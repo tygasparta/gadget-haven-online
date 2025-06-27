@@ -76,11 +76,11 @@ const HeroBanner = () => {
           }`}
         >
           <div className={`h-full bg-gradient-to-r ${slide.bgGradient} relative overflow-hidden`}>
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-8 left-8 w-24 h-24 bg-white rounded-full animate-pulse"></div>
-              <div className="absolute bottom-12 right-12 w-16 h-16 bg-white rounded-full animate-bounce"></div>
-              <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-white rounded-full animate-ping"></div>
+            {/* Subtle background pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-8 left-8 w-32 h-32 bg-white rounded-full animate-pulse"></div>
+              <div className="absolute bottom-12 right-12 w-20 h-20 bg-white rounded-full animate-bounce"></div>
+              <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-white rounded-full animate-ping"></div>
             </div>
 
             {/* Content */}
@@ -130,31 +130,48 @@ const HeroBanner = () => {
                   </div>
                 </div>
 
-                {/* Product Image */}
+                {/* Product Image - Enhanced */}
                 <div className="hidden lg:flex justify-center items-center relative">
-                  <div className="relative">
-                    {/* Glow effect */}
-                    <div className="absolute inset-0 bg-white/20 rounded-2xl blur-2xl transform scale-110 animate-pulse"></div>
-                    {/* Product showcase */}
-                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-500">
-                      <img 
-                        src={slide.image} 
-                        alt={slide.subtitle}
-                        className="max-w-sm w-full h-auto object-contain drop-shadow-2xl rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
-                        }}
-                      />
+                  <div className="relative w-full max-w-md">
+                    {/* Professional backdrop */}
+                    <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl transform scale-110"></div>
+                    
+                    {/* Main product container */}
+                    <div className="relative z-10 bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
+                      {/* Product showcase */}
+                      <div className="relative transform hover:scale-105 transition-transform duration-500">
+                        <div className="bg-white/90 rounded-2xl p-6 shadow-2xl">
+                          <img 
+                            src={slide.image} 
+                            alt={slide.subtitle}
+                            className="w-full h-64 object-contain mix-blend-multiply"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
+                            }}
+                          />
+                        </div>
+                        
+                        {/* Floating elements */}
+                        <div className="absolute -top-4 -right-4 bg-green-500 text-white rounded-full p-3 shadow-lg animate-bounce">
+                          <Shield className="w-5 h-5" />
+                        </div>
+                        <div className="absolute -bottom-4 -left-4 bg-blue-500 text-white rounded-full p-3 shadow-lg animate-pulse">
+                          <Truck className="w-5 h-5" />
+                        </div>
+                      </div>
+                      
+                      {/* Feature badges */}
+                      <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium border border-white/20">
+                        Premium Quality
+                      </div>
+                      <div className="absolute bottom-4 left-4 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium border border-white/20">
+                        Fast Delivery
+                      </div>
                     </div>
-                    {/* Feature badges */}
-                    <div className="absolute -top-3 -right-3 bg-white/20 backdrop-blur-sm rounded-lg p-2 text-white text-xs font-medium">
-                      <Shield className="w-4 h-4 mb-1" />
-                      Warranty
-                    </div>
-                    <div className="absolute -bottom-3 -left-3 bg-white/20 backdrop-blur-sm rounded-lg p-2 text-white text-xs font-medium">
-                      <Truck className="w-4 h-4 mb-1" />
-                      Free Ship
-                    </div>
+
+                    {/* Decorative elements */}
+                    <div className="absolute -top-6 -left-6 w-12 h-12 bg-yellow-400 rounded-full opacity-20 animate-pulse"></div>
+                    <div className="absolute -bottom-6 -right-6 w-8 h-8 bg-pink-400 rounded-full opacity-30 animate-bounce"></div>
                   </div>
                 </div>
               </div>
