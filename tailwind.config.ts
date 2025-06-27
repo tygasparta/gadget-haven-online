@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -21,6 +20,9 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
+			},
+			perspective: {
+				'1000': '1000px',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -112,5 +114,24 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }: { addUtilities: any }) {
+			const newUtilities = {
+				'.perspective-1000': {
+					perspective: '1000px',
+				},
+				'.transform-style-preserve-3d': {
+					'transform-style': 'preserve-3d',
+				},
+				'.backface-hidden': {
+					'backface-visibility': 'hidden',
+				},
+				'.rotate-y-180': {
+					transform: 'rotateY(180deg)',
+				},
+			}
+			addUtilities(newUtilities)
+		}
+	],
 } satisfies Config;

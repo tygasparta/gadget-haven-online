@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Gift, Zap, Trophy, ShoppingBag, Star, Crown } from 'lucide-react';
+import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const SideBanners = () => {
@@ -8,28 +8,50 @@ const SideBanners = () => {
     <>
       {/* Left Side Banner */}
       <div className="fixed left-0 top-1/2 -translate-y-1/2 z-10 hidden xl:block">
-        <div className="bg-gradient-to-b from-blue-600 to-blue-800 text-white p-6 rounded-r-2xl shadow-2xl w-64 overflow-hidden">
-          <div className="flex flex-col items-center space-y-4">
-            {/* Icon */}
-            <div className="bg-white/20 p-3 rounded-full">
-              <Gift className="w-8 h-8" />
+        <div className="group perspective-1000">
+          <div className="relative w-64 h-80 transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
+            {/* Front Side */}
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-6 rounded-r-2xl shadow-2xl backface-hidden">
+              <div className="flex flex-col items-center space-y-4 h-full justify-center">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Gift className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-bold text-xl mb-3">Weekly Deals</h3>
+                  <p className="text-sm mb-4 leading-relaxed opacity-90">Get up to 60% off on selected items every week!</p>
+                  <Button 
+                    size="sm" 
+                    className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                  >
+                    Explore Deals
+                  </Button>
+                </div>
+                <div className="absolute -top-2 -right-2 bg-yellow-400 text-blue-800 rounded-full p-2 text-xs font-bold">
+                  NEW
+                </div>
+              </div>
             </div>
             
-            {/* Content */}
-            <div className="text-center">
-              <h3 className="font-bold text-xl mb-3">Weekly Deals</h3>
-              <p className="text-sm mb-4 leading-relaxed opacity-90">Get up to 60% off on selected items every week!</p>
-              <Button 
-                size="sm" 
-                className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
-              >
-                Explore Deals
-              </Button>
-            </div>
-            
-            {/* Decorative elements */}
-            <div className="absolute -top-2 -right-2 bg-yellow-400 text-blue-800 rounded-full p-2 text-xs font-bold">
-              NEW
+            {/* Back Side */}
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-700 to-blue-900 text-white p-6 rounded-r-2xl shadow-2xl backface-hidden rotate-y-180">
+              <div className="flex flex-col items-center space-y-4 h-full justify-center">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Headphones className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-bold text-xl mb-3">Audio Sale</h3>
+                  <p className="text-sm mb-4 leading-relaxed opacity-90">Premium headphones & speakers at amazing prices!</p>
+                  <Button 
+                    size="sm" 
+                    className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                  >
+                    Shop Audio
+                  </Button>
+                </div>
+                <div className="absolute -top-2 -right-2 bg-green-400 text-blue-800 rounded-full p-2 text-xs font-bold">
+                  HOT
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -37,28 +59,50 @@ const SideBanners = () => {
 
       {/* Right Side Banner */}
       <div className="fixed right-0 top-1/2 -translate-y-1/2 z-10 hidden xl:block">
-        <div className="bg-gradient-to-b from-blue-500 to-blue-700 text-white p-6 rounded-l-2xl shadow-2xl w-64 overflow-hidden">
-          <div className="flex flex-col items-center space-y-4">
-            {/* Icon */}
-            <div className="bg-white/20 p-3 rounded-full">
-              <Crown className="w-8 h-8" />
+        <div className="group perspective-1000">
+          <div className="relative w-64 h-80 transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
+            {/* Front Side */}
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-500 to-blue-700 text-white p-6 rounded-l-2xl shadow-2xl backface-hidden">
+              <div className="flex flex-col items-center space-y-4 h-full justify-center">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Crown className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-bold text-xl mb-3">VIP Club</h3>
+                  <p className="text-sm mb-4 leading-relaxed opacity-90">Join our exclusive membership for premium benefits!</p>
+                  <Button 
+                    size="sm" 
+                    className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                  >
+                    Join Now
+                  </Button>
+                </div>
+                <div className="absolute -top-2 -left-2 bg-yellow-400 text-blue-800 rounded-full p-2 text-xs font-bold">
+                  VIP
+                </div>
+              </div>
             </div>
             
-            {/* Content */}
-            <div className="text-center">
-              <h3 className="font-bold text-xl mb-3">VIP Club</h3>
-              <p className="text-sm mb-4 leading-relaxed opacity-90">Join our exclusive membership for premium benefits!</p>
-              <Button 
-                size="sm" 
-                className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
-              >
-                Join Now
-              </Button>
-            </div>
-            
-            {/* Decorative elements */}
-            <div className="absolute -top-2 -left-2 bg-yellow-400 text-blue-800 rounded-full p-2 text-xs font-bold">
-              VIP
+            {/* Back Side */}
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-6 rounded-l-2xl shadow-2xl backface-hidden rotate-y-180">
+              <div className="flex flex-col items-center space-y-4 h-full justify-center">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Smartphone className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-bold text-xl mb-3">New Phones</h3>
+                  <p className="text-sm mb-4 leading-relaxed opacity-90">Latest smartphones with cutting-edge technology!</p>
+                  <Button 
+                    size="sm" 
+                    className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                  >
+                    View Phones
+                  </Button>
+                </div>
+                <div className="absolute -top-2 -left-2 bg-orange-400 text-blue-800 rounded-full p-2 text-xs font-bold">
+                  NEW
+                </div>
+              </div>
             </div>
           </div>
         </div>
