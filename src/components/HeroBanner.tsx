@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Zap, Shield, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 const HeroBanner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
   const slides = [{
     id: 1,
     title: "FLASH SALE",
@@ -45,31 +43,20 @@ const HeroBanner = () => {
     bgGradient: "from-red-500 via-pink-600 to-purple-700",
     image: "/lovable-uploads/ec24a873-3717-4a20-b741-b2588778cbd8.png"
   }];
-
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
   }, []);
-
   const nextSlide = () => {
     setCurrentSlide(prev => (prev + 1) % slides.length);
   };
-
   const prevSlide = () => {
     setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
   };
-
-  return (
-    <div className="relative h-[280px] md:h-[320px] overflow-hidden rounded-2xl mb-8 shadow-xl">
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-            index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-          }`}
-        >
+  return <div className="relative h-[280px] md:h-[320px] overflow-hidden rounded-2xl mb-8 shadow-xl">
+      {slides.map((slide, index) => <div key={slide.id} className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}>
           <div className={`h-full bg-gradient-to-r ${slide.bgGradient} relative overflow-hidden`}>
             {/* Subtle background pattern */}
             <div className="absolute inset-0 opacity-5">
@@ -130,14 +117,9 @@ const HeroBanner = () => {
                   <div className="relative w-full max-w-sm">
                     {/* Product showcase with transparent backgrounds */}
                     <div className="relative transform hover:scale-105 transition-transform duration-500">
-                      <img 
-                        src={slide.image} 
-                        alt={slide.subtitle} 
-                        className="w-full h-56 object-contain drop-shadow-2xl" 
-                        onError={(e) => {
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
-                        }} 
-                      />
+                      <img src={slide.image} alt={slide.subtitle} className="w-full h-56 object-contain drop-shadow-2xl" onError={e => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
+                  }} />
                       
                       {/* Floating elements with transparent backgrounds */}
                       <div className="absolute -top-2 -right-2 bg-green-500/80 backdrop-blur-sm text-white rounded-full p-2 shadow-lg animate-bounce">
@@ -156,40 +138,21 @@ const HeroBanner = () => {
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        </div>)}
 
       {/* Navigation buttons */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-200 z-20 hover:scale-110"
-      >
-        <ChevronLeft className="w-5 h-5" />
+      <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-200 z-20 hover:scale-110">
+        
       </button>
       
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-200 z-20 hover:scale-110"
-      >
-        <ChevronRight className="w-5 h-5" />
+      <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-200 z-20 hover:scale-110">
+        
       </button>
 
       {/* Dots indicator */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`transition-all duration-300 rounded-full ${
-              index === currentSlide
-                ? 'w-6 h-2 bg-white'
-                : 'w-2 h-2 bg-white/50 hover:bg-white/75'
-            }`}
-          />
-        ))}
+        {slides.map((_, index) => <button key={index} onClick={() => setCurrentSlide(index)} className={`transition-all duration-300 rounded-full ${index === currentSlide ? 'w-6 h-2 bg-white' : 'w-2 h-2 bg-white/50 hover:bg-white/75'}`} />)}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default HeroBanner;
