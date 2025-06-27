@@ -6,24 +6,24 @@ import { Button } from '@/components/ui/button';
 const SideBanners = () => {
   return (
     <>
-      {/* Desktop Side Banners - Hidden on mobile */}
+      {/* Desktop Side Banners - Fixed positioning with proper z-index */}
       <div className="hidden xl:block">
         {/* Left Side Banner */}
-        <div className="fixed left-0 top-1/2 -translate-y-1/2 z-10">
+        <div className="fixed left-2 top-1/2 -translate-y-1/2 z-40">
           <div className="group perspective-1000">
-            <div className="relative w-64 h-80 transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
+            <div className="relative w-56 h-72 transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
               {/* Front Side */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-6 rounded-r-2xl shadow-2xl backface-hidden">
-                <div className="flex flex-col items-center space-y-4 h-full justify-center">
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-5 rounded-r-2xl shadow-2xl backface-hidden">
+                <div className="flex flex-col items-center space-y-3 h-full justify-center">
                   <div className="bg-white/20 p-3 rounded-full">
-                    <Gift className="w-8 h-8" />
+                    <Gift className="w-7 h-7" />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-bold text-xl mb-3">Weekly Deals</h3>
-                    <p className="text-sm mb-4 leading-relaxed opacity-90">Get up to 60% off on selected items every week!</p>
+                    <h3 className="font-bold text-lg mb-2">Weekly Deals</h3>
+                    <p className="text-xs mb-3 leading-relaxed opacity-90">Get up to 60% off on selected items every week!</p>
                     <Button 
                       size="sm" 
-                      className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                      className="bg-white text-blue-600 hover:bg-gray-100 text-xs px-3 py-2"
                     >
                       Explore Deals
                     </Button>
@@ -35,17 +35,17 @@ const SideBanners = () => {
               </div>
               
               {/* Back Side */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-700 to-blue-900 text-white p-6 rounded-r-2xl shadow-2xl backface-hidden rotate-y-180">
-                <div className="flex flex-col items-center space-y-4 h-full justify-center">
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-700 to-blue-900 text-white p-5 rounded-r-2xl shadow-2xl backface-hidden rotate-y-180">
+                <div className="flex flex-col items-center space-y-3 h-full justify-center">
                   <div className="bg-white/20 p-3 rounded-full">
-                    <Headphones className="w-8 h-8" />
+                    <Headphones className="w-7 h-7" />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-bold text-xl mb-3">Audio Sale</h3>
-                    <p className="text-sm mb-4 leading-relaxed opacity-90">Premium headphones & speakers at amazing prices!</p>
+                    <h3 className="font-bold text-lg mb-2">Audio Sale</h3>
+                    <p className="text-xs mb-3 leading-relaxed opacity-90">Premium headphones & speakers at amazing prices!</p>
                     <Button 
                       size="sm" 
-                      className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                      className="bg-white text-blue-600 hover:bg-gray-100 text-xs px-3 py-2"
                     >
                       Shop Audio
                     </Button>
@@ -60,21 +60,21 @@ const SideBanners = () => {
         </div>
 
         {/* Right Side Banner */}
-        <div className="fixed right-0 top-1/2 -translate-y-1/2 z-10">
+        <div className="fixed right-2 top-1/2 -translate-y-1/2 z-40">
           <div className="group perspective-1000">
-            <div className="relative w-64 h-80 transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
+            <div className="relative w-56 h-72 transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
               {/* Front Side */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-500 to-blue-700 text-white p-6 rounded-l-2xl shadow-2xl backface-hidden">
-                <div className="flex flex-col items-center space-y-4 h-full justify-center">
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-500 to-blue-700 text-white p-5 rounded-l-2xl shadow-2xl backface-hidden">
+                <div className="flex flex-col items-center space-y-3 h-full justify-center">
                   <div className="bg-white/20 p-3 rounded-full">
-                    <Crown className="w-8 h-8" />
+                    <Crown className="w-7 h-7" />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-bold text-xl mb-3">VIP Club</h3>
-                    <p className="text-sm mb-4 leading-relaxed opacity-90">Join our exclusive membership for premium benefits!</p>
+                    <h3 className="font-bold text-lg mb-2">VIP Club</h3>
+                    <p className="text-xs mb-3 leading-relaxed opacity-90">Join our exclusive membership for premium benefits!</p>
                     <Button 
                       size="sm" 
-                      className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                      className="bg-white text-blue-600 hover:bg-gray-100 text-xs px-3 py-2"
                     >
                       Join Now
                     </Button>
@@ -86,17 +86,17 @@ const SideBanners = () => {
               </div>
               
               {/* Back Side */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-6 rounded-l-2xl shadow-2xl backface-hidden rotate-y-180">
-                <div className="flex flex-col items-center space-y-4 h-full justify-center">
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-800 text-white p-5 rounded-l-2xl shadow-2xl backface-hidden rotate-y-180">
+                <div className="flex flex-col items-center space-y-3 h-full justify-center">
                   <div className="bg-white/20 p-3 rounded-full">
-                    <Smartphone className="w-8 h-8" />
+                    <Smartphone className="w-7 h-7" />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-bold text-xl mb-3">New Phones</h3>
-                    <p className="text-sm mb-4 leading-relaxed opacity-90">Latest smartphones with cutting-edge technology!</p>
+                    <h3 className="font-bold text-lg mb-2">New Phones</h3>
+                    <p className="text-xs mb-3 leading-relaxed opacity-90">Latest smartphones with cutting-edge technology!</p>
                     <Button 
                       size="sm" 
-                      className="bg-white text-blue-600 hover:bg-gray-100 text-sm px-4 py-2"
+                      className="bg-white text-blue-600 hover:bg-gray-100 text-xs px-3 py-2"
                     >
                       View Phones
                     </Button>
@@ -111,8 +111,8 @@ const SideBanners = () => {
         </div>
       </div>
 
-      {/* Mobile Banner Cards - Displayed below other content */}
-      <div className="block xl:hidden mt-8 px-4">
+      {/* Mobile Banner Cards - Below other content */}
+      <div className="block xl:hidden mt-8 px-4 order-last">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Mobile VIP Club Banner */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-2xl shadow-lg">
@@ -157,7 +157,6 @@ const SideBanners = () => {
 
         {/* Mobile Additional Banners */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Audio Sale Banner */}
           <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-4 rounded-2xl shadow-lg">
             <div className="flex items-center space-x-3 mb-3">
               <div className="bg-white/20 p-2 rounded-full">
@@ -177,7 +176,6 @@ const SideBanners = () => {
             </Button>
           </div>
 
-          {/* New Phones Banner */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-2xl shadow-lg">
             <div className="flex items-center space-x-3 mb-3">
               <div className="bg-white/20 p-2 rounded-full">
@@ -199,12 +197,12 @@ const SideBanners = () => {
         </div>
       </div>
 
-      {/* Corner Banners - Responsive positioning */}
-      <div className="fixed bottom-4 left-4 z-10 hidden lg:block">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
-          <div className="flex items-center space-x-3">
+      {/* Corner Banners - Proper positioning */}
+      <div className="fixed bottom-4 left-4 z-30 hidden lg:block">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+          <div className="flex items-center space-x-2">
             <div className="bg-white/20 p-2 rounded-full">
-              <Zap className="w-5 h-5" />
+              <Zap className="w-4 h-4" />
             </div>
             <div>
               <h4 className="font-bold text-sm">Flash Sale</h4>
@@ -214,11 +212,11 @@ const SideBanners = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-4 right-4 z-10 hidden lg:block">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
-          <div className="flex items-center space-x-3">
+      <div className="fixed bottom-4 right-4 z-30 hidden lg:block">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+          <div className="flex items-center space-x-2">
             <div className="bg-white/20 p-2 rounded-full">
-              <Trophy className="w-5 h-5" />
+              <Trophy className="w-4 h-4" />
             </div>
             <div>
               <h4 className="font-bold text-sm">Top Rated</h4>
@@ -229,7 +227,7 @@ const SideBanners = () => {
       </div>
 
       {/* Mobile Floating Action Button */}
-      <div className="fixed bottom-4 right-4 z-10 lg:hidden">
+      <div className="fixed bottom-4 right-4 z-30 lg:hidden">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 cursor-pointer animate-bounce">
           <ShoppingBag className="w-6 h-6" />
         </div>
