@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Zap, Shield, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,7 @@ const HeroBanner = () => {
   };
 
   return (
-    <div className="relative h-[320px] md:h-[380px] overflow-hidden rounded-2xl mb-8 shadow-xl">
+    <div className="relative h-[280px] md:h-[320px] overflow-hidden rounded-2xl mb-8 shadow-xl">
       {slides.map((slide, index) => (
         <div
           key={slide.id}
@@ -99,29 +98,29 @@ const HeroBanner = () => {
                   </div>
                   
                   {/* Main Title */}
-                  <h1 className="text-4xl md:text-5xl font-bold mb-2 leading-tight">
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2 leading-tight">
                     {slide.subtitle}
                   </h1>
                   
                   {/* Save Amount */}
-                  <h2 className="text-2xl md:text-3xl mb-3 font-bold text-yellow-300">
+                  <h2 className="text-xl md:text-2xl mb-3 font-bold text-yellow-300">
                     {slide.description}
                   </h2>
                   
                   {/* Description */}
-                  <p className="text-lg mb-4 opacity-90 leading-relaxed">
+                  <p className="text-base mb-3 opacity-90 leading-relaxed">
                     {slide.details}
                   </p>
 
                   {/* Price Display */}
                   <div className="flex items-center mb-4">
-                    <span className="text-3xl font-bold text-white">{slide.price}</span>
-                    <span className="text-lg text-white/60 line-through ml-3">{slide.originalPrice}</span>
+                    <span className="text-2xl font-bold text-white">{slide.price}</span>
+                    <span className="text-base text-white/60 line-through ml-3">{slide.originalPrice}</span>
                   </div>
 
                   {/* Action Button & Validity */}
                   <div className="flex flex-col sm:flex-row items-start gap-4">
-                    <Button className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    <Button className="bg-white text-black hover:bg-gray-100 px-6 py-2 text-base font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                       {slide.buttonText}
                     </Button>
                     <div className="text-yellow-300 text-sm font-semibold">
@@ -130,48 +129,40 @@ const HeroBanner = () => {
                   </div>
                 </div>
 
-                {/* Product Image - Enhanced */}
+                {/* Product Image - Clean with transparent background */}
                 <div className="hidden lg:flex justify-center items-center relative">
-                  <div className="relative w-full max-w-md">
-                    {/* Professional backdrop */}
-                    <div className="absolute inset-0 bg-white/10 rounded-3xl blur-3xl transform scale-110"></div>
-                    
-                    {/* Main product container */}
-                    <div className="relative z-10 bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
-                      {/* Product showcase */}
-                      <div className="relative transform hover:scale-105 transition-transform duration-500">
-                        <div className="bg-white/90 rounded-2xl p-6 shadow-2xl">
-                          <img 
-                            src={slide.image} 
-                            alt={slide.subtitle}
-                            className="w-full h-64 object-contain mix-blend-multiply"
-                            onError={(e) => {
-                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
-                            }}
-                          />
-                        </div>
-                        
-                        {/* Floating elements */}
-                        <div className="absolute -top-4 -right-4 bg-green-500 text-white rounded-full p-3 shadow-lg animate-bounce">
-                          <Shield className="w-5 h-5" />
-                        </div>
-                        <div className="absolute -bottom-4 -left-4 bg-blue-500 text-white rounded-full p-3 shadow-lg animate-pulse">
-                          <Truck className="w-5 h-5" />
-                        </div>
-                      </div>
+                  <div className="relative w-full max-w-sm">
+                    {/* Product showcase - removed white backgrounds and borders */}
+                    <div className="relative transform hover:scale-105 transition-transform duration-500">
+                      <img 
+                        src={slide.image} 
+                        alt={slide.subtitle}
+                        className="w-full h-56 object-contain drop-shadow-2xl"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
+                        }}
+                      />
                       
-                      {/* Feature badges */}
-                      <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium border border-white/20">
-                        Premium Quality
+                      {/* Floating elements with transparent backgrounds */}
+                      <div className="absolute -top-2 -right-2 bg-green-500/80 backdrop-blur-sm text-white rounded-full p-2 shadow-lg animate-bounce">
+                        <Shield className="w-4 h-4" />
                       </div>
-                      <div className="absolute bottom-4 left-4 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-xs font-medium border border-white/20">
-                        Fast Delivery
+                      <div className="absolute -bottom-2 -left-2 bg-blue-500/80 backdrop-blur-sm text-white rounded-full p-2 shadow-lg animate-pulse">
+                        <Truck className="w-4 h-4" />
                       </div>
                     </div>
+                    
+                    {/* Feature badges with transparent backgrounds */}
+                    <div className="absolute top-2 right-2 bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 text-white text-xs font-medium border border-white/20">
+                      Premium Quality
+                    </div>
+                    <div className="absolute bottom-2 left-2 bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 text-white text-xs font-medium border border-white/20">
+                      Fast Delivery
+                    </div>
 
-                    {/* Decorative elements */}
-                    <div className="absolute -top-6 -left-6 w-12 h-12 bg-yellow-400 rounded-full opacity-20 animate-pulse"></div>
-                    <div className="absolute -bottom-6 -right-6 w-8 h-8 bg-pink-400 rounded-full opacity-30 animate-bounce"></div>
+                    {/* Subtle decorative elements */}
+                    <div className="absolute -top-4 -left-4 w-8 h-8 bg-yellow-400/20 rounded-full animate-pulse"></div>
+                    <div className="absolute -bottom-4 -right-4 w-6 h-6 bg-pink-400/20 rounded-full animate-bounce"></div>
                   </div>
                 </div>
               </div>
