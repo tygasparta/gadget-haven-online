@@ -28,12 +28,12 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 
   const getColorClasses = () => {
     switch (sectionColor) {
-      case "red":
+      case "blue":
         return {
-          border: "border-red-500",
-          text: "text-red-600",
-          bg: "hover:bg-red-50",
-          gradient: "from-red-500 to-red-600"
+          border: "border-blue-500",
+          text: "text-blue-600",
+          bg: "hover:bg-blue-50",
+          gradient: "from-blue-500 to-blue-600"
         };
       case "green":
         return {
@@ -66,7 +66,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
               <h2 className="text-3xl font-bold text-gray-800 flex items-center">
                 {title}
                 {title === "Flash Sale ⚡" && (
-                  <span className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-full text-sm font-bold ml-4 animate-pulse shadow-lg">
+                  <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold ml-4 animate-pulse shadow-lg">
                     ⚡ LIMITED TIME
                   </span>
                 )}

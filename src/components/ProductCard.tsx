@@ -41,7 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute top-3 left-3 z-10">
           {product.isFlash ? (
             <div className="flex flex-col space-y-1">
-              <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
                 <Zap className="w-3 h-3 mr-1" />
                 FLASH
               </div>
@@ -64,7 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Quick action buttons */}
       <div className="absolute top-3 right-3 z-10 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
         <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200">
-          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+          <Heart className="w-4 h-4 text-gray-600 hover:text-blue-500" />
         </button>
         <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200">
           <Eye className="w-4 h-4 text-gray-600 hover:text-blue-500" />
@@ -125,18 +125,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Enhanced countdown timer */}
         {product.countdownTimer && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-100">
+          <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
             <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-red-600 font-semibold flex items-center">
+              <span className="text-blue-600 font-semibold flex items-center">
                 <Zap className="w-3 h-3 mr-1" />
                 Flash Sale Ends:
               </span>
-              <span className="bg-red-500 text-white px-3 py-1 rounded-full font-mono font-bold">
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-full font-mono font-bold">
                 {product.countdownTimer}
               </span>
             </div>
-            <div className="w-full bg-red-200 rounded-full h-2">
-              <div className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
             </div>
           </div>
         )}

@@ -42,7 +42,7 @@ const Header = () => {
                   placeholder="Search for smartphones, electronics, gadgets..."
                   className="w-full pl-4 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500"
                 />
-                <Button className="absolute right-1 top-1 bottom-1 px-4 bg-red-500 hover:bg-red-600">
+                <Button className="absolute right-1 top-1 bottom-1 px-4 bg-blue-500 hover:bg-blue-600">
                   <Search className="w-5 h-5" />
                 </Button>
               </div>
@@ -62,7 +62,7 @@ const Header = () => {
                 <ShoppingCart className="w-6 h-6" />
                 <span className="ml-2 hidden md:inline">Cart</span>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -81,7 +81,7 @@ const Header = () => {
                 placeholder="Search for products..."
                 className="w-full pl-4 pr-12 py-2 border-2 border-gray-200 rounded-lg"
               />
-              <Button className="absolute right-1 top-1 bottom-1 px-3 bg-red-500 hover:bg-red-600">
+              <Button className="absolute right-1 top-1 bottom-1 px-3 bg-blue-500 hover:bg-blue-600">
                 <Search className="w-4 h-4" />
               </Button>
             </div>
