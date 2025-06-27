@@ -9,7 +9,7 @@ import Newsletter from '../components/Newsletter';
 import Footer from '../components/Footer';
 
 const Index = () => {
-  // Sample product data
+  // Enhanced product data with relevant stock images
   const flashSaleProducts = [
     {
       id: 1,
@@ -18,7 +18,7 @@ const Index = () => {
       originalPrice: 1199,
       rating: 4.5,
       reviews: 124,
-      image: "/lovable-uploads/e04ef79b-7e6b-483d-898a-d1e0e1f2a36f.png",
+      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop",
       discount: "25% OFF",
       isFlash: true,
       countdownTimer: "02:15:23"
@@ -30,7 +30,7 @@ const Index = () => {
       originalPrice: 349,
       rating: 4.8,
       reviews: 89,
-      image: "/lovable-uploads/d81d319e-54ab-4282-9501-5d174d3ddc41.png",
+      image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=400&fit=crop",
       discount: "20% OFF",
       isFlash: true,
       countdownTimer: "02:15:23"
@@ -42,7 +42,7 @@ const Index = () => {
       originalPrice: 65,
       rating: 4.6,
       reviews: 256,
-      image: "/lovable-uploads/30057c3b-ae96-41a4-bfa6-1aeb58d94099.png",
+      image: "https://images.unsplash.com/photo-1609592806689-60c84bdb98d0?w=400&h=400&fit=crop",
       discount: "31% OFF",
       isFlash: true,
       countdownTimer: "02:15:23"
@@ -54,7 +54,7 @@ const Index = () => {
       originalPrice: 1199,
       rating: 4.7,
       reviews: 67,
-      image: "/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png",
+      image: "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400&h=400&fit=crop",
       discount: "17% OFF",
       isFlash: true,
       countdownTimer: "02:15:23"
@@ -68,7 +68,7 @@ const Index = () => {
       price: 1399,
       rating: 4.8,
       reviews: 45,
-      image: "/lovable-uploads/7a8cf411-d2ed-4aba-9754-9c2c6fcc6c92.png",
+      image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop",
       discount: "NEW"
     },
     {
@@ -77,7 +77,7 @@ const Index = () => {
       price: 1299,
       rating: 4.6,
       reviews: 23,
-      image: "/lovable-uploads/e04ef79b-7e6b-483d-898a-d1e0e1f2a36f.png",
+      image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=400&fit=crop",
       discount: "NEW"
     },
     {
@@ -86,7 +86,7 @@ const Index = () => {
       price: 249,
       rating: 4.7,
       reviews: 78,
-      image: "/lovable-uploads/d81d319e-54ab-4282-9501-5d174d3ddc41.png",
+      image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400&h=400&fit=crop",
       discount: "NEW"
     },
     {
@@ -95,7 +95,7 @@ const Index = () => {
       price: 499,
       rating: 4.9,
       reviews: 156,
-      image: "/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png",
+      image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop",
       discount: "NEW"
     }
   ];
@@ -108,7 +108,7 @@ const Index = () => {
       originalPrice: 699,
       rating: 4.5,
       reviews: 89,
-      image: "/lovable-uploads/30057c3b-ae96-41a4-bfa6-1aeb58d94099.png",
+      image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=400&fit=crop",
       discount: "14% OFF"
     },
     {
@@ -117,7 +117,7 @@ const Index = () => {
       price: 349,
       rating: 4.8,
       reviews: 234,
-      image: "/lovable-uploads/7a8cf411-d2ed-4aba-9754-9c2c6fcc6c92.png"
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop"
     },
     {
       id: 11,
@@ -126,7 +126,7 @@ const Index = () => {
       originalPrice: 2799,
       rating: 4.9,
       reviews: 45,
-      image: "/lovable-uploads/e04ef79b-7e6b-483d-898a-d1e0e1f2a36f.png",
+      image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=400&fit=crop",
       discount: "11% OFF"
     },
     {
@@ -136,13 +136,13 @@ const Index = () => {
       originalPrice: 1499,
       rating: 4.6,
       reviews: 67,
-      image: "/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png",
+      image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=400&fit=crop",
       discount: "13% OFF"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-6">

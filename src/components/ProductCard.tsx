@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, ShoppingCart, Heart } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ProductCardProps {
@@ -30,81 +30,119 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ));
   };
 
+  const discountPercentage = product.originalPrice 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
   return (
-    <div className="bg-white rounded-lg border hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
-      {/* Discount badge */}
+    <div className="bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group relative overflow-hidden transform hover:-translate-y-1">
+      {/* Enhanced discount badge */}
       {product.discount && (
-        <div className="absolute top-2 left-2 z-10">
+        <div className="absolute top-3 left-3 z-10">
           {product.isFlash ? (
             <div className="flex flex-col space-y-1">
-              <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
+                <Zap className="w-3 h-3 mr-1" />
                 FLASH
-              </span>
-              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">
+              </div>
+              <span className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
                 {product.discount}
               </span>
             </div>
+          ) : product.discount === "NEW" ? (
+            <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+              {product.discount}
+            </span>
           ) : (
-            <span className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+            <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
               {product.discount}
             </span>
           )}
         </div>
       )}
 
-      {/* Wishlist button */}
-      <button className="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
-        <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
-      </button>
+      {/* Quick action buttons */}
+      <div className="absolute top-3 right-3 z-10 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+        <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200">
+          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+        </button>
+        <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200">
+          <Eye className="w-4 h-4 text-gray-600 hover:text-blue-500" />
+        </button>
+      </div>
 
-      {/* Product image */}
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
+      {/* Product image with enhanced styling */}
+      <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+          }}
         />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       </div>
 
-      {/* Product info */}
-      <div className="p-4">
-        <h3 className="font-medium text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+      {/* Enhanced product info */}
+      <div className="p-5">
+        <h3 className="font-semibold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors text-sm leading-relaxed">
           {product.name}
         </h3>
 
-        {/* Rating */}
-        <div className="flex items-center mb-2">
-          <div className="flex">{renderStars(product.rating)}</div>
-          <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
+        {/* Enhanced rating */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center">
+            <div className="flex">{renderStars(product.rating)}</div>
+            <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
+          </div>
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            {product.rating}/5
+          </span>
         </div>
 
-        {/* Price */}
-        <div className="flex items-center mb-3">
-          <span className="text-xl font-bold text-blue-600">${product.price}</span>
+        {/* Enhanced price with savings */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-2xl font-bold text-blue-600">${product.price}</span>
+            {discountPercentage > 0 && (
+              <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                Save {discountPercentage}%
+              </span>
+            )}
+          </div>
           {product.originalPrice && (
-            <span className="text-sm text-gray-500 line-through ml-2">
-              ${product.originalPrice}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500 line-through">
+                ${product.originalPrice}
+              </span>
+              <span className="text-xs text-green-600 font-medium">
+                You save ${product.originalPrice - product.price}
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Countdown timer for flash sales */}
+        {/* Enhanced countdown timer */}
         {product.countdownTimer && (
-          <div className="mb-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-red-500 font-medium">Ends in:</span>
-              <span className="bg-red-100 text-red-600 px-2 py-1 rounded font-mono">
+          <div className="mb-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-100">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-red-600 font-semibold flex items-center">
+                <Zap className="w-3 h-3 mr-1" />
+                Flash Sale Ends:
+              </span>
+              <span className="bg-red-500 text-white px-3 py-1 rounded-full font-mono font-bold">
                 {product.countdownTimer}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
-              <div className="bg-red-500 h-1 rounded-full" style={{ width: '60%' }}></div>
+            <div className="w-full bg-red-200 rounded-full h-2">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
             </div>
           </div>
         )}
 
-        {/* Add to cart button */}
-        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+        {/* Enhanced add to cart button */}
+        <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
           <ShoppingCart className="w-4 h-4 mr-2" />
           Add to Cart
         </Button>
