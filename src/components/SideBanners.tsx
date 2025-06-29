@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Clock, Tag, Sparkles } from 'lucide-react';
+import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Tag, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const SideBanners = () => {
@@ -9,12 +8,6 @@ const SideBanners = () => {
       {/* Left Side Long Banner - Desktop only */}
       <div className="fixed left-4 top-1/2 -translate-y-1/2 z-20 hidden xl:block">
         <div className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer p-8 w-20 h-96 flex flex-col items-center justify-center overflow-hidden relative group">
-          {/* Simplified background elements */}
-          <div className="absolute inset-0 opacity-10 overflow-hidden">
-            <div className="absolute top-8 left-3 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-            <div className="absolute bottom-12 right-3 w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
-          </div>
-
           {/* Main Content - Centered */}
           <div className="flex flex-col items-center space-y-6 relative z-10">
             {/* Sale Badge */}
@@ -43,10 +36,6 @@ const SideBanners = () => {
             </div>
           </div>
 
-          {/* Simplified side strips */}
-          <div className="absolute left-2 top-8 bottom-8 w-1 bg-gradient-to-b from-yellow-400 to-purple-400 rounded-full opacity-40"></div>
-          <div className="absolute right-2 top-8 bottom-8 w-1 bg-gradient-to-b from-pink-400 to-indigo-400 rounded-full opacity-40"></div>
-          
           {/* Hover effect */}
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
