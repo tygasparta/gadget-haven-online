@@ -1,11 +1,47 @@
 
-import React, { useState } from 'react';
-import { Search, ShoppingCart, User, Heart, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, ShoppingCart, User, Heart, Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Link, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const Header = () => {
   const [cartCount] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState('');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const auth = localStorage.getItem('isAuthenticated');
+      const role = localStorage.getItem('userRole');
+      setIsAuthenticated(!!auth);
+      setUserRole(role || '');
+    };
+    
+    checkAuth();
+    // Listen for storage changes to update auth state
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsAuthenticated(false);
+    setUserRole('');
+    toast({ title: "Logged out", description: "See you again soon!" });
+    navigate('/');
+  };
+
+  const handleAccountClick = () => {
+    if (userRole === 'admin') {
+      navigate('/admin-dashboard');
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <>
@@ -24,7 +60,7 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo - Responsive */}
-            <div className="flex items-center flex-shrink-0">
+            <Link to="/" className="flex items-center flex-shrink-0">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
                 <span className="text-white font-bold text-sm sm:text-lg">G</span>
               </div>
@@ -32,7 +68,7 @@ const Header = () => {
                 <h1 className="text-lg sm:text-2xl font-bold text-blue-600 truncate">Gadget Genie</h1>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Your Ultimate Tech Destination</p>
               </div>
-            </div>
+            </Link>
 
             {/* Search bar - Desktop only */}
             <div className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden md:block">
@@ -50,23 +86,59 @@ const Header = () => {
 
             {/* Right side icons - Responsive */}
             <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
-              <Button variant="ghost" className="p-2 hidden sm:flex">
-                <User className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span className="ml-2 hidden lg:inline">Account</span>
-              </Button>
-              <Button variant="ghost" className="p-2 hidden sm:flex">
-                <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span className="ml-2 hidden lg:inline">Wishlist</span>
-              </Button>
-              <Button variant="ghost" className="p-2 relative">
-                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span className="ml-2 hidden lg:inline">Cart</span>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleAccountClick}>
+                    <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">
+                      {userRole === 'admin' ? 'Admin' : 'Account'}
+                    </span>
+                  </Button>
+                  <Button variant="ghost" className="p-2 hidden sm:flex">
+                    <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">Wishlist</span>
+                  </Button>
+                  <Button variant="ghost" className="p-2 relative">
+                    <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">Cart</span>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">Logout</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="ghost" className="p-2 hidden sm:flex">
+                      <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <span className="ml-2 hidden lg:inline">Login</span>
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" className="p-2 hidden sm:flex">
+                    <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">Wishlist</span>
+                  </Button>
+                  <Button variant="ghost" className="p-2 relative">
+                    <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">Cart</span>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Button>
+                </>
+              )}
               <Button variant="ghost" className="p-2 md:hidden">
                 <Menu className="w-5 h-5" />
               </Button>
