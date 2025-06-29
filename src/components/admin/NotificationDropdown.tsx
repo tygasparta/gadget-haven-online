@@ -7,14 +7,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Check, AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, Check, AlertTriangle, Info, CheckCircle, XCircle, Plus } from 'lucide-react';
 import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
+import { useCreateSampleNotifications } from '@/hooks/useCreateSampleNotifications';
 import { useToast } from '@/hooks/use-toast';
 
 const NotificationDropdown = () => {
-  const { data: notifications = [] } = useNotifications();
+  const { data: notifications = [], isLoading } = useNotifications();
   const { mutate: markAsRead } = useMarkNotificationAsRead();
+  const { mutate: createSampleNotifications, isPending } = useCreateSampleNotifications();
   const { toast } = useToast();
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -57,19 +60,40 @@ const NotificationDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80 p-0" align="end">
         <div className="p-4 border-b">
-          <h3 className="font-semibold text-lg">Notifications</h3>
-          <p className="text-sm text-gray-500">
-            {unreadCount} unread notifications
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-lg">Notifications</h3>
+              <p className="text-sm text-gray-500">
+                {unreadCount} unread notifications
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => createSampleNotifications()}
+              disabled={isPending}
+              className="h-8 w-8 p-0"
+              title="Create sample notifications"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
+          {isLoading ? (
             <div className="p-4 text-center text-gray-500">
-              No notifications yet
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2">Loading notifications...</p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>No notifications yet</p>
+              <p className="text-xs mt-1">Click the + button to create sample notifications</p>
             </div>
           ) : (
             notifications.map((notification) => (
-              <Card key={notification.id} className={`m-2 ${!notification.is_read ? 'border-blue-200' : ''}`}>
+              <Card key={notification.id} className={`m-2 ${!notification.is_read ? 'border-blue-200 bg-blue-50/50' : ''}`}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3">
@@ -88,6 +112,7 @@ const NotificationDropdown = () => {
                         variant="ghost"
                         onClick={() => handleMarkAsRead(notification.id)}
                         className="h-6 w-6 p-0"
+                        title="Mark as read"
                       >
                         <Check className="w-3 h-3" />
                       </Button>
