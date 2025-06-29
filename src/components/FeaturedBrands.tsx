@@ -1,8 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const FeaturedBrands = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const isMobile = useIsMobile();
+  
   const brands = [
     { name: 'Samsung', image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop' },
     { name: 'Apple', image: 'https://images.unsplash.com/photo-1621768216002-5ac171876625?w=200&h=200&fit=crop' },
@@ -14,45 +18,85 @@ const FeaturedBrands = () => {
     { name: 'Canon', image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=200&h=200&fit=crop' }
   ];
 
+  const itemsPerPage = isMobile ? 2 : 4;
+  const totalPages = Math.ceil(brands.length / itemsPerPage);
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % totalPages);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
+  };
+
+  const getCurrentBrands = () => {
+    const start = currentIndex * itemsPerPage;
+    return brands.slice(start, start + itemsPerPage);
+  };
+
   return (
-    <div className="mb-12">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Featured Brands</h2>
-          <p className="text-gray-600">Shop from your favorite tech brands</p>
+    <div className="mb-8 sm:mb-12 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-8">
+        <div className="mb-4 sm:mb-0">
+          <h2 className="text-xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">Featured Brands</h2>
+          <p className="text-sm sm:text-base text-gray-600">Shop from your favorite tech brands</p>
         </div>
-        <div className="flex space-x-3">
-          <button className="p-3 rounded-full bg-white border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg">
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+        <div className="flex space-x-2 sm:space-x-3 justify-center sm:justify-end">
+          <button 
+            className="p-2 sm:p-3 rounded-full bg-white border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
+            onClick={prevSlide}
+            disabled={currentIndex === 0}
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </button>
-          <button className="p-3 rounded-full bg-white border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg">
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+          <button 
+            className="p-2 sm:p-3 rounded-full bg-white border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
+            onClick={nextSlide}
+            disabled={currentIndex === totalPages - 1}
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-6">
-        {brands.map((brand, index) => (
+      {/* Mobile: 2 columns, Desktop: 4+ columns */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-6">
+        {getCurrentBrands().map((brand, index) => (
           <div
-            key={index}
-            className="bg-white rounded-xl border-2 border-gray-100 p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer group transform hover:-translate-y-1"
+            key={`${currentIndex}-${index}`}
+            className="bg-white rounded-lg sm:rounded-xl border-2 border-gray-100 p-3 sm:p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer group transform hover:-translate-y-1"
           >
-            <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+            <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-md sm:rounded-lg mb-2 sm:mb-3 flex items-center justify-center overflow-hidden">
               <img 
                 src={brand.image} 
                 alt={brand.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 rounded-lg"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 rounded-md sm:rounded-lg"
                 onError={(e) => {
                   e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=200&h=200&fit=crop";
                 }}
               />
             </div>
-            <p className="text-center text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
+            <p className="text-center text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors truncate">
               {brand.name}
             </p>
           </div>
         ))}
       </div>
+
+      {/* Pagination dots for mobile */}
+      {isMobile && totalPages > 1 && (
+        <div className="flex justify-center mt-4 space-x-2">
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
+              }`}
+              onClick={() => setCurrentIndex(index)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
