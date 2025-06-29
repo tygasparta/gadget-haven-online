@@ -11,7 +11,6 @@ import { useCartItems } from '@/hooks/useCart';
 const Header = () => {
   const { user, signOut } = useAuthContext();
   const { data: cartItems = [] } = useCartItems();
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,6 +35,15 @@ const Header = () => {
 
   const handleAccountClick = () => {
     navigate('/dashboard');
+  };
+
+  const handleCartClick = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    // Trigger cart sidebar to open
+    window.dispatchEvent(new Event('openCart'));
   };
 
   return (
@@ -94,7 +102,7 @@ const Header = () => {
                   <Button 
                     variant="ghost" 
                     className="p-2 relative"
-                    onClick={() => setIsCartOpen(true)}
+                    onClick={handleCartClick}
                   >
                     <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Cart</span>

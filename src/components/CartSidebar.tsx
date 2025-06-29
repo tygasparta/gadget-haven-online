@@ -1,18 +1,48 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/CartContext';
+import { useCartItems, useUpdateCartItem, useRemoveFromCart } from '@/hooks/useCart';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const CartSidebar = () => {
-  const { items, updateQuantity, removeFromCart, getTotalPrice, isCartOpen, setIsCartOpen } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { data: cartItems = [] } = useCartItems();
+  const updateCartItem = useUpdateCartItem();
+  const removeFromCart = useRemoveFromCart();
+  const { user } = useAuthContext();
   const navigate = useNavigate();
 
+  const updateQuantity = (id: string, newQuantity: number) => {
+    updateCartItem.mutate({ id, quantity: newQuantity });
+  };
+
+  const handleRemoveFromCart = (id: string) => {
+    removeFromCart.mutate(id);
+  };
+
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => {
+      return total + (item.products.price * item.quantity);
+    }, 0);
+  };
+
   const handleCheckout = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
     setIsCartOpen(false);
     navigate('/checkout');
   };
+
+  // Listen for cart open state from header
+  React.useEffect(() => {
+    const handleCartOpen = () => setIsCartOpen(true);
+    window.addEventListener('openCart', handleCartOpen);
+    return () => window.removeEventListener('openCart', handleCartOpen);
+  }, []);
 
   if (!isCartOpen) return null;
 
@@ -43,26 +73,29 @@ const CartSidebar = () => {
 
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto p-6">
-          {items.length === 0 ? (
+          {cartItems.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingBag className="w-16 h-16 mx-auto text-gray-300 mb-4" />
               <p className="text-gray-500">Your cart is empty</p>
+              {!user && (
+                <p className="text-sm text-gray-400 mt-2">Please log in to save items to your cart</p>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
+              {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
                   <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item.products.image}
+                    alt={item.products.name}
                     className="w-16 h-16 object-cover rounded"
                     onError={(e) => {
                       e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
                     }}
                   />
                   <div className="flex-1">
-                    <h3 className="font-medium text-sm">{item.name}</h3>
-                    <p className="text-blue-600 font-bold">${item.price}</p>
+                    <h3 className="font-medium text-sm">{item.products.name}</h3>
+                    <p className="text-blue-600 font-bold">${item.products.price}</p>
                     <div className="flex items-center space-x-2 mt-2">
                       <Button
                         variant="outline"
@@ -87,7 +120,7 @@ const CartSidebar = () => {
                     variant="ghost"
                     size="icon"
                     className="text-red-500 hover:text-red-700"
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() => handleRemoveFromCart(item.id)}
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -98,7 +131,7 @@ const CartSidebar = () => {
         </div>
 
         {/* Footer */}
-        {items.length > 0 && (
+        {cartItems.length > 0 && (
           <div className="border-t p-6">
             <div className="flex justify-between items-center mb-4">
               <span className="text-lg font-bold">Total:</span>
