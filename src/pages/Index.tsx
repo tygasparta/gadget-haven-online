@@ -10,11 +10,8 @@ import SideBanners from '@/components/SideBanners';
 import PromoBanners from '@/components/PromoBanners';
 import NewsletterBanner from '@/components/NewsletterBanner';
 import CartSidebar from '@/components/CartSidebar';
-import { useProducts } from '@/hooks/useProducts';
 
 const Index = () => {
-  const { data: products = [] } = useProducts();
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -22,7 +19,7 @@ const Index = () => {
         <HeroBanner />
         <SideBanners />
         <PromoBanners />
-        <ProductSection title="Featured Products" products={products} />
+        <ProductSection />
         <NewsletterBanner />
         <FeaturedBrands />
         <Newsletter />
