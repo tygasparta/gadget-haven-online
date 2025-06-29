@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BarChart3, Users, Package, DollarSign, TrendingUp, ShoppingCart, Eye, Edit, Trash2, Plus, Search, Filter, Download, Bell, Settings, LogOut, Star, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -409,11 +408,15 @@ const AdminDashboard = () => {
                       className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                     />
                   </div>
-                  <Button className="bg-green-600 hover:bg-green-700 text-white border-0">
+                  <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Product
                   </Button>
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Filter className="w-4 h-4 mr-2" />
+                    Filter
+                  </Button>
+                  <Button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
@@ -502,11 +505,11 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">Order Management</h2>
                 <div className="flex items-center space-x-4">
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Filter className="w-4 h-4 mr-2" />
                     Filter
                   </Button>
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
@@ -577,11 +580,11 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">User Management</h2>
                 <div className="flex items-center space-x-4">
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Filter className="w-4 h-4 mr-2" />
                     Filter
                   </Button>
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
