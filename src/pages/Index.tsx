@@ -43,11 +43,11 @@ const Index = () => {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative">
       <Header />
       <CartSidebar />
       
-      {/* Side Banners - Hidden on mobile */}
+      {/* Side Banners - Desktop only */}
       <div className="hidden lg:block">
         <SideBanners />
       </div>
@@ -62,6 +62,12 @@ const Index = () => {
           <main className="flex-1 min-w-0 w-full">
             <div className="w-full">
               <HeroBanner />
+              
+              {/* Mobile Banners - Show after hero banner on mobile */}
+              <div className="block lg:hidden">
+                <SideBanners />
+              </div>
+              
               <FeaturedBrands />
               
               {transformedFlashSale.length > 0 && (

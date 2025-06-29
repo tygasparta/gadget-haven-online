@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Heart, Menu, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const Header = () => {
   const { data: cartItems = [] } = useCartItems();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Calculate total cart items
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -24,6 +25,7 @@ const Header = () => {
       
       toast({ title: "Logged out", description: "See you again soon!" });
       navigate('/');
+      setIsMobileMenuOpen(false);
     } catch (error: any) {
       toast({ 
         title: "Error", 
@@ -35,6 +37,7 @@ const Header = () => {
 
   const handleAccountClick = () => {
     navigate('/dashboard');
+    setIsMobileMenuOpen(false);
   };
 
   const handleCartClick = () => {
@@ -44,7 +47,30 @@ const Header = () => {
     }
     // Trigger cart sidebar to open
     window.dispatchEvent(new Event('openCart'));
+    setIsMobileMenuOpen(false);
   };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setIsMobileMenuOpen(false);
+    };
+    
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
+  }, []);
+
+  const menuItems = [
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: Grid3X3, label: 'Categories', path: '/categories' },
+    { icon: Tag, label: 'Deals', path: '/deals' },
+    { icon: Headphones, label: 'Audio', path: '/audio' },
+    { icon: Smartphone, label: 'Phones', path: '/phones' },
+  ];
 
   return (
     <>
@@ -59,11 +85,11 @@ const Header = () => {
       </div>
       
       {/* Main header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo - Responsive */}
-            <Link to="/" className="flex items-center flex-shrink-0">
+            <Link to="/" className="flex items-center flex-shrink-0" onClick={closeMobileMenu}>
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
                 <span className="text-white font-bold text-sm sm:text-lg">G</span>
               </div>
@@ -114,7 +140,7 @@ const Header = () => {
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 hidden sm:flex"
                     onClick={handleLogout}
                   >
                     <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -143,8 +169,14 @@ const Header = () => {
                   </Button>
                 </>
               )}
-              <Button variant="ghost" className="p-2 md:hidden">
-                <Menu className="w-5 h-5" />
+              
+              {/* Mobile Menu Button */}
+              <Button 
+                variant="ghost" 
+                className="p-2 md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
             </div>
           </div>
@@ -163,6 +195,82 @@ const Header = () => {
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 bg-black/50 z-50 md:hidden" onClick={closeMobileMenu}>
+            <div 
+              className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
+                  <Button variant="ghost" size="sm" onClick={closeMobileMenu}>
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-col p-4 space-y-2">
+                {/* Navigation Menu Items */}
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={closeMobileMenu}
+                  >
+                    <item.icon className="w-5 h-5 mr-3 text-blue-600" />
+                    <span className="text-gray-700">{item.label}</span>
+                  </Link>
+                ))}
+
+                {/* Divider */}
+                <div className="border-t my-4"></div>
+
+                {/* User Actions */}
+                {user ? (
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="justify-start p-3 h-auto"
+                      onClick={handleAccountClick}
+                    >
+                      <User className="w-5 h-5 mr-3" />
+                      <span>My Account</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start p-3 h-auto"
+                    >
+                      <Heart className="w-5 h-5 mr-3" />
+                      <span>Wishlist</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start p-3 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="w-5 h-5 mr-3" />
+                      <span>Logout</span>
+                    </Button>
+                  </>
+                ) : (
+                  <Link to="/auth" onClick={closeMobileMenu}>
+                    <Button
+                      variant="ghost"
+                      className="justify-start p-3 h-auto w-full"
+                    >
+                      <User className="w-5 h-5 mr-3" />
+                      <span>Login / Sign Up</span>
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </header>
     </>
   );

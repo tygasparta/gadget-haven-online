@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Tag, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,88 +42,145 @@ const SideBanners = () => {
         </div>
       </div>
 
-      {/* Mobile Banner Cards - Below other content */}
-      <div className="block xl:hidden mt-8 px-4 order-last">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {/* Mobile VIP Club Banner */}
-          <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-2xl shadow-lg">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="bg-white/20 p-2 rounded-full">
-                <Crown className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">VIP Club</h3>
-                <span className="bg-yellow-400 text-blue-800 rounded-full px-2 py-1 text-xs font-bold">VIP</span>
-              </div>
+      {/* Mobile Banner Section - Organized */}
+      <div className="block xl:hidden w-full">
+        {/* Mobile Flash Sale Banner - Top Priority */}
+        <div className="px-4 mb-4">
+          <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-yellow-400 text-red-800 px-3 py-1 rounded-bl-xl">
+              <span className="text-xs font-bold">LIMITED TIME</span>
             </div>
-            <p className="text-sm mb-3 opacity-90">Join our exclusive membership for premium benefits!</p>
-            <Button 
-              size="sm" 
-              className="bg-white text-blue-600 hover:bg-gray-100 text-sm w-full"
-            >
-              Join Now
-            </Button>
-          </div>
-
-          {/* Mobile Weekly Deals Banner */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-2xl shadow-lg">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="bg-white/20 p-2 rounded-full">
-                <Gift className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-white/20 p-3 rounded-full animate-pulse">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Flash Sale</h2>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl font-black">70%</span>
+                    <span className="text-lg font-bold text-yellow-300">OFF</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-lg">Weekly Deals</h3>
-                <span className="bg-green-400 text-blue-800 rounded-full px-2 py-1 text-xs font-bold">NEW</span>
-              </div>
+              <Button 
+                size="sm" 
+                className="bg-white text-red-600 hover:bg-gray-100 font-bold px-4 py-2"
+              >
+                Shop Now
+              </Button>
             </div>
-            <p className="text-sm mb-3 opacity-90">Up to 60% off selected items!</p>
-            <Button 
-              size="sm" 
-              className="bg-white text-blue-600 hover:bg-gray-100 text-sm w-full"
-            >
-              Explore Deals
-            </Button>
           </div>
         </div>
 
-        {/* Mobile Additional Banners */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-4 rounded-2xl shadow-lg">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="bg-white/20 p-2 rounded-full">
-                <Headphones className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">Audio Sale</h3>
-                <span className="bg-orange-400 text-blue-800 rounded-full px-2 py-1 text-xs font-bold">HOT</span>
+        {/* Mobile Feature Cards Grid */}
+        <div className="px-4 mb-4">
+          <div className="grid grid-cols-2 gap-3">
+            {/* VIP Club Banner */}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-4 rounded-xl shadow-lg">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">VIP Club</h3>
+                  <span className="bg-yellow-400 text-blue-800 rounded-full px-2 py-1 text-xs font-bold">EXCLUSIVE</span>
+                  <p className="text-xs mt-1 opacity-90">Premium benefits</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-white text-blue-600 hover:bg-gray-100 text-xs w-full py-1 h-7"
+                >
+                  Join
+                </Button>
               </div>
             </div>
-            <p className="text-sm mb-3 opacity-90">Premium headphones & speakers!</p>
-            <Button 
-              size="sm" 
-              className="bg-white text-blue-600 hover:bg-gray-100 text-sm w-full"
-            >
-              Shop Audio
-            </Button>
-          </div>
 
-          <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-2xl shadow-lg">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="bg-white/20 p-2 rounded-full">
-                <Smartphone className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">New Phones</h3>
-                <span className="bg-yellow-400 text-blue-800 rounded-full px-2 py-1 text-xs font-bold">NEW</span>
+            {/* Weekly Deals Banner */}
+            <div className="bg-gradient-to-br from-green-500 to-green-700 text-white p-4 rounded-xl shadow-lg">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">Weekly Deals</h3>
+                  <span className="bg-orange-400 text-green-800 rounded-full px-2 py-1 text-xs font-bold">HOT</span>
+                  <p className="text-xs mt-1 opacity-90">Up to 60% off</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-white text-green-600 hover:bg-gray-100 text-xs w-full py-1 h-7"
+                >
+                  Explore
+                </Button>
               </div>
             </div>
-            <p className="text-sm mb-3 opacity-90">Latest smartphone technology!</p>
-            <Button 
-              size="sm" 
-              className="bg-white text-blue-600 hover:bg-gray-100 text-sm w-full"
-            >
-              View Phones
-            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Category Quick Access */}
+        <div className="px-4 mb-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-4 rounded-xl shadow-lg">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Headphones className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">Audio Sale</h3>
+                  <span className="bg-pink-400 text-purple-800 rounded-full px-2 py-1 text-xs font-bold">NEW</span>
+                  <p className="text-xs mt-1 opacity-90">Premium sound</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-white text-purple-600 hover:bg-gray-100 text-xs w-full py-1 h-7"
+                >
+                  Browse
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-500 to-orange-700 text-white p-4 rounded-xl shadow-lg">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">New Phones</h3>
+                  <span className="bg-yellow-400 text-orange-800 rounded-full px-2 py-1 text-xs font-bold">LATEST</span>
+                  <p className="text-xs mt-1 opacity-90">Latest tech</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-white text-orange-600 hover:bg-gray-100 text-xs w-full py-1 h-7"
+                >
+                  View
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Special Offer Banner */}
+        <div className="px-4 mb-6">
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"></div>
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-lg">Special Offer</h2>
+                  <p className="text-sm opacity-90">Free shipping on all orders</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="bg-white/20 px-3 py-1 rounded-full">
+                  <span className="text-xs font-bold">CODE: FREE50</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
