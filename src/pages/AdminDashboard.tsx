@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -26,10 +25,16 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useProducts } from '@/hooks/useProducts';
 import { useOrders } from '@/hooks/useOrders';
+import { useUsers } from '@/hooks/useUsers';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import AddProductModal from '@/components/admin/AddProductModal';
+import EditProductModal from '@/components/admin/EditProductModal';
+import ProductsTab from '@/components/admin/ProductsTab';
+import OrdersTab from '@/components/admin/OrdersTab';
+import UsersTab from '@/components/admin/UsersTab';
+import AnalyticsTab from '@/components/admin/AnalyticsTab';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -37,11 +42,12 @@ const AdminDashboard = () => {
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { data: products = [] } = useProducts();
   const { data: orders = [] } = useOrders();
+  const { data: users = [] } = useUsers();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [editingProduct, setEditingProduct] = useState(null);
 
   // Redirect if not authenticated or not admin
   React.useEffect(() => {
@@ -72,32 +78,6 @@ const AdminDashboard = () => {
     return null;
   }
 
-  const handleDeleteProduct = async (productId: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Product deleted",
-        description: "The product has been removed from the catalog"
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting product",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -114,15 +94,8 @@ const AdminDashboard = () => {
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
   const totalOrders = orders.length;
   const totalProducts = products.length;
-  const totalUsers = 1567; // Mock data as we don't have user count
-  const conversionRate = 3.4; // Mock data
-
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const lowStockItems = products.filter(product => product.stock <= 10).length;
+  const totalUsers = users.length;
+  const conversionRate = totalOrders > 0 ? ((totalOrders / totalUsers) * 100).toFixed(1) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -265,8 +238,8 @@ const AdminDashboard = () => {
                   {orders.slice(0, 4).map((order, index) => (
                     <div key={order.id} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                       <div>
-                        <p className="font-medium">#ORD-2024-{String(index + 1).padStart(3, '0')}</p>
-                        <p className="text-sm text-gray-300">Customer Name</p>
+                        <p className="font-medium">#ORD-{order.id.slice(-8)}</p>
+                        <p className="text-sm text-gray-300">Customer</p>
                         <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="text-right">
@@ -298,11 +271,11 @@ const AdminDashboard = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Pending Orders</span>
-                    <span className="text-yellow-400 font-bold">12</span>
+                    <span className="text-yellow-400 font-bold">{orders.filter(o => o.status === 'pending').length}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Low Stock Items</span>
-                    <span className="text-red-400 font-bold">{lowStockItems}</span>
+                    <span className="text-red-400 font-bold">{products.filter(p => p.stock <= 10).length}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">New Customers</span>
@@ -315,122 +288,30 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'products' && (
-          <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold">Product Management</h3>
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search products..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => setShowAddProduct(true)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Product
-                  </Button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left p-4 text-gray-300">Product</th>
-                      <th className="text-left p-4 text-gray-300">Category</th>
-                      <th className="text-left p-4 text-gray-300">Price</th>
-                      <th className="text-left p-4 text-gray-300">Stock</th>
-                      <th className="text-left p-4 text-gray-300">Sales</th>
-                      <th className="text-left p-4 text-gray-300">Rating</th>
-                      <th className="text-left p-4 text-gray-300">Status</th>
-                      <th className="text-left p-4 text-gray-300">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-white/10 hover:bg-white/5">
-                        <td className="p-4">
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-12 h-12 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                              }}
-                            />
-                            <div>
-                              <p className="font-medium text-white">{product.name}</p>
-                              <p className="text-sm text-gray-400">{product.reviews} reviews</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 text-gray-300">{product.category}</td>
-                        <td className="p-4 text-white font-medium">${product.price}</td>
-                        <td className="p-4">
-                          <div className="flex items-center">
-                            <span className="text-white">{product.stock}</span>
-                            {product.stock <= 10 && (
-                              <AlertTriangle className="w-4 h-4 text-yellow-500 ml-2" />
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-4 text-white">{product.reviews}</td>
-                        <td className="p-4">
-                          <div className="flex items-center">
-                            <span className="text-yellow-400">★</span>
-                            <span className="text-white ml-1">{product.rating}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <Badge 
-                            variant={product.stock > 10 ? 'default' : 'secondary'}
-                            className={product.stock > 10 ? 'bg-green-600' : 'bg-orange-600'}
-                          >
-                            {product.stock > 10 ? 'Active' : 'Low Stock'}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex space-x-2">
-                            <Button size="sm" variant="outline" className="bg-blue-600 hover:bg-blue-700 border-blue-500">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" className="bg-green-600 hover:bg-green-700 border-green-500">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="bg-red-600 hover:bg-red-700 border-red-500"
-                              onClick={() => handleDeleteProduct(product.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <ProductsTab 
+            onAddProduct={() => setShowAddProduct(true)}
+            onEditProduct={setEditingProduct}
+          />
         )}
+
+        {activeTab === 'orders' && <OrdersTab />}
+        {activeTab === 'users' && <UsersTab />}
+        {activeTab === 'analytics' && <AnalyticsTab />}
       </div>
 
-      {/* Add Product Modal */}
+      {/* Modals */}
       <AddProductModal 
         isOpen={showAddProduct}
         onClose={() => setShowAddProduct(false)}
       />
+      
+      {editingProduct && (
+        <EditProductModal 
+          product={editingProduct}
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+        />
+      )}
     </div>
   );
 };
