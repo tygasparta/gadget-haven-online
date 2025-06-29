@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -142,14 +141,18 @@ const Header = () => {
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            {/* Logo - Responsive */}
-            <Link to="/" className="flex items-center flex-shrink-0" onClick={closeMobileMenu}>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                <span className="text-white font-bold text-sm sm:text-lg">G</span>
+            {/* Animated Logo - Responsive */}
+            <Link to="/" className="flex items-center flex-shrink-0 group" onClick={closeMobileMenu}>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-2 sm:mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl animate-pulse hover:animate-none">
+                <span className="text-white font-bold text-sm sm:text-lg drop-shadow-lg">G</span>
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold text-blue-600 truncate">Gadget Genie</h1>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Your Ultimate Tech Destination</p>
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent truncate group-hover:scale-105 transition-transform duration-300">
+                  Gadget Genie
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-700 transition-colors duration-300">
+                  Your Ultimate Tech Destination
+                </p>
               </div>
             </Link>
 

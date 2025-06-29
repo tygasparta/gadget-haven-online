@@ -7,15 +7,19 @@ const Footer = () => {
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
+          {/* Animated Company Info */}
           <div>
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-lg">G</span>
+            <div className="flex items-center mb-4 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-2xl animate-pulse hover:animate-none cursor-pointer">
+                <span className="text-white font-bold text-lg drop-shadow-lg">G</span>
               </div>
               <div>
-                <h3 className="text-xl font-bold">Gadget Genie</h3>
-                <p className="text-sm text-gray-400">Your Ultimate Tech Destination</p>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
+                  Gadget Genie
+                </h3>
+                <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                  Your Ultimate Tech Destination
+                </p>
               </div>
             </div>
             <p className="text-gray-300 mb-4 text-sm">
@@ -23,15 +27,15 @@ const Footer = () => {
               We offer the latest technology at competitive prices with fast, reliable delivery nationwide.
             </p>
             <div className="space-y-2 text-sm">
-              <div className="flex items-center">
+              <div className="flex items-center hover:text-blue-400 transition-colors duration-300 cursor-pointer">
                 <Phone className="w-4 h-4 mr-2 text-blue-400" />
                 <span>+263719337910</span>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center hover:text-blue-400 transition-colors duration-300 cursor-pointer">
                 <Mail className="w-4 h-4 mr-2 text-blue-400" />
                 <span>info@gadgetgenie.org</span>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center hover:text-blue-400 transition-colors duration-300 cursor-pointer">
                 <MapPin className="w-4 h-4 mr-2 text-blue-400" />
                 <span>Harare, Zimbabwe</span>
               </div>
@@ -77,16 +81,16 @@ const Footer = () => {
             <div className="mt-6">
               <h5 className="font-semibold mb-3 text-white">Follow Us</h5>
               <div className="flex space-x-3">
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors">
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
                   <span className="text-blue-400">📘</span>
                 </a>
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors">
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
                   <span className="text-blue-400">🐦</span>
                 </a>
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors">
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
                   <span className="text-pink-400">📷</span>
                 </a>
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors">
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
                   <span className="text-red-400">📺</span>
                 </a>
               </div>
@@ -106,10 +110,10 @@ const Footer = () => {
             <div className="flex items-center space-x-6">
               <span className="text-sm text-gray-400">Secure payments:</span>
               <div className="flex space-x-2">
-                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-blue-400 font-semibold">VISA</span>
-                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-blue-400 font-semibold">PayPal</span>
-                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-purple-400 font-semibold">Stripe</span>
-                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-gray-400 font-semibold">Apple Pay</span>
+                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-blue-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">VISA</span>
+                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-blue-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">PayPal</span>
+                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-purple-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">Stripe</span>
+                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-gray-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">Apple Pay</span>
               </div>
             </div>
           </div>
