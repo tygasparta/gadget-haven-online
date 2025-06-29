@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Smartphone, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Smartphone, Shield, ArrowLeft, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate, Link } from 'react-router-dom';
@@ -47,10 +47,20 @@ const Login = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl"></div>
       </div>
 
+      {/* Back to Store Button */}
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white/80 hover:text-white transition-colors bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 hover:bg-white/20"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <Store className="w-4 h-4" />
+        <span className="text-sm font-medium">Back to Store</span>
+      </Link>
+
       <div className="relative z-10 w-full max-w-md">
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-2xl">
             <Smartphone className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
@@ -70,7 +80,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-blue-200 focus:border-blue-400"
+                  className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50"
                 />
               </div>
             </div>
@@ -85,21 +95,35 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="pl-10 pr-10 bg-white/5 border-white/20 text-white placeholder:text-blue-200 focus:border-blue-400"
+                  className="pl-10 pr-10 bg-white/5 border-white/20 text-white placeholder:text-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-white"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 text-sm text-blue-200">
+                <input type="checkbox" className="rounded border-white/20" />
+                <span>Remember me</span>
+              </label>
+              <Link to="#" className="text-sm text-blue-300 hover:text-white transition-colors">
+                Forgot password?
+              </Link>
+            </div>
+
             {/* Demo Credentials */}
-            <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
-              <p className="text-sm text-blue-100 mb-2 font-medium">Demo Credentials:</p>
+            <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-lg p-4">
+              <p className="text-sm text-blue-100 mb-2 font-medium flex items-center">
+                <Shield className="w-4 h-4 mr-2" />
+                Demo Credentials:
+              </p>
               <p className="text-xs text-blue-200">Admin: admin@gadgetgenie.com / admin123</p>
               <p className="text-xs text-blue-200">User: any email / any password</p>
             </div>
@@ -108,10 +132,13 @@ const Login = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 group"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 group shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
-                "Signing In..."
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Signing In...</span>
+                </div>
               ) : (
                 <>
                   Sign In
@@ -126,7 +153,7 @@ const Login = () => {
             <Link to="/signup" className="text-blue-200 hover:text-white transition-colors">
               Don't have an account? <span className="font-semibold">Sign up</span>
             </Link>
-            <div className="flex items-center space-x-2 text-xs text-blue-300">
+            <div className="flex items-center justify-center space-x-2 text-xs text-blue-300">
               <Shield className="w-4 h-4" />
               <span>Secured by industry-standard encryption</span>
             </div>
