@@ -10,9 +10,9 @@ const Header = () => {
   return (
     <>
       {/* Top banner */}
-      <div className="bg-blue-600 text-white py-2 px-4 text-sm text-center">
-        Free delivery on orders over $50
-        <div className="float-right hidden md:block">
+      <div className="bg-blue-600 text-white py-2 px-4 text-xs sm:text-sm text-center">
+        <span className="block sm:inline">Free delivery on orders over $50</span>
+        <div className="hidden lg:float-right lg:block">
           <span className="mr-4">Help Centre</span>
           <span className="mr-4">Track Order</span>
           <span>Sell on Gadget Genie</span>
@@ -21,21 +21,21 @@ const Header = () => {
       
       {/* Main header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-lg">G</span>
+            {/* Logo - Responsive */}
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
+                <span className="text-white font-bold text-sm sm:text-lg">G</span>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-blue-600">Gadget Genie</h1>
-                <p className="text-sm text-gray-500">Your Ultimate Tech Destination</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-blue-600 truncate">Gadget Genie</h1>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Your Ultimate Tech Destination</p>
               </div>
             </div>
 
-            {/* Search bar */}
-            <div className="flex-1 max-w-2xl mx-8 hidden md:block">
+            {/* Search bar - Desktop only */}
+            <div className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden md:block">
               <div className="relative">
                 <Input
                   type="text"
@@ -48,33 +48,33 @@ const Header = () => {
               </div>
             </div>
 
-            {/* Right side icons */}
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" className="p-2">
-                <User className="w-6 h-6" />
-                <span className="ml-2 hidden md:inline">Account</span>
+            {/* Right side icons - Responsive */}
+            <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
+              <Button variant="ghost" className="p-2 hidden sm:flex">
+                <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="ml-2 hidden lg:inline">Account</span>
               </Button>
-              <Button variant="ghost" className="p-2">
-                <Heart className="w-6 h-6" />
-                <span className="ml-2 hidden md:inline">Wishlist</span>
+              <Button variant="ghost" className="p-2 hidden sm:flex">
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="ml-2 hidden lg:inline">Wishlist</span>
               </Button>
               <Button variant="ghost" className="p-2 relative">
-                <ShoppingCart className="w-6 h-6" />
-                <span className="ml-2 hidden md:inline">Cart</span>
+                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="ml-2 hidden lg:inline">Cart</span>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
               </Button>
               <Button variant="ghost" className="p-2 md:hidden">
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5" />
               </Button>
             </div>
           </div>
 
           {/* Mobile search */}
-          <div className="mt-4 md:hidden">
+          <div className="mt-3 md:hidden">
             <div className="relative">
               <Input
                 type="text"
