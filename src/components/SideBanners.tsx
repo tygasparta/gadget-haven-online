@@ -1,12 +1,16 @@
 import React from 'react';
 import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Tag, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/useCart';
+import { useCart } from '@/contexts/CartContext';
 import { Badge } from '@/components/ui/badge';
 
 const SideBanners = () => {
-  const { cartItems, toggleCart } = useCart();
+  const { items: cartItems, isCartOpen, setIsCartOpen } = useCart();
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  const toggleCart = () => {
+    setIsCartOpen(!isCartOpen);
+  };
 
   return (
     <>
