@@ -8,59 +8,46 @@ const SideBanners = () => {
     <>
       {/* Left Side Long Banner - Desktop only */}
       <div className="fixed left-4 top-1/2 -translate-y-1/2 z-20 hidden xl:block">
-        <div className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer p-6 w-20 h-96 flex flex-col items-center justify-between overflow-hidden relative group">
-          {/* Animated background elements */}
+        <div className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer p-8 w-20 h-96 flex flex-col items-center justify-center overflow-hidden relative group">
+          {/* Simplified background elements */}
           <div className="absolute inset-0 opacity-10 overflow-hidden">
-            <div className="absolute top-4 left-2 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-            <div className="absolute bottom-8 right-2 w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
-            <div className="absolute top-1/3 right-1 w-2 h-2 bg-white rounded-full animate-ping"></div>
+            <div className="absolute top-8 left-3 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+            <div className="absolute bottom-12 right-3 w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
           </div>
 
-          {/* Top Section - Hot Badge */}
-          <div className="flex flex-col items-center space-y-3 relative z-10">
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 p-3 rounded-full shadow-lg animate-bounce">
-              <Percent className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-center">
-              <span className="text-xs font-bold text-yellow-300 tracking-wider">HOT</span>
-            </div>
-          </div>
-
-          {/* Middle Section - Main Content */}
-          <div className="flex flex-col items-center space-y-4 relative z-10">
-            <div className="bg-gradient-to-r from-red-500 to-pink-500 p-3 rounded-full shadow-lg">
-              <Star className="w-6 h-6 text-white" />
+          {/* Main Content - Centered */}
+          <div className="flex flex-col items-center space-y-6 relative z-10">
+            {/* Sale Badge */}
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 p-4 rounded-full shadow-lg">
+              <Percent className="w-6 h-6 text-white" />
             </div>
             
-            <div className="text-center space-y-2">
-              <span className="text-xs font-bold text-green-300 block">UP TO</span>
+            {/* Main Offer */}
+            <div className="text-center space-y-3">
+              <span className="text-sm font-bold text-yellow-300 block tracking-wider">UP TO</span>
               <div className="relative">
-                <span className="text-4xl font-black block text-white drop-shadow-lg">70</span>
-                <span className="text-xl font-bold block text-yellow-300">%</span>
+                <span className="text-5xl font-black block text-white drop-shadow-lg">70</span>
+                <span className="text-2xl font-bold block text-yellow-300 -mt-2">%</span>
               </div>
-              <span className="text-xs font-bold text-green-300 block">OFF</span>
+              <span className="text-sm font-bold text-green-300 block tracking-wider">OFF</span>
             </div>
 
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-3 rounded-full shadow-lg animate-pulse">
-              <Zap className="w-5 h-5 text-white" />
+            {/* Flash Sale Indicator */}
+            <div className="bg-gradient-to-r from-red-500 to-pink-500 p-4 rounded-full shadow-lg animate-pulse">
+              <Zap className="w-6 h-6 text-white" />
             </div>
-          </div>
 
-          {/* Bottom Section - Action */}
-          <div className="flex flex-col items-center space-y-3 relative z-10">
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-3 rounded-full shadow-lg">
-              <Clock className="w-5 h-5 text-white" />
-            </div>
+            {/* Sale Text */}
             <div className="text-center">
-              <span className="text-xs font-bold text-purple-300 tracking-wider">SALE</span>
+              <span className="text-sm font-bold text-purple-300 tracking-wider">FLASH SALE</span>
             </div>
           </div>
 
-          {/* Decorative side strips */}
-          <div className="absolute left-1 top-6 bottom-6 w-1 bg-gradient-to-b from-yellow-400 via-green-400 to-purple-400 rounded-full opacity-60"></div>
-          <div className="absolute right-1 top-6 bottom-6 w-1 bg-gradient-to-b from-pink-400 via-blue-400 to-indigo-400 rounded-full opacity-60"></div>
+          {/* Simplified side strips */}
+          <div className="absolute left-2 top-8 bottom-8 w-1 bg-gradient-to-b from-yellow-400 to-purple-400 rounded-full opacity-40"></div>
+          <div className="absolute right-2 top-8 bottom-8 w-1 bg-gradient-to-b from-pink-400 to-indigo-400 rounded-full opacity-40"></div>
           
-          {/* Hover effect glow */}
+          {/* Hover effect */}
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
       </div>
