@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Edit, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, Mail } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -40,8 +40,10 @@ const OrdersTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    setUpdatingStatus(true);
     try {
       const { error } = await supabase
         .from('orders')
@@ -51,17 +53,19 @@ const OrdersTab = () => {
       if (error) throw error;
 
       toast({
-        title: "Order updated",
-        description: `Order status changed to ${status}`
+        title: "Order updated successfully",
+        description: `Order status changed to ${status.charAt(0).toUpperCase() + status.slice(1)}`,
       });
 
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     } catch (error: any) {
       toast({
         title: "Error updating order",
-        description: error.message,
+        description: error.message || "Failed to update order status",
         variant: "destructive"
       });
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -261,7 +265,10 @@ const OrdersTab = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-300">
-                      {order.payment_method || 'Card'}
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4" />
+                        {order.payment_method || 'Card'}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -276,68 +283,207 @@ const OrdersTab = () => {
                               <Eye className="w-4 h-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl">
+                          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
-                              <DialogTitle>Order Details - #{order.id.slice(-8).toUpperCase()}</DialogTitle>
+                              <DialogTitle className="text-2xl font-bold">
+                                Order Details - #{order.id.slice(-8).toUpperCase()}
+                              </DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-sm text-gray-400">Order Date</p>
+                            
+                            <div className="space-y-6">
+                              {/* Order Summary */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="bg-white/5 p-4 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Calendar className="w-4 h-4 text-blue-400" />
+                                    <p className="text-sm text-gray-400">Order Date</p>
+                                  </div>
                                   <p className="font-medium">{new Date(order.created_at).toLocaleString()}</p>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-gray-400">Customer ID</p>
-                                  <p className="font-medium">{order.user_id.slice(-8)}</p>
+                                
+                                <div className="bg-white/5 p-4 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <User className="w-4 h-4 text-green-400" />
+                                    <p className="text-sm text-gray-400">Customer ID</p>
+                                  </div>
+                                  <p className="font-medium">{order.user_id.slice(-12)}</p>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-gray-400">Total Amount</p>
-                                  <p className="font-medium text-green-400">${Number(order.total_amount).toFixed(2)}</p>
+                                
+                                <div className="bg-white/5 p-4 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <DollarSign className="w-4 h-4 text-yellow-400" />
+                                    <p className="text-sm text-gray-400">Total Amount</p>
+                                  </div>
+                                  <p className="font-medium text-green-400 text-lg">${Number(order.total_amount).toFixed(2)}</p>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-gray-400">Payment Method</p>
-                                  <p className="font-medium">{order.payment_method || 'Card'}</p>
+                                
+                                <div className="bg-white/5 p-4 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <CreditCard className="w-4 h-4 text-purple-400" />
+                                    <p className="text-sm text-gray-400">Payment Method</p>
+                                  </div>
+                                  <p className="font-medium">{order.payment_method || 'Credit Card'}</p>
                                 </div>
                               </div>
-                              
+
+                              {/* Status Management */}
+                              <div className="bg-white/5 p-4 rounded-lg">
+                                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                  <Package className="w-5 h-5" />
+                                  Order Status Management
+                                </h4>
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-400">Current Status:</span>
+                                    <Badge className={`${getStatusColor(order.status || 'pending')} text-white flex items-center gap-1`}>
+                                      {getStatusIcon(order.status || 'pending')}
+                                      {(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-400">Update to:</span>
+                                    <Select
+                                      value={order.status || 'pending'}
+                                      onValueChange={(value) => handleUpdateOrderStatus(order.id, value)}
+                                      disabled={updatingStatus}
+                                    >
+                                      <SelectTrigger className="bg-gray-700 text-white text-sm border-gray-600 w-32">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-gray-800 border-gray-700">
+                                        <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="shipped">Shipped</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                              </div>
+
                               <Separator className="bg-gray-700" />
                               
+                              {/* Order Items */}
                               {order.order_items && order.order_items.length > 0 && (
-                                <div>
-                                  <h4 className="font-semibold mb-3">Order Items</h4>
-                                  <div className="space-y-2">
+                                <div className="bg-white/5 p-4 rounded-lg">
+                                  <h4 className="font-semibold mb-4 flex items-center gap-2">
+                                    <Package className="w-5 h-5" />
+                                    Order Items ({order.order_items.length})
+                                  </h4>
+                                  <div className="space-y-3">
                                     {order.order_items.map((item) => (
-                                      <div key={item.id} className="flex justify-between items-center p-2 bg-white/5 rounded">
-                                        <div className="flex items-center gap-3">
+                                      <div key={item.id} className="flex justify-between items-center p-3 bg-white/5 rounded border border-gray-700">
+                                        <div className="flex items-center gap-4">
                                           {item.products?.image && (
                                             <img 
                                               src={item.products.image} 
                                               alt={item.products.name}
-                                              className="w-12 h-12 object-cover rounded"
+                                              className="w-16 h-16 object-cover rounded border border-gray-600"
                                             />
                                           )}
                                           <div>
-                                            <p className="font-medium">{item.products?.name || 'Product'}</p>
-                                            <p className="text-sm text-gray-400">Qty: {item.quantity}</p>
+                                            <p className="font-medium text-white">{item.products?.name || 'Unknown Product'}</p>
+                                            <p className="text-sm text-gray-400">Product ID: {item.product_id}</p>
+                                            <p className="text-sm text-blue-400">Quantity: {item.quantity}</p>
                                           </div>
                                         </div>
-                                        <p className="font-medium">${Number(item.price).toFixed(2)}</p>
+                                        <div className="text-right">
+                                          <p className="font-medium text-green-400">${Number(item.price).toFixed(2)}</p>
+                                          <p className="text-sm text-gray-400">per item</p>
+                                          <p className="text-sm font-medium text-white">
+                                            Total: ${(Number(item.price) * item.quantity).toFixed(2)}
+                                          </p>
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
                               )}
                               
-                              {order.shipping_address && (
-                                <div>
-                                  <h4 className="font-semibold mb-2">Shipping Address</h4>
-                                  <div className="p-3 bg-white/5 rounded text-sm">
-                                    <pre className="whitespace-pre-wrap font-mono">
-                                      {JSON.stringify(order.shipping_address, null, 2)}
-                                    </pre>
+                              {/* Addresses */}
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {order.shipping_address && (
+                                  <div className="bg-white/5 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                      <MapPin className="w-5 h-5 text-blue-400" />
+                                      Shipping Address
+                                    </h4>
+                                    <div className="space-y-2 text-sm">
+                                      {typeof order.shipping_address === 'object' ? (
+                                        <>
+                                          <p className="text-white">{order.shipping_address.name || 'N/A'}</p>
+                                          <p className="text-gray-300">{order.shipping_address.street || 'N/A'}</p>
+                                          <p className="text-gray-300">
+                                            {order.shipping_address.city || 'N/A'}, {order.shipping_address.state || 'N/A'} {order.shipping_address.zipCode || 'N/A'}
+                                          </p>
+                                          <p className="text-gray-300">{order.shipping_address.country || 'N/A'}</p>
+                                          {order.shipping_address.phone && (
+                                            <p className="text-blue-400 flex items-center gap-1">
+                                              <Phone className="w-3 h-3" />
+                                              {order.shipping_address.phone}
+                                            </p>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <p className="text-gray-400">Address information not available</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {order.billing_address && (
+                                  <div className="bg-white/5 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                      <CreditCard className="w-5 h-5 text-green-400" />
+                                      Billing Address
+                                    </h4>
+                                    <div className="space-y-2 text-sm">
+                                      {typeof order.billing_address === 'object' ? (
+                                        <>
+                                          <p className="text-white">{order.billing_address.name || 'N/A'}</p>
+                                          <p className="text-gray-300">{order.billing_address.street || 'N/A'}</p>
+                                          <p className="text-gray-300">
+                                            {order.billing_address.city || 'N/A'}, {order.billing_address.state || 'N/A'} {order.billing_address.zipCode || 'N/A'}
+                                          </p>
+                                          <p className="text-gray-300">{order.billing_address.country || 'N/A'}</p>
+                                          {order.billing_address.phone && (
+                                            <p className="text-blue-400 flex items-center gap-1">
+                                              <Phone className="w-3 h-3" />
+                                              {order.billing_address.phone}
+                                            </p>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <p className="text-gray-400">Billing address same as shipping</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Order Timeline */}
+                              <div className="bg-white/5 p-4 rounded-lg">
+                                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                  <Clock className="w-5 h-5 text-yellow-400" />
+                                  Order Timeline
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-400">Order Created:</span>
+                                    <span className="text-white">{new Date(order.created_at).toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-400">Last Updated:</span>
+                                    <span className="text-white">{new Date(order.updated_at).toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-400">Processing Time:</span>
+                                    <span className="text-blue-400">
+                                      {Math.ceil((new Date(order.updated_at).getTime() - new Date(order.created_at).getTime()) / (1000 * 60 * 60 * 24))} days
+                                    </span>
                                   </div>
                                 </div>
-                              )}
+                              </div>
                             </div>
                           </DialogContent>
                         </Dialog>
@@ -345,6 +491,7 @@ const OrdersTab = () => {
                         <Select
                           value={order.status || 'pending'}
                           onValueChange={(value) => handleUpdateOrderStatus(order.id, value)}
+                          disabled={updatingStatus}
                         >
                           <SelectTrigger className="bg-gray-700 text-white text-sm border-gray-600 w-32">
                             <SelectValue />
