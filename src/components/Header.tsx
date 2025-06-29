@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 
 const Header = () => {
-  const [cartCount] = useState(0);
+  const { getTotalItems, setIsCartOpen } = useCart();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ const Header = () => {
       navigate('/dashboard');
     }
   };
+
+  const cartCount = getTotalItems();
 
   return (
     <>
@@ -98,7 +101,11 @@ const Header = () => {
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Wishlist</span>
                   </Button>
-                  <Button variant="ghost" className="p-2 relative">
+                  <Button 
+                    variant="ghost" 
+                    className="p-2 relative"
+                    onClick={() => setIsCartOpen(true)}
+                  >
                     <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Cart</span>
                     {cartCount > 0 && (
@@ -128,7 +135,11 @@ const Header = () => {
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Wishlist</span>
                   </Button>
-                  <Button variant="ghost" className="p-2 relative">
+                  <Button 
+                    variant="ghost" 
+                    className="p-2 relative"
+                    onClick={() => setIsCartOpen(true)}
+                  >
                     <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Cart</span>
                     {cartCount > 0 && (
