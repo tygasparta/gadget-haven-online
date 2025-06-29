@@ -1,9 +1,13 @@
-
 import React from 'react';
 import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Tag, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCart } from '@/hooks/useCart';
+import { Badge } from '@/components/ui/badge';
 
 const SideBanners = () => {
+  const { cartItems, toggleCart } = useCart();
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <>
       {/* Desktop Left Side Banner */}
@@ -222,10 +226,18 @@ const SideBanners = () => {
         </div>
       </div>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Now Functional */}
       <div className="fixed bottom-6 right-6 z-30 lg:hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 cursor-pointer border-4 border-white">
+        <div 
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 cursor-pointer border-4 border-white relative"
+          onClick={toggleCart}
+        >
           <ShoppingBag className="w-6 h-6" />
+          {totalItems > 0 && (
+            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-6 h-6 flex items-center justify-center">
+              {totalItems}
+            </Badge>
+          )}
         </div>
       </div>
     </>
