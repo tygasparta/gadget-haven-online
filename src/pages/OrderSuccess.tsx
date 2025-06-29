@@ -11,6 +11,13 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
   const { orderId, total } = location.state || {};
 
+  React.useEffect(() => {
+    // If no order data, redirect to home
+    if (!orderId) {
+      navigate('/');
+    }
+  }, [orderId, navigate]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -29,11 +36,11 @@ const OrderSuccess = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="font-semibold mb-2">Order Number</h3>
-                <p className="text-blue-600 font-mono text-lg">#{orderId}</p>
+                <p className="text-blue-600 font-mono text-lg">#{orderId?.slice(0, 8) || 'N/A'}</p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Total Amount</h3>
-                <p className="text-green-600 font-bold text-xl">${total?.toFixed(2)}</p>
+                <p className="text-green-600 font-bold text-xl">${total?.toFixed(2) || '0.00'}</p>
               </div>
             </div>
           </CardContent>

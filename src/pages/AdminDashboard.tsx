@@ -1,971 +1,413 @@
 
-import React, { useState, useEffect } from 'react';
-import { BarChart3, Users, Package, DollarSign, TrendingUp, ShoppingCart, Eye, Edit, Trash2, Plus, Search, Filter, Download, Bell, Settings, LogOut, Star, AlertTriangle, CheckCircle, X, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { 
+  ArrowLeft, 
+  Package, 
+  Plus, 
+  Edit, 
+  Trash2,
+  Users,
+  ShoppingCart,
+  DollarSign
+} from 'lucide-react';
+import Header from '@/components/Header';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useProducts } from '@/hooks/useProducts';
+import { useOrders } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const { data: products = [] } = useProducts();
+  const { data: orders = [] } = useOrders();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [editingProduct, setEditingProduct] = useState<number | null>(null);
-  const [editingOrder, setEditingOrder] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [showAddProduct, setShowAddProduct] = useState(false);
-
-  useEffect(() => {
-    const isAuth = localStorage.getItem('isAuthenticated');
-    const userRole = localStorage.getItem('userRole');
-    if (!isAuth || userRole !== 'admin') {
-      navigate('/login');
-    }
-  }, [navigate]);
-
-  const [stats, setStats] = useState({
-    totalRevenue: 45678,
-    totalOrders: 234,
-    totalUsers: 1567,
-    totalProducts: 89,
-    revenueGrowth: 12.5,
-    orderGrowth: 8.3,
-    userGrowth: 15.2,
-    conversionRate: 3.4,
-    avgOrderValue: 195
-  });
-
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'iPhone 15 Pro Max',
-      category: 'Smartphones',
-      price: 1399,
-      stock: 45,
-      sales: 123,
-      status: 'Active',
-      rating: 4.8,
-      reviews: 456
-    },
-    {
-      id: 2,
-      name: 'MacBook Air M2',
-      category: 'Laptops',
-      price: 999,
-      stock: 23,
-      sales: 67,
-      status: 'Active',
-      rating: 4.9,
-      reviews: 234
-    },
-    {
-      id: 3,
-      name: 'AirPods Pro 2nd Gen',
-      category: 'Audio',
-      price: 249,
-      stock: 89,
-      sales: 234,
-      status: 'Active',
-      rating: 4.7,
-      reviews: 678
-    },
-    {
-      id: 4,
-      name: 'Samsung Galaxy S24',
-      category: 'Smartphones',
-      price: 899,
-      stock: 12,
-      sales: 89,
-      status: 'Low Stock',
-      rating: 4.6,
-      reviews: 345
-    },
-    {
-      id: 5,
-      name: 'Sony WH-1000XM5',
-      category: 'Audio',
-      price: 349,
-      stock: 0,
-      sales: 156,
-      status: 'Out of Stock',
-      rating: 4.8,
-      reviews: 567
-    }
-  ]);
-
-  const [recentOrders, setRecentOrders] = useState([
-    {
-      id: '#ORD-2024-001',
-      customer: 'John Smith',
-      email: 'john@example.com',
-      total: 1498,
-      status: 'Processing',
-      date: '2024-01-15',
-      items: 2
-    },
-    {
-      id: '#ORD-2024-002',
-      customer: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      total: 999,
-      status: 'Shipped',
-      date: '2024-01-14',
-      items: 1
-    },
-    {
-      id: '#ORD-2024-003',
-      customer: 'Mike Chen',
-      email: 'mike@example.com',
-      total: 299,
-      status: 'Delivered',
-      date: '2024-01-13',
-      items: 1
-    },
-    {
-      id: '#ORD-2024-004',
-      customer: 'Emily Davis',
-      email: 'emily@example.com',
-      total: 1299,
-      status: 'Cancelled',
-      date: '2024-01-12',
-      items: 3
-    }
-  ]);
-
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'John Smith',
-      email: 'john@example.com',
-      joinDate: '2024-01-01',
-      totalOrders: 5,
-      totalSpent: 2456,
-      status: 'Active'
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      joinDate: '2024-01-05',
-      totalOrders: 3,
-      totalSpent: 1299,
-      status: 'Active'
-    },
-    {
-      id: 3,
-      name: 'Mike Chen',
-      email: 'mike@example.com',
-      joinDate: '2024-01-10',
-      totalOrders: 8,
-      totalSpent: 3456,
-      status: 'VIP'
-    }
-  ]);
-
   const [newProduct, setNewProduct] = useState({
     name: '',
+    description: '',
+    price: '',
+    original_price: '',
+    image: '',
     category: '',
-    price: 0,
-    stock: 0
+    brand: '',
+    stock: '',
+    is_featured: false,
+    is_flash_sale: false,
+    discount_percentage: ''
   });
 
-  const handleLogout = () => {
-    localStorage.clear();
-    toast({ title: "Logged out", description: "Admin session ended" });
-    navigate('/');
-  };
-
-  const handleAddProduct = () => {
-    if (newProduct.name && newProduct.category && newProduct.price > 0) {
-      const product = {
-        id: Math.max(...products.map(p => p.id)) + 1,
-        ...newProduct,
-        sales: 0,
-        status: newProduct.stock > 0 ? 'Active' : 'Out of Stock',
-        rating: 0,
-        reviews: 0
-      };
-      setProducts(prev => [...prev, product]);
-      setNewProduct({ name: '', category: '', price: 0, stock: 0 });
-      setShowAddProduct(false);
-      toast({ title: "Product Added", description: `${newProduct.name} has been added successfully.` });
-    } else {
-      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
+  // Redirect if not authenticated (in real app, check if user is admin)
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/auth');
     }
-  };
+  }, [user, navigate]);
 
-  const handleUpdateProduct = (id: number, updates: any) => {
-    setProducts(prev => prev.map(p => 
-      p.id === id ? { 
-        ...p, 
-        ...updates, 
-        status: updates.stock !== undefined ? 
-          (updates.stock === 0 ? 'Out of Stock' : updates.stock < 20 ? 'Low Stock' : 'Active') : 
-          p.status 
-      } : p
-    ));
-    setEditingProduct(null);
-    toast({ title: "Product Updated", description: "Product has been updated successfully." });
-  };
+  if (!user) {
+    return null;
+  }
 
-  const handleDeleteProduct = (id: number) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-    toast({ title: "Product Deleted", description: "Product has been removed from inventory." });
-  };
-
-  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
-    setRecentOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
-    setEditingOrder(null);
-    toast({ title: "Order Updated", description: `Order ${orderId} status changed to ${newStatus}.` });
-  };
-
-  const handleExportData = (type: string) => {
-    let data: any[] = [];
-    let filename = '';
-    let headers = '';
-
-    switch (type) {
-      case 'products':
-        data = products;
-        filename = 'products.csv';
-        headers = 'ID,Name,Category,Price,Stock,Sales,Status,Rating,Reviews';
-        break;
-      case 'orders':
-        data = recentOrders;
-        filename = 'orders.csv';
-        headers = 'ID,Customer,Email,Total,Status,Date,Items';
-        break;
-      case 'users':
-        data = users;
-        filename = 'users.csv';
-        headers = 'ID,Name,Email,Join Date,Total Orders,Total Spent,Status';
-        break;
-    }
-
-    const csvContent = "data:text/csv;charset=utf-8," + 
-      headers + "\n" +
-      data.map(item => Object.values(item).map(val => `"${val}"`).join(",")).join("\n");
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast({ title: "Data Exported", description: `${type} data has been exported to CSV.` });
+    try {
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          name: newProduct.name,
+          description: newProduct.description,
+          price: parseFloat(newProduct.price),
+          original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
+          image: newProduct.image,
+          category: newProduct.category,
+          brand: newProduct.brand,
+          stock: parseInt(newProduct.stock),
+          is_featured: newProduct.is_featured,
+          is_flash_sale: newProduct.is_flash_sale,
+          discount_percentage: newProduct.discount_percentage ? parseInt(newProduct.discount_percentage) : 0,
+          rating: 4.5,
+          reviews: 0
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Product added successfully",
+        description: "The new product has been added to the catalog"
+      });
+
+      // Reset form and close modal
+      setNewProduct({
+        name: '',
+        description: '',
+        price: '',
+        original_price: '',
+        image: '',
+        category: '',
+        brand: '',
+        stock: '',
+        is_featured: false,
+        is_flash_sale: false,
+        discount_percentage: ''
+      });
+      setShowAddProduct(false);
+      
+      // Refresh products list
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    } catch (error: any) {
+      toast({
+        title: "Error adding product",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleDeleteProduct = async (productId: number) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Product deleted",
+        description: "The product has been removed from the catalog"
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting product",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
+  const totalOrders = orders.length;
+  const totalProducts = products.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-lg border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-gray-300">Manage your Gadget Genie store</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button 
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 relative"
-                onClick={() => toast({ title: "Notifications", description: "You have 3 new notifications" })}
-              >
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                  3
-                </span>
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => toast({ title: "Settings", description: "Opening settings panel..." })}
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-              <Button 
-                onClick={handleLogout}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gray-50">
+      <Header />
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm">Total Revenue</p>
-                <p className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
-                <p className="text-green-100 text-sm flex items-center mt-2">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  +{stats.revenueGrowth}%
-                </p>
-              </div>
-              <DollarSign className="w-12 h-12 text-green-200" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm">Total Orders</p>
-                <p className="text-3xl font-bold">{stats.totalOrders}</p>
-                <p className="text-blue-100 text-sm flex items-center mt-2">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  +{stats.orderGrowth}%
-                </p>
-              </div>
-              <ShoppingCart className="w-12 h-12 text-blue-200" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-500 to-violet-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-sm">Total Users</p>
-                <p className="text-3xl font-bold">{stats.totalUsers}</p>
-                <p className="text-purple-100 text-sm flex items-center mt-2">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  +{stats.userGrowth}%
-                </p>
-              </div>
-              <Users className="w-12 h-12 text-purple-200" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm">Total Products</p>
-                <p className="text-3xl font-bold">{stats.totalProducts}</p>
-                <p className="text-orange-100 text-sm mt-2">
-                  Active inventory
-                </p>
-              </div>
-              <Package className="w-12 h-12 text-orange-200" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-pink-500 to-rose-600 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-pink-100 text-sm">Conversion Rate</p>
-                <p className="text-3xl font-bold">{stats.conversionRate}%</p>
-                <p className="text-pink-100 text-sm mt-2">
-                  Avg: ${stats.avgOrderValue}
-                </p>
-              </div>
-              <BarChart3 className="w-12 h-12 text-pink-200" />
-            </div>
-          </div>
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Store
+          </Button>
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <div className="flex space-x-1 bg-white/10 backdrop-blur-sm rounded-xl p-1">
-            {[
-              { key: 'overview', label: 'Overview', icon: BarChart3 },
-              { key: 'products', label: 'Products', icon: Package },
-              { key: 'orders', label: 'Orders', icon: ShoppingCart },
-              { key: 'users', label: 'Users', icon: Users },
-              { key: 'analytics', label: 'Analytics', icon: TrendingUp }
-            ].map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  activeTab === key
-                    ? 'bg-white text-gray-900'
-                    : 'text-white hover:bg-white/10'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <DollarSign className="w-8 h-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">${totalRevenue.toFixed(2)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <ShoppingCart className="w-8 h-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Package className="w-8 h-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Products</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalProducts}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Content based on active tab */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-4">Recent Orders</h3>
-                  <div className="space-y-4">
-                    {recentOrders.slice(0, 4).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                        <div>
-                          <p className="font-medium">{order.id}</p>
-                          <p className="text-sm text-gray-300">{order.customer}</p>
-                          <p className="text-xs text-gray-400">{order.date}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">${order.total}</p>
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                            order.status === 'Delivered' 
-                              ? 'bg-green-500/20 text-green-300'
-                              : order.status === 'Shipped'
-                              ? 'bg-blue-500/20 text-blue-300'
-                              : order.status === 'Processing'
-                              ? 'bg-yellow-500/20 text-yellow-300'
-                              : 'bg-red-500/20 text-red-300'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+        {/* Products Management */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center">
+                <Package className="w-5 h-5 mr-2" />
+                Products Management
+              </CardTitle>
+              <Button onClick={() => setShowAddProduct(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Product
+              </Button>
             </div>
-
-            <div className="space-y-6">
-              <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-4">Quick Stats</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Today's Sales</span>
-                      <span className="font-bold text-green-400">$2,345</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Pending Orders</span>
-                      <span className="font-bold text-yellow-400">12</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Low Stock Items</span>
-                      <span className="font-bold text-red-400">{products.filter(p => p.stock < 20 && p.stock > 0).length}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-300">New Customers</span>
-                      <span className="font-bold text-blue-400">8</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-4">Top Products</h3>
-                  <div className="space-y-3">
-                    {products.slice(0, 3).map((product) => (
-                      <div key={product.id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-sm">{product.name}</p>
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                            <span className="text-xs text-gray-300">{product.rating}</span>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">Product</th>
+                    <th className="text-left p-2">Price</th>
+                    <th className="text-left p-2">Stock</th>
+                    <th className="text-left p-2">Status</th>
+                    <th className="text-left p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.id} className="border-b">
+                      <td className="p-2">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-10 h-10 object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                            }}
+                          />
+                          <div>
+                            <p className="font-medium">{product.name}</p>
+                            <p className="text-gray-500 text-xs">{product.category}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold">{product.sales} sales</p>
-                          <p className="text-xs text-gray-300">${product.price}</p>
+                      </td>
+                      <td className="p-2">${product.price}</td>
+                      <td className="p-2">{product.stock}</td>
+                      <td className="p-2">
+                        <div className="flex space-x-1">
+                          {product.is_featured && (
+                            <Badge variant="outline" className="text-xs">Featured</Badge>
+                          )}
+                          {product.is_flash_sale && (
+                            <Badge variant="destructive" className="text-xs">Flash Sale</Badge>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+                      </td>
+                      <td className="p-2">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
+          </CardContent>
+        </Card>
 
-        {activeTab === 'products' && (
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Product Management</h2>
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      placeholder="Search products..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+        {/* Add Product Modal */}
+        {showAddProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <CardTitle>Add New Product</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAddProduct} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Product Name</Label>
+                      <Input
+                        id="name"
+                        value={newProduct.name}
+                        onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="brand">Brand</Label>
+                      <Input
+                        id="brand"
+                        value={newProduct.brand}
+                        onChange={(e) => setNewProduct({...newProduct, brand: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={newProduct.description}
+                      onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                     />
                   </div>
-                  <Button 
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => setShowAddProduct(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Product
-                  </Button>
-                  <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filter
-                  </Button>
-                  <Button 
-                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => handleExportData('products')}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
-                </div>
-              </div>
 
-              {/* Add Product Modal */}
-              {showAddProduct && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-bold text-gray-900">Add New Product</h3>
-                      <Button variant="outline" size="sm" onClick={() => setShowAddProduct(false)}>
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="price">Price</Label>
                       <Input
-                        placeholder="Product Name"
-                        value={newProduct.name}
-                        onChange={(e) => setNewProduct(prev => ({ ...prev, name: e.target.value }))}
+                        id="price"
+                        type="number"
+                        step="0.01"
+                        value={newProduct.price}
+                        onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                        required
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="original_price">Original Price</Label>
                       <Input
-                        placeholder="Category"
+                        id="original_price"
+                        type="number"
+                        step="0.01"
+                        value={newProduct.original_price}
+                        onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="stock">Stock</Label>
+                      <Input
+                        id="stock"
+                        type="number"
+                        value={newProduct.stock}
+                        onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Input
+                        id="category"
                         value={newProduct.category}
-                        onChange={(e) => setNewProduct(prev => ({ ...prev, category: e.target.value }))}
+                        onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="discount_percentage">Discount %</Label>
                       <Input
+                        id="discount_percentage"
                         type="number"
-                        placeholder="Price"
-                        value={newProduct.price || ''}
-                        onChange={(e) => setNewProduct(prev => ({ ...prev, price: Number(e.target.value) }))}
+                        value={newProduct.discount_percentage}
+                        onChange={(e) => setNewProduct({...newProduct, discount_percentage: e.target.value})}
                       />
-                      <Input
-                        type="number"
-                        placeholder="Stock"
-                        value={newProduct.stock || ''}
-                        onChange={(e) => setNewProduct(prev => ({ ...prev, stock: Number(e.target.value) }))}
-                      />
-                      <div className="flex space-x-2">
-                        <Button onClick={handleAddProduct} className="flex-1">
-                          <Save className="w-4 h-4 mr-2" />
-                          Add Product
-                        </Button>
-                        <Button variant="outline" onClick={() => setShowAddProduct(false)} className="flex-1">
-                          Cancel
-                        </Button>
-                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left py-3 px-2">Product</th>
-                      <th className="text-left py-3 px-2">Category</th>
-                      <th className="text-left py-3 px-2">Price</th>
-                      <th className="text-left py-3 px-2">Stock</th>
-                      <th className="text-left py-3 px-2">Sales</th>
-                      <th className="text-left py-3 px-2">Rating</th>
-                      <th className="text-left py-3 px-2">Status</th>
-                      <th className="text-left py-3 px-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-white/10">
-                        <td className="py-3 px-2">
-                          <div>
-                            {editingProduct === product.id ? (
-                              <Input
-                                value={product.name}
-                                onChange={(e) => setProducts(prev => prev.map(p => 
-                                  p.id === product.id ? { ...p, name: e.target.value } : p
-                                ))}
-                                className="bg-white/10 border-white/20 text-white"
-                              />
-                            ) : (
-                              <>
-                                <p className="font-medium">{product.name}</p>
-                                <p className="text-xs text-gray-400">{product.reviews} reviews</p>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-gray-300">
-                          {editingProduct === product.id ? (
-                            <Input
-                              value={product.category}
-                              onChange={(e) => setProducts(prev => prev.map(p => 
-                                p.id === product.id ? { ...p, category: e.target.value } : p
-                              ))}
-                              className="bg-white/10 border-white/20 text-white"
-                            />
-                          ) : (
-                            product.category
-                          )}
-                        </td>
-                        <td className="py-3 px-2 font-bold">
-                          {editingProduct === product.id ? (
-                            <Input
-                              type="number"
-                              value={product.price}
-                              onChange={(e) => setProducts(prev => prev.map(p => 
-                                p.id === product.id ? { ...p, price: Number(e.target.value) } : p
-                              ))}
-                              className="bg-white/10 border-white/20 text-white"
-                            />
-                          ) : (
-                            `$${product.price}`
-                          )}
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center space-x-2">
-                            {editingProduct === product.id ? (
-                              <Input
-                                type="number"
-                                value={product.stock}
-                                onChange={(e) => setProducts(prev => prev.map(p => 
-                                  p.id === product.id ? { ...p, stock: Number(e.target.value) } : p
-                                ))}
-                                className="bg-white/10 border-white/20 text-white w-20"
-                              />
-                            ) : (
-                              <>
-                                <span>{product.stock}</span>
-                                {product.stock < 20 && product.stock > 0 && (
-                                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                                )}
-                                {product.stock === 0 && (
-                                  <AlertTriangle className="w-4 h-4 text-red-400" />
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-2">{product.sales}</td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                            <span>{product.rating}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            product.status === 'Active' 
-                              ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-                              : product.status === 'Low Stock'
-                              ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                              : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                          }`}>
-                            {product.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex space-x-2">
-                            {editingProduct === product.id ? (
-                              <>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-green-600 hover:bg-green-700 text-white border-0"
-                                  onClick={() => handleUpdateProduct(product.id, product)}
-                                >
-                                  <Save className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => setEditingProduct(null)}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
-                                  onClick={() => toast({ title: "Product Details", description: `Viewing ${product.name}` })}
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-green-600 hover:bg-green-700 text-white border-0"
-                                  onClick={() => setEditingProduct(product.id)}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-red-600 hover:bg-red-700 text-white border-0"
-                                  onClick={() => handleDeleteProduct(product.id)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'orders' && (
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Order Management</h2>
-                <div className="flex items-center space-x-4">
-                  <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filter
-                  </Button>
-                  <Button 
-                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => handleExportData('orders')}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left py-3 px-2">Order ID</th>
-                      <th className="text-left py-3 px-2">Customer</th>
-                      <th className="text-left py-3 px-2">Date</th>
-                      <th className="text-left py-3 px-2">Items</th>
-                      <th className="text-left py-3 px-2">Total</th>
-                      <th className="text-left py-3 px-2">Status</th>
-                      <th className="text-left py-3 px-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order) => (
-                      <tr key={order.id} className="border-b border-white/10">
-                        <td className="py-3 px-2 font-medium">{order.id}</td>
-                        <td className="py-3 px-2">
-                          <div>
-                            <p className="font-medium">{order.customer}</p>
-                            <p className="text-xs text-gray-400">{order.email}</p>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-gray-300">{order.date}</td>
-                        <td className="py-3 px-2">{order.items}</td>
-                        <td className="py-3 px-2 font-bold">${order.total}</td>
-                        <td className="py-3 px-2">
-                          {editingOrder === order.id ? (
-                            <select
-                              value={order.status}
-                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                              className="bg-white/10 border-white/20 text-white rounded px-2 py-1"
-                            >
-                              <option value="Processing">Processing</option>
-                              <option value="Shipped">Shipped</option>
-                              <option value="Delivered">Delivered</option>
-                              <option value="Cancelled">Cancelled</option>
-                            </select>
-                          ) : (
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              order.status === 'Delivered' 
-                                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                                : order.status === 'Shipped'
-                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                                : order.status === 'Processing'
-                                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                                : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                            }`}>
-                              {order.status}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              className="bg-blue-600 hover:bg-blue-700 text-white border-0"
-                              onClick={() => toast({ title: "Order Details", description: `Viewing order ${order.id}` })}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              className="bg-green-600 hover:bg-green-700 text-white border-0"
-                              onClick={() => setEditingOrder(editingOrder === order.id ? null : order.id)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'users' && (
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">User Management</h2>
-                <div className="flex items-center space-x-4">
-                  <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filter
-                  </Button>
-                  <Button 
-                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => handleExportData('users')}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left py-3 px-2">User</th>
-                      <th className="text-left py-3 px-2">Join Date</th>
-                      <th className="text-left py-3 px-2">Orders</th>
-                      <th className="text-left py-3 px-2">Total Spent</th>
-                      <th className="text-left py-3 px-2">Status</th>
-                      <th className="text-left py-3 px-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id} className="border-b border-white/10">
-                        <td className="py-3 px-2">
-                          <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-xs text-gray-400">{user.email}</p>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-gray-300">{user.joinDate}</td>
-                        <td className="py-3 px-2">{user.totalOrders}</td>
-                        <td className="py-3 px-2 font-bold">${user.totalSpent}</td>
-                        <td className="py-3 px-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            user.status === 'VIP' 
-                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                              : 'bg-green-500/20 text-green-300 border border-green-500/30'
-                          }`}>
-                            {user.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              className="bg-blue-600 hover:bg-blue-700 text-white border-0"
-                              onClick={() => toast({ title: "User Details", description: `Viewing ${user.name}'s profile` })}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              className="bg-green-600 hover:bg-green-700 text-white border-0"
-                              onClick={() => toast({ title: "Edit User", description: `Editing ${user.name}'s account` })}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'analytics' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-4">Revenue Analytics</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">This Month</span>
-                    <span className="font-bold text-green-400">$12,456</span>
+                  
+                  <div>
+                    <Label htmlFor="image">Image URL</Label>
+                    <Input
+                      id="image"
+                      value={newProduct.image}
+                      onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
+                      required
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Last Month</span>
-                    <span className="font-bold text-gray-300">$11,234</span>
+
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={newProduct.is_featured}
+                        onChange={(e) => setNewProduct({...newProduct, is_featured: e.target.checked})}
+                        className="mr-2"
+                      />
+                      Featured Product
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={newProduct.is_flash_sale}
+                        onChange={(e) => setNewProduct({...newProduct, is_flash_sale: e.target.checked})}
+                        className="mr-2"
+                      />
+                      Flash Sale
+                    </label>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Growth</span>
-                    <span className="font-bold text-green-400">+10.9%</span>
-                  </div>
-                  <div className="mt-4">
-                    <Button 
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      onClick={() => toast({ title: "Revenue Report", description: "Generating detailed revenue report..." })}
-                    >
-                      Generate Report
+
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setShowAddProduct(false)}>
+                      Cancel
                     </Button>
+                    <Button type="submit">Add Product</Button>
                   </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-4">Performance Metrics</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Page Views</span>
-                    <span className="font-bold text-blue-400">45,678</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Unique Visitors</span>
-                    <span className="font-bold text-purple-400">12,345</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Bounce Rate</span>
-                    <span className="font-bold text-yellow-400">32.5%</span>
-                  </div>
-                  <div className="mt-4">
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() => toast({ title: "Analytics Report", description: "Generating performance analytics..." })}
-                    >
-                      View Analytics
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                </form>
+              </CardContent>
             </Card>
           </div>
         )}

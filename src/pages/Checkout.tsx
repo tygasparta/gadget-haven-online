@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,15 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, CreditCard, Truck, Shield } from 'lucide-react';
 import Header from '@/components/Header';
+import { useCartItems } from '@/hooks/useCart';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Checkout = () => {
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { data: cartItems = [] } = useCartItems();
+  const { user } = useAuthContext();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   
   const [formData, setFormData] = useState({
-    email: '',
+    email: user?.email || '',
     firstName: '',
     lastName: '',
     address: '',
@@ -37,41 +40,110 @@ const Checkout = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-
-    // Simulate order processing
-    setTimeout(() => {
-      const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
-      
-      // Save order to localStorage (in real app, this would go to backend)
-      const order = {
-        id: orderId,
-        items: items,
-        total: getTotalPrice(),
-        customerInfo: formData,
-        status: 'confirmed',
-        date: new Date().toISOString()
-      };
-      
-      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      existingOrders.push(order);
-      localStorage.setItem('orders', JSON.stringify(existingOrders));
-      
-      clearCart();
-      setIsProcessing(false);
-      
-      toast({
-        title: "Order Confirmed!",
-        description: `Your order #${orderId} has been placed successfully.`
-      });
-      
-      navigate('/order-success', { state: { orderId, total: getTotalPrice() } });
-    }, 2000);
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => {
+      return total + (item.products.price * item.quantity);
+    }, 0);
   };
 
-  if (items.length === 0) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to complete your order",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total_amount: getTotalPrice(),
+          status: 'confirmed',
+          payment_method: 'credit_card',
+          shipping_address: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            address: formData.address,
+            city: formData.city,
+            zipCode: formData.zipCode,
+            country: formData.country
+          },
+          billing_address: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            address: formData.address,
+            city: formData.city,
+            zipCode: formData.zipCode,
+            country: formData.country
+          }
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cartItems.map(item => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.products.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // Clear cart after successful order
+      const { error: clearCartError } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (clearCartError) throw clearCartError;
+
+      toast({
+        title: "Order Confirmed!",
+        description: `Your order has been placed successfully.`
+      });
+      
+      navigate('/order-success', { 
+        state: { 
+          orderId: order.id, 
+          total: getTotalPrice() 
+        } 
+      });
+    } catch (error: any) {
+      console.error('Order creation error:', error);
+      toast({
+        title: "Order Failed",
+        description: error.message || "There was an error processing your order. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Redirect to auth if not logged in
+  if (!user) {
+    navigate('/auth');
+    return null;
+  }
+
+  if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -249,19 +321,22 @@ const Checkout = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {items.map((item) => (
+                  {cartItems.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4">
                       <img
-                        src={item.image}
-                        alt={item.name}
+                        src={item.products.image}
+                        alt={item.products.name}
                         className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                        }}
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium text-sm">{item.name}</h3>
+                        <h3 className="font-medium text-sm">{item.products.name}</h3>
                         <p className="text-gray-500">Qty: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-bold">${(item.products.price * item.quantity).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
