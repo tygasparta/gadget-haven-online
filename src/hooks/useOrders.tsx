@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export interface Order {
   id: string;
@@ -32,13 +33,14 @@ export interface OrderItem {
 
 export const useOrders = () => {
   const { user } = useAuthContext();
+  const { isAdmin } = useUserRole();
   
   return useQuery({
-    queryKey: ['orders', user?.id],
+    queryKey: ['orders', user?.id, isAdmin],
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('orders')
         .select(`
           *,
@@ -51,8 +53,14 @@ export const useOrders = () => {
             )
           )
         `)
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+      
+      // If not admin, only fetch user's own orders
+      if (!isAdmin) {
+        query = query.eq('user_id', user.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as Order[];
