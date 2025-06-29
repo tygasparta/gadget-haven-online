@@ -21,7 +21,7 @@ const Auth = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [user, navigate]);
 
@@ -35,7 +35,7 @@ const Auth = () => {
         if (error) throw error;
         
         toast({ title: "Welcome back!", description: "Successfully logged in" });
-        navigate('/dashboard');
+        navigate('/');
       } else {
         if (!fullName.trim()) {
           throw new Error('Full name is required');
@@ -48,6 +48,7 @@ const Auth = () => {
           title: "Account created!", 
           description: "Please check your email to verify your account" 
         });
+        // Don't redirect immediately for sign up, let them verify email first
       }
     } catch (error: any) {
       toast({ 
