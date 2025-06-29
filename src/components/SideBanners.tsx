@@ -1,11 +1,64 @@
 
 import React from 'react';
-import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone } from 'lucide-react';
+import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const SideBanners = () => {
   return (
     <>
+      {/* Left Side Long Banner - Desktop only */}
+      <div className="fixed left-4 top-1/2 -translate-y-1/2 z-20 hidden xl:block">
+        <div className="bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 text-white rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer p-6 w-20 h-96 flex flex-col items-center justify-between overflow-hidden relative">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-4 left-4 w-8 h-8 border-2 border-white rounded-full"></div>
+            <div className="absolute bottom-8 right-4 w-6 h-6 border-2 border-white rounded-full"></div>
+            <div className="absolute top-1/3 right-2 w-4 h-4 bg-white rounded-full"></div>
+            <div className="absolute bottom-1/3 left-2 w-3 h-3 bg-white rounded-full"></div>
+          </div>
+
+          {/* Top Section */}
+          <div className="flex flex-col items-center space-y-4 relative z-10">
+            <div className="bg-yellow-400 p-3 rounded-full animate-bounce">
+              <Percent className="w-6 h-6 text-blue-800" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-bold text-xs mb-1 transform -rotate-90 whitespace-nowrap origin-center">MEGA</h3>
+              <h3 className="font-bold text-xs transform -rotate-90 whitespace-nowrap origin-center">DEALS</h3>
+            </div>
+          </div>
+
+          {/* Middle Section */}
+          <div className="flex flex-col items-center space-y-3 relative z-10">
+            <div className="bg-green-400 p-2 rounded-full">
+              <Star className="w-4 h-4 text-blue-800" />
+            </div>
+            <div className="text-center">
+              <span className="text-2xl font-bold block">70%</span>
+              <span className="text-xs font-medium block transform -rotate-90 whitespace-nowrap origin-center mt-2">OFF</span>
+            </div>
+            <div className="bg-orange-400 p-2 rounded-full">
+              <Clock className="w-4 h-4 text-blue-800" />
+            </div>
+          </div>
+
+          {/* Bottom Section */}
+          <div className="flex flex-col items-center space-y-2 relative z-10">
+            <div className="bg-red-400 p-2 rounded-full animate-pulse">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-center">
+              <span className="text-xs font-bold block transform -rotate-90 whitespace-nowrap origin-center">LIMITED</span>
+              <span className="text-xs font-bold block transform -rotate-90 whitespace-nowrap origin-center mt-1">TIME</span>
+            </div>
+          </div>
+
+          {/* Decorative Elements */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-green-400 to-orange-400"></div>
+          <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-red-400 via-pink-400 to-purple-400"></div>
+        </div>
+      </div>
+
       {/* Mobile Banner Cards - Below other content */}
       <div className="block xl:hidden mt-8 px-4 order-last">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -88,35 +141,6 @@ const SideBanners = () => {
             >
               View Phones
             </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Corner Banners - Desktop only */}
-      <div className="fixed bottom-4 left-4 z-30 hidden lg:block">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
-          <div className="flex items-center space-x-2">
-            <div className="bg-white/20 p-2 rounded-full">
-              <Zap className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm">Flash Sale</h4>
-              <p className="text-xs opacity-90">Ends in 2h 15m</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="fixed bottom-4 right-4 z-30 hidden lg:block">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
-          <div className="flex items-center space-x-2">
-            <div className="bg-white/20 p-2 rounded-full">
-              <Trophy className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm">Top Rated</h4>
-              <p className="text-xs opacity-90">4.8★ Products</p>
-            </div>
           </div>
         </div>
       </div>
