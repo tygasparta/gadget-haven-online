@@ -11,11 +11,18 @@ import { useUserRole } from '@/hooks/useUserRole';
 
 const Header = () => {
   const { user, signOut } = useAuthContext();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { data: cartItems = [] } = useCartItems();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Header: User:', user?.email);
+    console.log('Header: Is Admin:', isAdmin);
+    console.log('Header: Role Loading:', roleLoading);
+  }, [user, isAdmin, roleLoading]);
 
   // Calculate total cart items
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -43,6 +50,12 @@ const Header = () => {
     } else {
       navigate('/dashboard');
     }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleAdminClick = () => {
+    console.log('Admin button clicked, navigating to /admin');
+    navigate('/admin');
     setIsMobileMenuOpen(false);
   };
 
@@ -128,14 +141,15 @@ const Header = () => {
                     <span className="ml-2 hidden lg:inline">Account</span>
                   </Button>
                   
-                  {/* Admin Dashboard Button - More prominent for admin users */}
+                  {/* Admin Dashboard Button - Very prominent and always visible for admin users */}
                   {isAdmin && (
-                    <Link to="/admin">
-                      <Button className="p-2 hidden sm:flex bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 border-0">
-                        <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
-                        <span className="ml-2 hidden lg:inline font-semibold">Admin</span>
-                      </Button>
-                    </Link>
+                    <Button 
+                      onClick={handleAdminClick}
+                      className="p-2 hidden sm:flex bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0 shadow-lg"
+                    >
+                      <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <span className="ml-2 font-bold text-sm">ADMIN</span>
+                    </Button>
                   )}
                   
                   <Button variant="ghost" className="p-2 hidden sm:flex">
@@ -258,16 +272,15 @@ const Header = () => {
                       <span>My Account</span>
                     </Button>
                     
-                    {/* Admin Dashboard - Mobile - More prominent */}
+                    {/* Admin Dashboard - Mobile - Very prominent */}
                     {isAdmin && (
-                      <Link to="/admin" onClick={closeMobileMenu}>
-                        <Button
-                          className="justify-start p-3 h-auto w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
-                        >
-                          <Settings className="w-5 h-5 mr-3" />
-                          <span className="font-semibold">Admin Dashboard</span>
-                        </Button>
-                      </Link>
+                      <Button
+                        onClick={handleAdminClick}
+                        className="justify-start p-3 h-auto w-full bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg"
+                      >
+                        <Settings className="w-5 h-5 mr-3" />
+                        <span className="font-bold">ADMIN DASHBOARD</span>
+                      </Button>
                     )}
                     
                     <Button
