@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Users, Package, DollarSign, TrendingUp, ShoppingCart, Eye, Edit, Trash2, Plus, Search, Filter, Download, Bell, Settings, LogOut, Star, AlertTriangle, CheckCircle } from 'lucide-react';
+import { BarChart3, Users, Package, DollarSign, TrendingUp, ShoppingCart, Eye, Edit, Trash2, Plus, Search, Filter, Download, Bell, Settings, LogOut, Star, AlertTriangle, CheckCircle, X, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,9 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingProduct, setEditingProduct] = useState<number | null>(null);
+  const [editingOrder, setEditingOrder] = useState<string | null>(null);
+  const [showAddProduct, setShowAddProduct] = useState(false);
 
   useEffect(() => {
     const isAuth = localStorage.getItem('isAuthenticated');
@@ -20,7 +24,7 @@ const AdminDashboard = () => {
     }
   }, [navigate]);
 
-  const [stats] = useState({
+  const [stats, setStats] = useState({
     totalRevenue: 45678,
     totalOrders: 234,
     totalUsers: 1567,
@@ -32,7 +36,7 @@ const AdminDashboard = () => {
     avgOrderValue: 195
   });
 
-  const [products] = useState([
+  const [products, setProducts] = useState([
     {
       id: 1,
       name: 'iPhone 15 Pro Max',
@@ -90,7 +94,7 @@ const AdminDashboard = () => {
     }
   ]);
 
-  const [recentOrders] = useState([
+  const [recentOrders, setRecentOrders] = useState([
     {
       id: '#ORD-2024-001',
       customer: 'John Smith',
@@ -129,7 +133,7 @@ const AdminDashboard = () => {
     }
   ]);
 
-  const [users] = useState([
+  const [users, setUsers] = useState([
     {
       id: 1,
       name: 'John Smith',
@@ -159,10 +163,100 @@ const AdminDashboard = () => {
     }
   ]);
 
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    category: '',
+    price: 0,
+    stock: 0
+  });
+
   const handleLogout = () => {
     localStorage.clear();
     toast({ title: "Logged out", description: "Admin session ended" });
     navigate('/');
+  };
+
+  const handleAddProduct = () => {
+    if (newProduct.name && newProduct.category && newProduct.price > 0) {
+      const product = {
+        id: Math.max(...products.map(p => p.id)) + 1,
+        ...newProduct,
+        sales: 0,
+        status: newProduct.stock > 0 ? 'Active' : 'Out of Stock',
+        rating: 0,
+        reviews: 0
+      };
+      setProducts(prev => [...prev, product]);
+      setNewProduct({ name: '', category: '', price: 0, stock: 0 });
+      setShowAddProduct(false);
+      toast({ title: "Product Added", description: `${newProduct.name} has been added successfully.` });
+    } else {
+      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
+    }
+  };
+
+  const handleUpdateProduct = (id: number, updates: any) => {
+    setProducts(prev => prev.map(p => 
+      p.id === id ? { 
+        ...p, 
+        ...updates, 
+        status: updates.stock !== undefined ? 
+          (updates.stock === 0 ? 'Out of Stock' : updates.stock < 20 ? 'Low Stock' : 'Active') : 
+          p.status 
+      } : p
+    ));
+    setEditingProduct(null);
+    toast({ title: "Product Updated", description: "Product has been updated successfully." });
+  };
+
+  const handleDeleteProduct = (id: number) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+    toast({ title: "Product Deleted", description: "Product has been removed from inventory." });
+  };
+
+  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
+    setRecentOrders(prev => prev.map(order => 
+      order.id === orderId ? { ...order, status: newStatus } : order
+    ));
+    setEditingOrder(null);
+    toast({ title: "Order Updated", description: `Order ${orderId} status changed to ${newStatus}.` });
+  };
+
+  const handleExportData = (type: string) => {
+    let data: any[] = [];
+    let filename = '';
+    let headers = '';
+
+    switch (type) {
+      case 'products':
+        data = products;
+        filename = 'products.csv';
+        headers = 'ID,Name,Category,Price,Stock,Sales,Status,Rating,Reviews';
+        break;
+      case 'orders':
+        data = recentOrders;
+        filename = 'orders.csv';
+        headers = 'ID,Customer,Email,Total,Status,Date,Items';
+        break;
+      case 'users':
+        data = users;
+        filename = 'users.csv';
+        headers = 'ID,Name,Email,Join Date,Total Orders,Total Spent,Status';
+        break;
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      headers + "\n" +
+      data.map(item => Object.values(item).map(val => `"${val}"`).join(",")).join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({ title: "Data Exported", description: `${type} data has been exported to CSV.` });
   };
 
   const filteredProducts = products.filter(product =>
@@ -183,6 +277,7 @@ const AdminDashboard = () => {
             <div className="flex items-center space-x-3">
               <Button 
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 relative"
+                onClick={() => toast({ title: "Notifications", description: "You have 3 new notifications" })}
               >
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
@@ -192,6 +287,7 @@ const AdminDashboard = () => {
               </Button>
               <Button 
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={() => toast({ title: "Settings", description: "Opening settings panel..." })}
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -357,7 +453,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-300">Low Stock Items</span>
-                      <span className="font-bold text-red-400">5</span>
+                      <span className="font-bold text-red-400">{products.filter(p => p.stock < 20 && p.stock > 0).length}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-300">New Customers</span>
@@ -408,7 +504,10 @@ const AdminDashboard = () => {
                       className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                     />
                   </div>
-                  <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Button 
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => setShowAddProduct(true)}
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Product
                   </Button>
@@ -416,12 +515,62 @@ const AdminDashboard = () => {
                     <Filter className="w-4 h-4 mr-2" />
                     Filter
                   </Button>
-                  <Button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Button 
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => handleExportData('products')}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
                 </div>
               </div>
+
+              {/* Add Product Modal */}
+              {showAddProduct && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">Add New Product</h3>
+                      <Button variant="outline" size="sm" onClick={() => setShowAddProduct(false)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Product Name"
+                        value={newProduct.name}
+                        onChange={(e) => setNewProduct(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                      <Input
+                        placeholder="Category"
+                        value={newProduct.category}
+                        onChange={(e) => setNewProduct(prev => ({ ...prev, category: e.target.value }))}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Price"
+                        value={newProduct.price || ''}
+                        onChange={(e) => setNewProduct(prev => ({ ...prev, price: Number(e.target.value) }))}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Stock"
+                        value={newProduct.stock || ''}
+                        onChange={(e) => setNewProduct(prev => ({ ...prev, stock: Number(e.target.value) }))}
+                      />
+                      <div className="flex space-x-2">
+                        <Button onClick={handleAddProduct} className="flex-1">
+                          <Save className="w-4 h-4 mr-2" />
+                          Add Product
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowAddProduct(false)} className="flex-1">
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -442,20 +591,70 @@ const AdminDashboard = () => {
                       <tr key={product.id} className="border-b border-white/10">
                         <td className="py-3 px-2">
                           <div>
-                            <p className="font-medium">{product.name}</p>
-                            <p className="text-xs text-gray-400">{product.reviews} reviews</p>
+                            {editingProduct === product.id ? (
+                              <Input
+                                value={product.name}
+                                onChange={(e) => setProducts(prev => prev.map(p => 
+                                  p.id === product.id ? { ...p, name: e.target.value } : p
+                                ))}
+                                className="bg-white/10 border-white/20 text-white"
+                              />
+                            ) : (
+                              <>
+                                <p className="font-medium">{product.name}</p>
+                                <p className="text-xs text-gray-400">{product.reviews} reviews</p>
+                              </>
+                            )}
                           </div>
                         </td>
-                        <td className="py-3 px-2 text-gray-300">{product.category}</td>
-                        <td className="py-3 px-2 font-bold">${product.price}</td>
+                        <td className="py-3 px-2 text-gray-300">
+                          {editingProduct === product.id ? (
+                            <Input
+                              value={product.category}
+                              onChange={(e) => setProducts(prev => prev.map(p => 
+                                p.id === product.id ? { ...p, category: e.target.value } : p
+                              ))}
+                              className="bg-white/10 border-white/20 text-white"
+                            />
+                          ) : (
+                            product.category
+                          )}
+                        </td>
+                        <td className="py-3 px-2 font-bold">
+                          {editingProduct === product.id ? (
+                            <Input
+                              type="number"
+                              value={product.price}
+                              onChange={(e) => setProducts(prev => prev.map(p => 
+                                p.id === product.id ? { ...p, price: Number(e.target.value) } : p
+                              ))}
+                              className="bg-white/10 border-white/20 text-white"
+                            />
+                          ) : (
+                            `$${product.price}`
+                          )}
+                        </td>
                         <td className="py-3 px-2">
                           <div className="flex items-center space-x-2">
-                            <span>{product.stock}</span>
-                            {product.stock < 20 && product.stock > 0 && (
-                              <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                            )}
-                            {product.stock === 0 && (
-                              <AlertTriangle className="w-4 h-4 text-red-400" />
+                            {editingProduct === product.id ? (
+                              <Input
+                                type="number"
+                                value={product.stock}
+                                onChange={(e) => setProducts(prev => prev.map(p => 
+                                  p.id === product.id ? { ...p, stock: Number(e.target.value) } : p
+                                ))}
+                                className="bg-white/10 border-white/20 text-white w-20"
+                              />
+                            ) : (
+                              <>
+                                <span>{product.stock}</span>
+                                {product.stock < 20 && product.stock > 0 && (
+                                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                                )}
+                                {product.stock === 0 && (
+                                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                                )}
+                              </>
                             )}
                           </div>
                         </td>
@@ -479,15 +678,48 @@ const AdminDashboard = () => {
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex space-x-2">
-                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white border-0">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white border-0">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {editingProduct === product.id ? (
+                              <>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-green-600 hover:bg-green-700 text-white border-0"
+                                  onClick={() => handleUpdateProduct(product.id, product)}
+                                >
+                                  <Save className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => setEditingProduct(null)}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-blue-600 hover:bg-blue-700 text-white border-0"
+                                  onClick={() => toast({ title: "Product Details", description: `Viewing ${product.name}` })}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-green-600 hover:bg-green-700 text-white border-0"
+                                  onClick={() => setEditingProduct(product.id)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-red-600 hover:bg-red-700 text-white border-0"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -509,7 +741,10 @@ const AdminDashboard = () => {
                     <Filter className="w-4 h-4 mr-2" />
                     Filter
                   </Button>
-                  <Button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Button 
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => handleExportData('orders')}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
@@ -543,24 +778,45 @@ const AdminDashboard = () => {
                         <td className="py-3 px-2">{order.items}</td>
                         <td className="py-3 px-2 font-bold">${order.total}</td>
                         <td className="py-3 px-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            order.status === 'Delivered' 
-                              ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                              : order.status === 'Shipped'
-                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                              : order.status === 'Processing'
-                              ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                              : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                          }`}>
-                            {order.status}
-                          </span>
+                          {editingOrder === order.id ? (
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                              className="bg-white/10 border-white/20 text-white rounded px-2 py-1"
+                            >
+                              <option value="Processing">Processing</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          ) : (
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              order.status === 'Delivered' 
+                                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                : order.status === 'Shipped'
+                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                : order.status === 'Processing'
+                                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                                : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                            }`}>
+                              {order.status}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex space-x-2">
-                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
+                            <Button 
+                              size="sm" 
+                              className="bg-blue-600 hover:bg-blue-700 text-white border-0"
+                              onClick={() => toast({ title: "Order Details", description: `Viewing order ${order.id}` })}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white border-0">
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700 text-white border-0"
+                              onClick={() => setEditingOrder(editingOrder === order.id ? null : order.id)}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
                           </div>
@@ -584,7 +840,10 @@ const AdminDashboard = () => {
                     <Filter className="w-4 h-4 mr-2" />
                     Filter
                   </Button>
-                  <Button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Button 
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => handleExportData('users')}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Export
                   </Button>
@@ -626,10 +885,18 @@ const AdminDashboard = () => {
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex space-x-2">
-                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
+                            <Button 
+                              size="sm" 
+                              className="bg-blue-600 hover:bg-blue-700 text-white border-0"
+                              onClick={() => toast({ title: "User Details", description: `Viewing ${user.name}'s profile` })}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white border-0">
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700 text-white border-0"
+                              onClick={() => toast({ title: "Edit User", description: `Editing ${user.name}'s account` })}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
                           </div>
@@ -661,6 +928,14 @@ const AdminDashboard = () => {
                     <span className="text-gray-300">Growth</span>
                     <span className="font-bold text-green-400">+10.9%</span>
                   </div>
+                  <div className="mt-4">
+                    <Button 
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={() => toast({ title: "Revenue Report", description: "Generating detailed revenue report..." })}
+                    >
+                      Generate Report
+                    </Button>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -680,6 +955,14 @@ const AdminDashboard = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-300">Bounce Rate</span>
                     <span className="font-bold text-yellow-400">32.5%</span>
+                  </div>
+                  <div className="mt-4">
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => toast({ title: "Analytics Report", description: "Generating performance analytics..." })}
+                    >
+                      View Analytics
+                    </Button>
                   </div>
                 </div>
               </div>

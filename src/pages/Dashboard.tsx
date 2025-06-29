@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Heart, Package, Star, TrendingUp, Award, Bell, Settings, LogOut, User, CreditCard, MapPin, Download, Filter, Search } from 'lucide-react';
+import { ShoppingBag, Heart, Package, Star, TrendingUp, Award, Bell, Settings, LogOut, User, CreditCard, MapPin, Download, Filter, Search, Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,9 @@ const Dashboard = () => {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [orderFilter, setOrderFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editUser, setEditUser] = useState(user);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,7 +42,7 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const recentOrders = [
+  const [recentOrders, setRecentOrders] = useState([
     {
       id: '#ORD-2024-001',
       date: '2024-01-15',
@@ -72,9 +75,9 @@ const Dashboard = () => {
       status: 'Processing',
       trackingNumber: 'TRK789123456'
     }
-  ];
+  ]);
 
-  const wishlistItems = [
+  const [wishlistItems, setWishlistItems] = useState([
     {
       id: 1,
       name: 'Sony WH-1000XM5',
@@ -99,18 +102,81 @@ const Dashboard = () => {
       image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=200&h=200&fit=crop',
       inStock: false
     }
-  ];
+  ]);
 
-  const notifications = [
-    { id: 1, type: 'order', message: 'Your order #ORD-2024-003 has been shipped', time: '2 hours ago' },
-    { id: 2, type: 'offer', message: 'Special discount: 20% off on Apple products', time: '1 day ago' },
-    { id: 3, type: 'wishlist', message: 'Sony WH-1000XM5 is back in stock', time: '2 days ago' }
-  ];
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'order', message: 'Your order #ORD-2024-003 has been shipped', time: '2 hours ago', read: false },
+    { id: 2, type: 'offer', message: 'Special discount: 20% off on Apple products', time: '1 day ago', read: false },
+    { id: 3, type: 'wishlist', message: 'Sony WH-1000XM5 is back in stock', time: '2 days ago', read: true }
+  ]);
+
+  const handleSaveProfile = () => {
+    setUser(editUser);
+    localStorage.setItem('userName', editUser.name);
+    localStorage.setItem('userEmail', editUser.email);
+    setIsEditing(false);
+    toast({ title: "Profile Updated", description: "Your profile has been saved successfully." });
+  };
+
+  const handleTrackOrder = (trackingNumber: string) => {
+    toast({ title: "Tracking Order", description: `Tracking number: ${trackingNumber}` });
+  };
+
+  const handleReorder = (orderId: string) => {
+    toast({ title: "Reorder Placed", description: `Reordering items from ${orderId}` });
+  };
+
+  const handleAddToCart = (itemId: number) => {
+    toast({ title: "Added to Cart", description: "Item has been added to your cart." });
+  };
+
+  const handleRemoveFromWishlist = (itemId: number) => {
+    setWishlistItems(prev => prev.filter(item => item.id !== itemId));
+    toast({ title: "Removed from Wishlist", description: "Item has been removed from your wishlist." });
+  };
+
+  const handleMarkAsRead = (notificationId: number) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === notificationId ? { ...notif, read: true } : notif
+      )
+    );
+  };
+
+  const handleRedeemPoints = () => {
+    if (user.loyaltyPoints >= 100) {
+      setUser(prev => ({ ...prev, loyaltyPoints: prev.loyaltyPoints - 100 }));
+      toast({ title: "Points Redeemed", description: "You've redeemed 100 points for a $10 discount!" });
+    } else {
+      toast({ title: "Insufficient Points", description: "You need at least 100 points to redeem.", variant: "destructive" });
+    }
+  };
+
+  const handleExportOrders = () => {
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      "Order ID,Date,Items,Total,Status\n" +
+      filteredOrders.map(order => 
+        `${order.id},${order.date},"${order.items}",${order.total},${order.status}`
+      ).join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "orders.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({ title: "Orders Exported", description: "Your orders have been exported to CSV." });
+  };
 
   const filteredOrders = recentOrders.filter(order => {
-    if (orderFilter === 'all') return true;
-    return order.status.toLowerCase() === orderFilter;
+    const matchesFilter = orderFilter === 'all' || order.status.toLowerCase() === orderFilter;
+    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.items.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
   });
+
+  const unreadNotifications = notifications.filter(n => !n.read).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
@@ -187,7 +253,7 @@ const Dashboard = () => {
               { key: 'overview', label: 'Overview', icon: TrendingUp },
               { key: 'orders', label: 'Orders', icon: Package },
               { key: 'wishlist', label: 'Wishlist', icon: Heart },
-              { key: 'notifications', label: 'Notifications', icon: Bell },
+              { key: 'notifications', label: `Notifications ${unreadNotifications > 0 ? `(${unreadNotifications})` : ''}`, icon: Bell },
               { key: 'profile', label: 'Profile', icon: User }
             ].map(({ key, label, icon: Icon }) => (
               <button
@@ -248,6 +314,15 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">Order History</h2>
                   <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Search orders..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
                     <select
                       value={orderFilter}
                       onChange={(e) => setOrderFilter(e.target.value)}
@@ -258,7 +333,7 @@ const Dashboard = () => {
                       <option value="in transit">In Transit</option>
                       <option value="processing">Processing</option>
                     </select>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleExportOrders}>
                       <Download className="w-4 h-4 mr-2" />
                       Export
                     </Button>
@@ -294,10 +369,17 @@ const Dashboard = () => {
                       <p className="text-gray-700 mb-2">{order.items}</p>
                       <p className="text-sm text-gray-500 mb-3">Tracking: {order.trackingNumber}</p>
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">View Details</Button>
-                        <Button size="sm" variant="outline">Track Order</Button>
+                        <Button size="sm" variant="outline" onClick={() => toast({ title: "Order Details", description: `Viewing details for ${order.id}` })}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleTrackOrder(order.trackingNumber)}>
+                          Track Order
+                        </Button>
                         {order.status === 'Delivered' && (
-                          <Button size="sm" variant="outline">Reorder</Button>
+                          <Button size="sm" variant="outline" onClick={() => handleReorder(order.id)}>
+                            Reorder
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -337,11 +419,20 @@ const Dashboard = () => {
                         </p>
                       </div>
                       <div className="flex flex-col space-y-2">
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700" disabled={!item.inStock}>
+                        <Button 
+                          size="sm" 
+                          className="bg-blue-600 hover:bg-blue-700" 
+                          disabled={!item.inStock}
+                          onClick={() => handleAddToCart(item.id)}
+                        >
                           Add to Cart
                         </Button>
-                        <Button size="sm" variant="outline">
-                          Remove
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleRemoveFromWishlist(item.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -352,10 +443,25 @@ const Dashboard = () => {
 
             {activeTab === 'notifications' && (
               <Card className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Notifications</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                  >
+                    Mark All as Read
+                  </Button>
+                </div>
                 <div className="space-y-4">
                   {notifications.map((notification) => (
-                    <div key={notification.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                    <div 
+                      key={notification.id} 
+                      className={`flex items-start space-x-4 p-4 rounded-xl cursor-pointer transition-colors ${
+                        notification.read ? 'bg-gray-50' : 'bg-blue-50 border-l-4 border-blue-500'
+                      }`}
+                      onClick={() => handleMarkAsRead(notification.id)}
+                    >
                       <div className={`p-2 rounded-full ${
                         notification.type === 'order' ? 'bg-blue-100' :
                         notification.type === 'offer' ? 'bg-green-100' : 'bg-purple-100'
@@ -368,6 +474,9 @@ const Dashboard = () => {
                         <p className="text-gray-900">{notification.message}</p>
                         <p className="text-sm text-gray-500 mt-1">{notification.time}</p>
                       </div>
+                      {!notification.read && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -376,32 +485,59 @@ const Dashboard = () => {
 
             {activeTab === 'profile' && (
               <Card className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Settings</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </Button>
+                </div>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                      <Input value={user.name} className="w-full" />
+                      <Input 
+                        value={isEditing ? editUser.name : user.name} 
+                        onChange={(e) => setEditUser(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full" 
+                        disabled={!isEditing}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                      <Input value={user.email} className="w-full" />
+                      <Input 
+                        value={isEditing ? editUser.email : user.email} 
+                        onChange={(e) => setEditUser(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full" 
+                        disabled={!isEditing}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="flex-1 flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                       <CreditCard className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-700">{user.savedCards} saved payment methods</span>
+                      <Button size="sm" variant="outline" className="ml-auto">Manage</Button>
                     </div>
                     <div className="flex-1 flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                       <MapPin className="w-5 h-5 text-gray-600" />
                       <span className="text-gray-700">{user.addresses} saved addresses</span>
+                      <Button size="sm" variant="outline" className="ml-auto">Manage</Button>
                     </div>
                   </div>
-                  <div className="flex space-x-4">
-                    <Button className="bg-blue-600 hover:bg-blue-700">Save Changes</Button>
-                    <Button variant="outline">Change Password</Button>
-                  </div>
+                  {isEditing && (
+                    <div className="flex space-x-4">
+                      <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveProfile}>
+                        Save Changes
+                      </Button>
+                      <Button variant="outline" onClick={() => setIsEditing(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </Card>
             )}
@@ -420,13 +556,18 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Member since {user.memberSince}</p>
                 
                 <div className="mt-6 space-y-3">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={() => setActiveTab('profile')}>
                     <Settings className="w-4 h-4 mr-2" />
                     Account Settings
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={() => setActiveTab('notifications')}>
                     <Bell className="w-4 h-4 mr-2" />
                     Notifications
+                    {unreadNotifications > 0 && (
+                      <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        {unreadNotifications}
+                      </span>
+                    )}
                   </Button>
                   <Button 
                     onClick={handleLogout}
@@ -453,7 +594,11 @@ const Dashboard = () => {
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full" style={{width: '68%'}}></div>
                 </div>
                 
-                <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700">
+                <Button 
+                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                  onClick={handleRedeemPoints}
+                  disabled={user.loyaltyPoints < 100}
+                >
                   Redeem Points
                 </Button>
               </div>
@@ -463,17 +608,17 @@ const Dashboard = () => {
             <Card className="p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => setActiveTab('orders')}>
                   <Package className="w-4 h-4 mr-2" />
                   Track an Order
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => setActiveTab('wishlist')}>
                   <Heart className="w-4 h-4 mr-2" />
                   View Wishlist
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleExportOrders}>
                   <Download className="w-4 h-4 mr-2" />
-                  Download Invoice
+                  Download Orders
                 </Button>
               </div>
             </Card>
