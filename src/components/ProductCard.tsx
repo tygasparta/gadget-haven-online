@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/CartContext';
+import { useAddToCart } from '@/hooks/useCart';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: {
@@ -19,7 +22,9 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart } = useCart();
+  const { mutate: addToCart } = useAddToCart();
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -37,7 +42,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : 0;
 
   const handleAddToCart = () => {
-    addToCart(product);
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    addToCart({ productId: product.id });
   };
 
   return (
@@ -153,7 +163,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           onClick={handleAddToCart}
         >
           <ShoppingCart className="w-4 h-4 mr-2" />
-          Add to Cart
+          {user ? 'Add to Cart' : 'Login to Buy'}
         </Button>
       </div>
     </div>
