@@ -15,10 +15,22 @@ const FeaturedBrands = () => {
     { name: 'LG', image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&h=200&fit=crop' },
     { name: 'Xiaomi', image: 'https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=200&h=200&fit=crop' },
     { name: 'HP', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop' },
-    { name: 'Canon', image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=200&h=200&fit=crop' }
+    { name: 'Canon', image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=200&h=200&fit=crop' },
+    { name: 'Dell', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop' },
+    { name: 'Microsoft', image: 'https://images.unsplash.com/photo-1633114128174-2f8aa49759b0?w=200&h=200&fit=crop' },
+    { name: 'Google', image: 'https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=200&h=200&fit=crop' },
+    { name: 'OnePlus', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop' },
+    { name: 'Lenovo', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop' },
+    { name: 'Asus', image: 'https://images.unsplash.com/photo-1541807084-5c52b6b99f0f?w=200&h=200&fit=crop' },
+    { name: 'Acer', image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop' },
+    { name: 'JBL', image: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=200&h=200&fit=crop' },
+    { name: 'Bose', image: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=200&h=200&fit=crop' },
+    { name: 'Beats', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=200&h=200&fit=crop' },
+    { name: 'Anker', image: 'https://images.unsplash.com/photo-1609592806689-60c84bdb98d0?w=200&h=200&fit=crop' },
+    { name: 'Logitech', image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200&h=200&fit=crop' }
   ];
 
-  const itemsPerPage = isMobile ? 2 : 4;
+  const itemsPerPage = isMobile ? 4 : 8;
   const totalPages = Math.ceil(brands.length / itemsPerPage);
 
   const nextSlide = () => {
@@ -59,7 +71,7 @@ const FeaturedBrands = () => {
         </div>
       </div>
 
-      {/* Mobile: 2 columns, Desktop: 4+ columns */}
+      {/* Mobile: 4 columns (2x2), Desktop: 8 columns */}
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-6">
         {getCurrentBrands().map((brand, index) => (
           <div
@@ -83,14 +95,16 @@ const FeaturedBrands = () => {
         ))}
       </div>
 
-      {/* Pagination dots for mobile */}
-      {isMobile && totalPages > 1 && (
-        <div className="flex justify-center mt-4 space-x-2">
+      {/* Pagination dots */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 space-x-2">
           {Array.from({ length: totalPages }).map((_, index) => (
             <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentIndex 
+                  ? 'bg-blue-500 scale-110' 
+                  : 'bg-gray-300 hover:bg-gray-400'
               }`}
               onClick={() => setCurrentIndex(index)}
             />
