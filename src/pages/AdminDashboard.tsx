@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,10 +14,12 @@ import {
   Trash2,
   Users,
   ShoppingCart,
-  DollarSign
+  DollarSign,
+  Shield
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useProducts } from '@/hooks/useProducts';
 import { useOrders } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +29,7 @@ import { useQueryClient } from '@tanstack/react-query';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { data: products = [] } = useProducts();
   const { data: orders = [] } = useOrders();
   const { toast } = useToast();
@@ -47,14 +49,32 @@ const AdminDashboard = () => {
     discount_percentage: ''
   });
 
-  // Redirect if not authenticated (in real app, check if user is admin)
+  // Redirect if not authenticated or not admin
   React.useEffect(() => {
-    if (!user) {
+    if (!user && !roleLoading) {
       navigate('/auth');
+    } else if (user && !isAdmin && !roleLoading) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have admin privileges to access this page.",
+        variant: "destructive"
+      });
+      navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, roleLoading, navigate, toast]);
 
-  if (!user) {
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
     return null;
   }
 
@@ -156,7 +176,10 @@ const AdminDashboard = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Store
           </Button>
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <div className="flex items-center space-x-2">
+            <Shield className="w-5 h-5 text-blue-600" />
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          </div>
         </div>
 
         {/* Stats Cards */}
