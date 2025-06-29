@@ -17,6 +17,7 @@ import Categories from "./pages/Categories";
 import Deals from "./pages/Deals";
 import Audio from "./pages/Audio";
 import Phones from "./pages/Phones";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/deals" element={<Deals />} />
               <Route path="/audio" element={<Audio />} />
               <Route path="/phones" element={<Phones />} />
+              <Route path="/wishlist" element={<Wishlist />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

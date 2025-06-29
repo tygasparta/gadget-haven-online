@@ -2,9 +2,12 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Grid3X3, Smartphone, Headphones, Laptop, Watch, Camera } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Grid3X3, Smartphone, Headphones, Laptop, Watch, Camera, Gamepad2, Tv, Zap } from 'lucide-react';
 
 const Categories = () => {
+  const navigate = useNavigate();
+
   const categories = [
     {
       id: 1,
@@ -12,7 +15,8 @@ const Categories = () => {
       icon: Smartphone,
       count: 45,
       description: 'Latest smartphones and accessories',
-      color: 'bg-blue-500'
+      color: 'bg-blue-500',
+      path: '/phones'
     },
     {
       id: 2,
@@ -20,7 +24,8 @@ const Categories = () => {
       icon: Headphones,
       count: 32,
       description: 'Headphones, speakers, and audio gear',
-      color: 'bg-green-500'
+      color: 'bg-green-500',
+      path: '/audio'
     },
     {
       id: 3,
@@ -28,7 +33,8 @@ const Categories = () => {
       icon: Laptop,
       count: 28,
       description: 'Laptops and computing devices',
-      color: 'bg-purple-500'
+      color: 'bg-purple-500',
+      path: '/laptops'
     },
     {
       id: 4,
@@ -36,7 +42,8 @@ const Categories = () => {
       icon: Watch,
       count: 18,
       description: 'Smartwatches and fitness trackers',
-      color: 'bg-red-500'
+      color: 'bg-red-500',
+      path: '/wearables'
     },
     {
       id: 5,
@@ -44,9 +51,41 @@ const Categories = () => {
       icon: Camera,
       count: 25,
       description: 'Digital cameras and photography gear',
-      color: 'bg-yellow-500'
+      color: 'bg-yellow-500',
+      path: '/cameras'
+    },
+    {
+      id: 6,
+      name: 'Gaming',
+      icon: Gamepad2,
+      count: 35,
+      description: 'Gaming consoles and accessories',
+      color: 'bg-indigo-500',
+      path: '/gaming'
+    },
+    {
+      id: 7,
+      name: 'TV & Home',
+      icon: Tv,
+      count: 22,
+      description: 'Smart TVs and home entertainment',
+      color: 'bg-pink-500',
+      path: '/tv-home'
+    },
+    {
+      id: 8,
+      name: 'Electronics',
+      icon: Zap,
+      count: 40,
+      description: 'Power banks, cables, and accessories',
+      color: 'bg-orange-500',
+      path: '/electronics'
     }
   ];
+
+  const handleCategoryClick = (category: any) => {
+    navigate(category.path);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,25 +97,53 @@ const Categories = () => {
           <p className="text-gray-600">Explore our wide range of tech products</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {categories.map((category) => (
             <div
               key={category.id}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 cursor-pointer"
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6 cursor-pointer transform hover:-translate-y-1 hover:scale-105"
+              onClick={() => handleCategoryClick(category)}
             >
-              <div className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mb-4`}>
-                <category.icon className="w-6 h-6 text-white" />
+              <div className={`w-16 h-16 ${category.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
+                <category.icon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{category.name}</h3>
-              <p className="text-gray-600 mb-3">{category.description}</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">{category.name}</h3>
+              <p className="text-gray-600 mb-3 text-center text-sm">{category.description}</p>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">{category.count} products</span>
-                <button className="text-blue-600 hover:text-blue-700 font-medium">
+                <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
                   View All →
                 </button>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Featured Categories */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Featured Collections</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div 
+              className="relative bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/deals')}
+            >
+              <h3 className="text-2xl font-bold mb-2">Flash Deals</h3>
+              <p className="mb-4">Up to 50% off on selected items</p>
+              <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Shop Deals
+              </button>
+            </div>
+            <div 
+              className="relative bg-gradient-to-r from-green-600 to-green-800 rounded-lg p-8 text-white cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/new-arrivals')}
+            >
+              <h3 className="text-2xl font-bold mb-2">New Arrivals</h3>
+              <p className="mb-4">Latest tech products just landed</p>
+              <button className="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Explore New
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

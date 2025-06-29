@@ -36,6 +36,7 @@ import ProductsTab from '@/components/admin/ProductsTab';
 import OrdersTab from '@/components/admin/OrdersTab';
 import UsersTab from '@/components/admin/UsersTab';
 import AnalyticsTab from '@/components/admin/AnalyticsTab';
+import SettingsModal from '@/components/admin/SettingsModal';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Debug logging
   React.useEffect(() => {
@@ -132,6 +134,7 @@ const AdminDashboard = () => {
             <Button
               variant="outline"
               className="bg-green-600 hover:bg-green-700 text-white border-green-500"
+              onClick={() => setShowSettings(true)}
             >
               <Settings className="w-4 h-4 mr-2" />
               Settings
@@ -326,6 +329,11 @@ const AdminDashboard = () => {
           onClose={() => setEditingProduct(null)}
         />
       )}
+
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   );
 };

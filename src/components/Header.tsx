@@ -8,14 +8,18 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartItems } from '@/hooks/useCart';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useProducts } from '@/hooks/useProducts';
 
 const Header = () => {
   const { user, signOut } = useAuthContext();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { data: cartItems = [] } = useCartItems();
+  const { data: products = [] } = useProducts();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -26,6 +30,28 @@ const Header = () => {
 
   // Calculate total cart items
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  // Filter products based on search term
+  const searchResults = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice(0, 5); // Limit to 5 results
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+      setShowSearchResults(false);
+      setSearchTerm('');
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShowSearchResults(value.length > 2);
+  };
 
   const handleLogout = async () => {
     try {
@@ -66,6 +92,15 @@ const Header = () => {
     }
     // Trigger cart sidebar to open
     window.dispatchEvent(new Event('openCart'));
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleWishlistClick = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    navigate('/wishlist');
     setIsMobileMenuOpen(false);
   };
 
@@ -118,18 +153,61 @@ const Header = () => {
               </div>
             </Link>
 
-            {/* Search bar - Desktop only */}
-            <div className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden md:block">
-              <div className="relative">
+            {/* Enhanced Search bar - Desktop only */}
+            <div className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden md:block relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Input
                   type="text"
                   placeholder="Search for smartphones, electronics, gadgets..."
                   className="w-full pl-4 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500"
+                  value={searchTerm}
+                  onChange={handleSearchInputChange}
+                  onFocus={() => searchTerm.length > 2 && setShowSearchResults(true)}
+                  onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                 />
-                <Button className="absolute right-1 top-1 bottom-1 px-4 bg-blue-500 hover:bg-blue-600">
+                <Button type="submit" className="absolute right-1 top-1 bottom-1 px-4 bg-blue-500 hover:bg-blue-600">
                   <Search className="w-5 h-5" />
                 </Button>
-              </div>
+              </form>
+              
+              {/* Search Results Dropdown */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg mt-1 shadow-lg z-50 max-h-80 overflow-y-auto">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      onClick={() => {
+                        navigate(`/product/${product.id}`);
+                        setShowSearchResults(false);
+                        setSearchTerm('');
+                      }}
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded-lg mr-3"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{product.name}</p>
+                        <p className="text-sm text-gray-500">{product.category}</p>
+                        <p className="text-sm font-semibold text-blue-600">${product.price}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-2 border-t border-gray-100">
+                    <button
+                      onClick={handleSearch}
+                      className="w-full text-center text-blue-600 hover:text-blue-700 font-medium py-2"
+                    >
+                      View all results for "{searchTerm}"
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right side icons - Responsive */}
@@ -152,7 +230,7 @@ const Header = () => {
                     </Button>
                   )}
                   
-                  <Button variant="ghost" className="p-2 hidden sm:flex">
+                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleWishlistClick}>
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Wishlist</span>
                   </Button>
@@ -186,7 +264,7 @@ const Header = () => {
                       <span className="ml-2 hidden lg:inline">Login</span>
                     </Button>
                   </Link>
-                  <Button variant="ghost" className="p-2 hidden sm:flex">
+                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={() => navigate('/auth')}>
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Wishlist</span>
                   </Button>
@@ -214,16 +292,18 @@ const Header = () => {
 
           {/* Mobile search */}
           <div className="mt-3 md:hidden">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Input
                 type="text"
                 placeholder="Search for products..."
                 className="w-full pl-4 pr-12 py-2 border-2 border-gray-200 rounded-lg"
+                value={searchTerm}
+                onChange={handleSearchInputChange}
               />
-              <Button className="absolute right-1 top-1 bottom-1 px-3 bg-blue-500 hover:bg-blue-600">
+              <Button type="submit" className="absolute right-1 top-1 bottom-1 px-3 bg-blue-500 hover:bg-blue-600">
                 <Search className="w-4 h-4" />
               </Button>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -286,6 +366,7 @@ const Header = () => {
                     <Button
                       variant="ghost"
                       className="justify-start p-3 h-auto"
+                      onClick={handleWishlistClick}
                     >
                       <Heart className="w-5 h-5 mr-3" />
                       <span>Wishlist</span>
