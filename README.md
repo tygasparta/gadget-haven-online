@@ -5,7 +5,6 @@
   <img src="public/logo.svg" alt="Gadget Genie Logo" width="200" height="200" />
   <h3>Zimbabwe's Premier Tech E-commerce Platform</h3>
   
-  [![Built with Lovable](https://img.shields.io/badge/Built%20with-Lovable-ff69b4.svg)](https://lovable.dev)
   [![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-Latest-blue.svg)](https://www.typescriptlang.org/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-Latest-38B2AC.svg)](https://tailwindcss.com/)
@@ -186,7 +185,6 @@ The application can be deployed on various platforms:
 ### Recommended Platforms
 - **Vercel** - Automatic deployments from Git
 - **Netlify** - Easy static site hosting
-- **Lovable** - One-click deployment platform
 
 ### Environment Variables
 No additional environment variables needed for basic deployment as Supabase configuration is included.
@@ -242,6 +240,6 @@ For technical support or business inquiries:
 ---
 
 <div align="center">
-  <p>Built with ❤️ by <a href="https://tyga-sparta.com">Tyga Sparta</a> using <a href="https://lovable.dev">Lovable</a></p>
+  <p>Built with ❤️ by <a href="https://tyga-sparta.com">Tyga Sparta</a></p>
   <p><strong>Gadget Genie</strong> - Bringing the latest technology to Zimbabwe 🇿🇼</p>
 </div>
