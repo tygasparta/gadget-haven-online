@@ -1,8 +1,10 @@
+
 import React from 'react';
-import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Tag, Sparkles, TrendingUp } from 'lucide-react';
+import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Percent, Tag, Sparkles, TrendingUp, Award, Target, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 const SideBanners = () => {
   const { items: cartItems, isCartOpen, setIsCartOpen } = useCart();
@@ -60,17 +62,15 @@ const SideBanners = () => {
       </div>
 
       {/* Mobile Banner Section */}
-      <div className="block xl:hidden w-full px-4 space-y-4">
+      <div className="block xl:hidden w-full space-y-4">
         {/* Main Flash Sale Banner */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 relative overflow-hidden border border-gray-100">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50"></div>
-          
-          <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-            <Zap className="w-3 h-3" />
-            FLASH SALE
-          </div>
-          
-          <div className="relative z-10">
+        <Card className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-6 relative">
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              FLASH SALE
+            </div>
+            
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-xl shadow-lg">
@@ -85,7 +85,6 @@ const SideBanners = () => {
                   </div>
                   <p className="text-sm text-gray-600 mt-1 font-medium">Premium Electronics</p>
                   
-                  {/* Better organized timeframe */}
                   <div className="mt-2 flex items-center gap-2">
                     <div className="bg-red-100 text-red-700 px-2 py-1 rounded-lg text-xs font-bold">
                       ⏰ Ends in: 23h 45m
@@ -104,7 +103,6 @@ const SideBanners = () => {
               </Button>
             </div>
             
-            {/* Mobile Shop Button */}
             <div className="block sm:hidden mt-4">
               <Button 
                 size="lg" 
@@ -114,21 +112,21 @@ const SideBanners = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Feature Grid - Better organized for mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* VIP Club */}
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-            <div className="text-center space-y-3">
-              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit">
+          <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white overflow-hidden group hover:scale-105 transition-transform duration-300">
+            <CardContent className="p-6 text-center space-y-3">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit group-hover:scale-110 transition-transform duration-300">
                 <Crown className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-2">VIP Club</h3>
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-purple-900 rounded-full px-3 py-1 text-xs font-bold mb-3">
+                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-purple-900 text-xs font-bold mb-3">
                   EXCLUSIVE
-                </div>
+                </Badge>
                 <p className="text-sm opacity-90 mb-4">Premium benefits & early access</p>
                 <Button 
                   size="sm" 
@@ -137,44 +135,42 @@ const SideBanners = () => {
                   Join VIP
                 </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Weekly Deals */}
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 rounded-2xl shadow-lg">
-            <div className="text-center space-y-3">
-              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit">
-                <Gift className="w-6 h-6" />
+          {/* Gaming Gear */}
+          <Card className="bg-gradient-to-br from-purple-500 to-pink-600 text-white overflow-hidden group hover:scale-105 transition-transform duration-300">
+            <CardContent className="p-6 text-center space-y-3">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit group-hover:scale-110 transition-transform duration-300">
+                <Gamepad2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-2">Hot Deals</h3>
-                <div className="bg-gradient-to-r from-orange-400 to-red-400 text-emerald-900 rounded-full px-3 py-1 text-xs font-bold mb-3">
-                  LIMITED
-                </div>
-                <p className="text-sm opacity-90 mb-4">Up to 60% off selected items</p>
+                <h3 className="font-bold text-lg mb-2">Gaming</h3>
+                <Badge className="bg-gradient-to-r from-green-400 to-blue-400 text-purple-900 text-xs font-bold mb-3">
+                  50% OFF
+                </Badge>
+                <p className="text-sm opacity-90 mb-4">Pro gaming equipment</p>
                 <Button 
                   size="sm" 
-                  className="bg-white text-emerald-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2"
+                  className="bg-white text-purple-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2"
                 >
                   Browse
                 </Button>
               </div>
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {/* Category Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-            <div className="text-center space-y-3">
-              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit">
+          {/* Audio */}
+          <Card className="bg-gradient-to-br from-violet-500 to-purple-600 text-white overflow-hidden group hover:scale-105 transition-transform duration-300">
+            <CardContent className="p-6 text-center space-y-3">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit group-hover:scale-110 transition-transform duration-300">
                 <Headphones className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-2">Audio</h3>
-                <div className="bg-gradient-to-r from-pink-400 to-rose-400 text-purple-900 rounded-full px-3 py-1 text-xs font-bold mb-3">
+                <Badge className="bg-gradient-to-r from-pink-400 to-rose-400 text-purple-900 text-xs font-bold mb-3">
                   NEW
-                </div>
+                </Badge>
                 <p className="text-sm opacity-90 mb-4">Premium sound experience</p>
                 <Button 
                   size="sm" 
@@ -183,19 +179,20 @@ const SideBanners = () => {
                   Explore
                 </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-6 rounded-2xl shadow-lg">
-            <div className="text-center space-y-3">
-              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit">
+          {/* Smartphones */}
+          <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white overflow-hidden group hover:scale-105 transition-transform duration-300">
+            <CardContent className="p-6 text-center space-y-3">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm mx-auto w-fit group-hover:scale-110 transition-transform duration-300">
                 <Smartphone className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-2">Phones</h3>
-                <div className="bg-gradient-to-r from-yellow-400 to-amber-400 text-orange-900 rounded-full px-3 py-1 text-xs font-bold mb-3">
+                <Badge className="bg-gradient-to-r from-yellow-400 to-amber-400 text-orange-900 text-xs font-bold mb-3">
                   LATEST
-                </div>
+                </Badge>
                 <p className="text-sm opacity-90 mb-4">Newest smartphone tech</p>
                 <Button 
                   size="sm" 
@@ -204,44 +201,68 @@ const SideBanners = () => {
                   View All
                 </Button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Free Shipping Promo */}
-        <div className="bg-white p-6 rounded-2xl shadow-xl relative overflow-hidden border border-gray-100">
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50"></div>
-          <div className="relative z-10">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center space-x-4">
-                <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-4 rounded-2xl shadow-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
+        {/* Service Features */}
+        <Card className="bg-white shadow-xl border border-gray-100">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 rounded-xl shadow-lg">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
-                <div className="text-center sm:text-left">
-                  <h2 className="font-black text-xl text-gray-800 mb-1">Free Shipping</h2>
-                  <p className="text-sm text-gray-600 font-medium">On orders over $50</p>
+                <div>
+                  <h4 className="font-semibold text-gray-800">Free Shipping</h4>
+                  <p className="text-sm text-gray-600">On orders over $50</p>
                 </div>
               </div>
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-xl font-bold shadow-lg">
-                <span className="text-sm">CODE: FREE50</span>
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-3 rounded-xl shadow-lg">
+                  <Award className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800">Quality Guarantee</h4>
+                  <p className="text-sm text-gray-600">Premium products</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-3 rounded-xl shadow-lg">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800">24/7 Support</h4>
+                  <p className="text-sm text-gray-600">Always here to help</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-orange-500 to-red-600 p-3 rounded-xl shadow-lg">
+                  <Trophy className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800">Best Prices</h4>
+                  <p className="text-sm text-gray-600">Price match guarantee</p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Floating Action Button - Now Functional */}
+      {/* Floating Cart Button */}
       <div className="fixed bottom-6 right-6 z-30 lg:hidden">
         <div 
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 cursor-pointer border-4 border-white relative"
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 cursor-pointer border-4 border-white relative group"
           onClick={toggleCart}
         >
           <ShoppingBag className="w-6 h-6" />
           {totalItems > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-6 h-6 flex items-center justify-center">
+            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-6 h-6 flex items-center justify-center animate-pulse">
               {totalItems}
             </Badge>
           )}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
         </div>
       </div>
     </>

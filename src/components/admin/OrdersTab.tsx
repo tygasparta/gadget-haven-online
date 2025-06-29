@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Edit, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,20 +18,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+import OrderDetailsModal from './OrderDetailsModal';
 
 const OrdersTab = () => {
   const { data: orders = [] } = useOrders();
@@ -40,6 +33,7 @@ const OrdersTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
     try {
@@ -63,6 +57,11 @@ const OrdersTab = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleViewOrder = (order: any) => {
+    setSelectedOrder(order);
+    setIsModalOpen(true);
   };
 
   const filteredOrders = orders.filter(order => {
@@ -265,82 +264,14 @@ const OrdersTab = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="bg-blue-600 hover:bg-blue-700 border-blue-500 text-white"
-                              onClick={() => setSelectedOrder(order)}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Order Details - #{order.id.slice(-8).toUpperCase()}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-sm text-gray-400">Order Date</p>
-                                  <p className="font-medium">{new Date(order.created_at).toLocaleString()}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-400">Customer ID</p>
-                                  <p className="font-medium">{order.user_id.slice(-8)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-400">Total Amount</p>
-                                  <p className="font-medium text-green-400">${Number(order.total_amount).toFixed(2)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-400">Payment Method</p>
-                                  <p className="font-medium">{order.payment_method || 'Card'}</p>
-                                </div>
-                              </div>
-                              
-                              <Separator className="bg-gray-700" />
-                              
-                              {order.order_items && order.order_items.length > 0 && (
-                                <div>
-                                  <h4 className="font-semibold mb-3">Order Items</h4>
-                                  <div className="space-y-2">
-                                    {order.order_items.map((item) => (
-                                      <div key={item.id} className="flex justify-between items-center p-2 bg-white/5 rounded">
-                                        <div className="flex items-center gap-3">
-                                          {item.products?.image && (
-                                            <img 
-                                              src={item.products.image} 
-                                              alt={item.products.name}
-                                              className="w-12 h-12 object-cover rounded"
-                                            />
-                                          )}
-                                          <div>
-                                            <p className="font-medium">{item.products?.name || 'Product'}</p>
-                                            <p className="text-sm text-gray-400">Qty: {item.quantity}</p>
-                                          </div>
-                                        </div>
-                                        <p className="font-medium">${Number(item.price).toFixed(2)}</p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {order.shipping_address && (
-                                <div>
-                                  <h4 className="font-semibold mb-2">Shipping Address</h4>
-                                  <div className="p-3 bg-white/5 rounded text-sm">
-                                    <pre className="whitespace-pre-wrap font-mono">
-                                      {JSON.stringify(order.shipping_address, null, 2)}
-                                    </pre>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="bg-blue-600 hover:bg-blue-700 border-blue-500 text-white"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
                         
                         <Select
                           value={order.status || 'pending'}
@@ -373,6 +304,16 @@ const OrdersTab = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal 
+        order={selectedOrder}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedOrder(null);
+        }}
+      />
     </div>
   );
 };
