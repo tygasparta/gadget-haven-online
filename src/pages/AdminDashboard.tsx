@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,6 +36,8 @@ import OrdersTab from '@/components/admin/OrdersTab';
 import UsersTab from '@/components/admin/UsersTab';
 import AnalyticsTab from '@/components/admin/AnalyticsTab';
 import SettingsModal from '@/components/admin/SettingsModal';
+import NotificationDropdown from '@/components/admin/NotificationDropdown';
+import OverviewTab from '@/components/admin/OverviewTab';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -123,14 +124,7 @@ const AdminDashboard = () => {
             <p className="text-gray-300 mt-1">Manage your Gadget Genie store</p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
-            >
-              <Bell className="w-4 h-4 mr-2" />
-              Notifications
-              <Badge variant="destructive" className="ml-2">3</Badge>
-            </Button>
+            <NotificationDropdown />
             <Button
               variant="outline"
               className="bg-green-600 hover:bg-green-700 text-white border-green-500"
@@ -151,74 +145,6 @@ const AdminDashboard = () => {
       </div>
 
       <div className="p-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 border-none text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-sm font-medium">Total Revenue</p>
-                  <p className="text-3xl font-bold">${totalRevenue.toLocaleString()}</p>
-                  <p className="text-green-100 text-sm mt-1">↗ +12.5%</p>
-                </div>
-                <DollarSign className="w-12 h-12 text-green-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 border-none text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm font-medium">Total Orders</p>
-                  <p className="text-3xl font-bold">{totalOrders}</p>
-                  <p className="text-blue-100 text-sm mt-1">↗ +8.3%</p>
-                </div>
-                <ShoppingCart className="w-12 h-12 text-blue-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 border-none text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm font-medium">Total Users</p>
-                  <p className="text-3xl font-bold">{totalUsers}</p>
-                  <p className="text-purple-100 text-sm mt-1">↗ +15.2%</p>
-                </div>
-                <Users className="w-12 h-12 text-purple-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 border-none text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-sm font-medium">Total Products</p>
-                  <p className="text-3xl font-bold">{totalProducts}</p>
-                  <p className="text-orange-100 text-sm mt-1">Active inventory</p>
-                </div>
-                <Package className="w-12 h-12 text-orange-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-pink-500 to-pink-600 border-none text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-pink-100 text-sm font-medium">Conversion Rate</p>
-                  <p className="text-3xl font-bold">{conversionRate}%</p>
-                  <p className="text-pink-100 text-sm mt-1">Avg: $195</p>
-                </div>
-                <BarChart3 className="w-12 h-12 text-pink-200" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Navigation Tabs */}
         <div className="flex space-x-2 mb-8">
           {[
@@ -245,72 +171,13 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content based on active tab */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Orders */}
-            <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4">Recent Orders</h3>
-                <div className="space-y-4">
-                  {orders.slice(0, 4).map((order, index) => (
-                    <div key={order.id} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                      <div>
-                        <p className="font-medium">#ORD-{order.id.slice(-8)}</p>
-                        <p className="text-sm text-gray-300">Customer</p>
-                        <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">${order.total_amount}</p>
-                        <Badge 
-                          variant={order.status === 'completed' ? 'default' : 'secondary'}
-                          className={
-                            order.status === 'completed' ? 'bg-green-600' : 
-                            order.status === 'shipped' ? 'bg-blue-600' : 'bg-orange-600'
-                          }
-                        >
-                          {order.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4">Quick Stats</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">Today's Sales</span>
-                    <span className="text-green-400 font-bold">$2,345</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">Pending Orders</span>
-                    <span className="text-yellow-400 font-bold">{orders.filter(o => o.status === 'pending').length}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">Low Stock Items</span>
-                    <span className="text-red-400 font-bold">{products.filter(p => p.stock <= 10).length}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">New Customers</span>
-                    <span className="text-blue-400 font-bold">8</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
+        {activeTab === 'overview' && <OverviewTab />}
         {activeTab === 'products' && (
           <ProductsTab 
             onAddProduct={() => setShowAddProduct(true)}
             onEditProduct={setEditingProduct}
           />
         )}
-
         {activeTab === 'orders' && <OrdersTab />}
         {activeTab === 'users' && <UsersTab />}
         {activeTab === 'analytics' && <AnalyticsTab />}
