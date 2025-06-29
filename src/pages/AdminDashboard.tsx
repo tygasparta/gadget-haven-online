@@ -181,18 +181,25 @@ const AdminDashboard = () => {
               <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
               <p className="text-gray-300">Manage your Gadget Genie store</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            <div className="flex items-center space-x-3">
+              <Button 
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 relative"
+              >
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                  3
+                </span>
               </Button>
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              <Button 
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
               </Button>
               <Button 
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white border-0"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
