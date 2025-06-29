@@ -47,11 +47,6 @@ const Index = () => {
       <Header />
       <CartSidebar />
       
-      {/* Side Banners - Desktop only */}
-      <div className="hidden lg:block">
-        <SideBanners />
-      </div>
-      
       <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-6">
           {/* Sidebar - Hidden on mobile, shown as collapsible on tablet+ */}

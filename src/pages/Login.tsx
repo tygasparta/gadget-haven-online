@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,29 +15,65 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuthContext();
+
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data: roles, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching user roles:', error);
+        return false;
+      }
+
+      const userRoles = roles?.map(r => r.role) || [];
+      return userRoles.includes('admin');
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      return false;
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Demo authentication - simulate API call
-    setTimeout(() => {
-      if (email === 'admin@gadgetgenie.com' && password === 'admin123') {
-        localStorage.setItem('userRole', 'admin');
-        localStorage.setItem('isAuthenticated', 'true');
-        toast({ title: "Welcome back!", description: "Logged in as Administrator" });
-        navigate('/admin-dashboard');
-      } else if (email && password) {
-        localStorage.setItem('userRole', 'user');
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userEmail', email);
-        toast({ title: "Welcome back!", description: "Successfully logged in" });
-        navigate('/dashboard');
-      } else {
-        toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
+    try {
+      const { data, error } = await signIn(email, password);
+      
+      if (error) {
+        toast({ 
+          title: "Error", 
+          description: error.message, 
+          variant: "destructive" 
+        });
+        return;
       }
+
+      if (data.user) {
+        // Check if user is admin
+        const isAdmin = await checkUserRole(data.user.id);
+        
+        if (isAdmin) {
+          toast({ title: "Welcome back!", description: "Logged in as Administrator" });
+          navigate('/admin');
+        } else {
+          toast({ title: "Welcome back!", description: "Successfully logged in" });
+          navigate('/dashboard');
+        }
+      }
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "An error occurred", 
+        variant: "destructive" 
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -124,7 +162,7 @@ const Login = () => {
                 <Shield className="w-4 h-4 mr-2" />
                 Demo Credentials:
               </p>
-              <p className="text-xs text-blue-200">Admin: admin@gadgetgenie.com / admin123</p>
+              <p className="text-xs text-blue-200">Admin: info@gadgetgenie.org / any password</p>
               <p className="text-xs text-blue-200">User: any email / any password</p>
             </div>
 

@@ -7,9 +7,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartItems } from '@/hooks/useCart';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const Header = () => {
   const { user, signOut } = useAuthContext();
+  const { isAdmin } = useUserRole();
   const { data: cartItems = [] } = useCartItems();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -36,7 +38,11 @@ const Header = () => {
   };
 
   const handleAccountClick = () => {
-    navigate('/dashboard');
+    if (isAdmin) {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
     setIsMobileMenuOpen(false);
   };
 
@@ -119,7 +125,7 @@ const Header = () => {
                 <>
                   <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleAccountClick}>
                     <User className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Account</span>
+                    <span className="ml-2 hidden lg:inline">{isAdmin ? 'Admin' : 'Account'}</span>
                   </Button>
                   <Button variant="ghost" className="p-2 hidden sm:flex">
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -238,7 +244,7 @@ const Header = () => {
                       onClick={handleAccountClick}
                     >
                       <User className="w-5 h-5 mr-3" />
-                      <span>My Account</span>
+                      <span>{isAdmin ? 'Admin Dashboard' : 'My Account'}</span>
                     </Button>
                     <Button
                       variant="ghost"

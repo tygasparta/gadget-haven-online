@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,17 +26,47 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data: roles, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching user roles:', error);
+        return false;
+      }
+
+      const userRoles = roles?.map(r => r.role) || [];
+      return userRoles.includes('admin');
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const { data, error } = await signIn(email, password);
         if (error) throw error;
         
-        toast({ title: "Welcome back!", description: "Successfully logged in" });
-        navigate('/');
+        if (data.user) {
+          // Check if user is admin
+          const isAdmin = await checkUserRole(data.user.id);
+          
+          if (isAdmin) {
+            toast({ title: "Welcome back!", description: "Logged in as Administrator" });
+            navigate('/admin');
+          } else {
+            toast({ title: "Welcome back!", description: "Successfully logged in" });
+            navigate('/');
+          }
+        }
       } else {
         if (!fullName.trim()) {
           throw new Error('Full name is required');
