@@ -123,20 +123,21 @@ const Header = () => {
             <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
               {user ? (
                 <>
-                  {/* Admin Dashboard Button - Only visible for admin users */}
+                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleAccountClick}>
+                    <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="ml-2 hidden lg:inline">Account</span>
+                  </Button>
+                  
+                  {/* Admin Dashboard Button - More prominent for admin users */}
                   {isAdmin && (
                     <Link to="/admin">
-                      <Button variant="outline" className="p-2 hidden sm:flex bg-gradient-to-r from-purple-500 to-blue-500 text-white border-purple-500 hover:from-purple-600 hover:to-blue-600">
+                      <Button className="p-2 hidden sm:flex bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 border-0">
                         <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
-                        <span className="ml-2 hidden lg:inline">Admin Dashboard</span>
+                        <span className="ml-2 hidden lg:inline font-semibold">Admin</span>
                       </Button>
                     </Link>
                   )}
                   
-                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleAccountClick}>
-                    <User className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">{isAdmin ? 'Account' : 'Account'}</span>
-                  </Button>
                   <Button variant="ghost" className="p-2 hidden sm:flex">
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Wishlist</span>
@@ -248,19 +249,6 @@ const Header = () => {
                 {/* User Actions */}
                 {user ? (
                   <>
-                    {/* Admin Dashboard - Mobile */}
-                    {isAdmin && (
-                      <Link to="/admin" onClick={closeMobileMenu}>
-                        <Button
-                          variant="ghost"
-                          className="justify-start p-3 h-auto w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
-                        >
-                          <Settings className="w-5 h-5 mr-3" />
-                          <span>Admin Dashboard</span>
-                        </Button>
-                      </Link>
-                    )}
-                    
                     <Button
                       variant="ghost"
                       className="justify-start p-3 h-auto"
@@ -269,6 +257,19 @@ const Header = () => {
                       <User className="w-5 h-5 mr-3" />
                       <span>My Account</span>
                     </Button>
+                    
+                    {/* Admin Dashboard - Mobile - More prominent */}
+                    {isAdmin && (
+                      <Link to="/admin" onClick={closeMobileMenu}>
+                        <Button
+                          className="justify-start p-3 h-auto w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
+                        >
+                          <Settings className="w-5 h-5 mr-3" />
+                          <span className="font-semibold">Admin Dashboard</span>
+                        </Button>
+                      </Link>
+                    )}
+                    
                     <Button
                       variant="ghost"
                       className="justify-start p-3 h-auto"
