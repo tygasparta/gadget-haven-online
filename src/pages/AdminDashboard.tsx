@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -49,17 +50,30 @@ const AdminDashboard = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('AdminDashboard: User:', user?.email);
+    console.log('AdminDashboard: Is Admin:', isAdmin);
+    console.log('AdminDashboard: Role Loading:', roleLoading);
+  }, [user, isAdmin, roleLoading]);
+
   // Redirect if not authenticated or not admin
   React.useEffect(() => {
-    if (!user && !roleLoading) {
-      navigate('/auth');
-    } else if (user && !isAdmin && !roleLoading) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have admin privileges to access this page.",
-        variant: "destructive"
-      });
-      navigate('/');
+    if (!roleLoading) {
+      if (!user) {
+        console.log('AdminDashboard: No user, redirecting to auth');
+        navigate('/auth');
+      } else if (!isAdmin) {
+        console.log('AdminDashboard: User is not admin, redirecting to home');
+        toast({
+          title: "Access Denied",
+          description: "You don't have admin privileges to access this page.",
+          variant: "destructive"
+        });
+        navigate('/');
+      } else {
+        console.log('AdminDashboard: User is admin, access granted');
+      }
     }
   }, [user, isAdmin, roleLoading, navigate, toast]);
 
