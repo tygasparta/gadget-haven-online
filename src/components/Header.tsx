@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
@@ -123,9 +123,19 @@ const Header = () => {
             <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
               {user ? (
                 <>
+                  {/* Admin Dashboard Button - Only visible for admin users */}
+                  {isAdmin && (
+                    <Link to="/admin">
+                      <Button variant="outline" className="p-2 hidden sm:flex bg-gradient-to-r from-purple-500 to-blue-500 text-white border-purple-500 hover:from-purple-600 hover:to-blue-600">
+                        <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="ml-2 hidden lg:inline">Admin Dashboard</span>
+                      </Button>
+                    </Link>
+                  )}
+                  
                   <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleAccountClick}>
                     <User className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">{isAdmin ? 'Admin' : 'Account'}</span>
+                    <span className="ml-2 hidden lg:inline">{isAdmin ? 'Account' : 'Account'}</span>
                   </Button>
                   <Button variant="ghost" className="p-2 hidden sm:flex">
                     <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -238,13 +248,26 @@ const Header = () => {
                 {/* User Actions */}
                 {user ? (
                   <>
+                    {/* Admin Dashboard - Mobile */}
+                    {isAdmin && (
+                      <Link to="/admin" onClick={closeMobileMenu}>
+                        <Button
+                          variant="ghost"
+                          className="justify-start p-3 h-auto w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
+                        >
+                          <Settings className="w-5 h-5 mr-3" />
+                          <span>Admin Dashboard</span>
+                        </Button>
+                      </Link>
+                    )}
+                    
                     <Button
                       variant="ghost"
                       className="justify-start p-3 h-auto"
                       onClick={handleAccountClick}
                     >
                       <User className="w-5 h-5 mr-3" />
-                      <span>{isAdmin ? 'Admin Dashboard' : 'My Account'}</span>
+                      <span>My Account</span>
                     </Button>
                     <Button
                       variant="ghost"
