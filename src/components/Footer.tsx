@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -82,17 +82,17 @@ const Footer = () => {
             <div className="mt-6">
               <h5 className="font-semibold mb-3 text-white">Follow Us</h5>
               <div className="flex space-x-3">
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
-                  <span className="text-blue-400">📘</span>
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-blue-600 transition-colors hover:scale-110 transform duration-200">
+                  <Facebook className="w-5 h-5 text-blue-400" />
                 </a>
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
-                  <span className="text-blue-400">🐦</span>
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-blue-400 transition-colors hover:scale-110 transform duration-200">
+                  <Twitter className="w-5 h-5 text-blue-400" />
                 </a>
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
-                  <span className="text-pink-400">📷</span>
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-pink-600 transition-colors hover:scale-110 transform duration-200">
+                  <Instagram className="w-5 h-5 text-pink-400" />
                 </a>
-                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-gray-700 transition-colors hover:scale-110 transform duration-200">
-                  <span className="text-red-400">📺</span>
+                <a href="#" className="bg-gray-800 p-2 rounded hover:bg-red-600 transition-colors hover:scale-110 transform duration-200">
+                  <Youtube className="w-5 h-5 text-red-400" />
                 </a>
               </div>
             </div>
@@ -115,6 +115,8 @@ const Footer = () => {
                 <span className="bg-gray-800 px-3 py-1 rounded text-xs text-blue-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">PayPal</span>
                 <span className="bg-gray-800 px-3 py-1 rounded text-xs text-purple-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">Stripe</span>
                 <span className="bg-gray-800 px-3 py-1 rounded text-xs text-gray-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">Apple Pay</span>
+                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-green-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">EcoCash</span>
+                <span className="bg-gray-800 px-3 py-1 rounded text-xs text-orange-400 font-semibold hover:bg-gray-700 transition-colors cursor-pointer">InnBucks</span>
               </div>
             </div>
           </div>
