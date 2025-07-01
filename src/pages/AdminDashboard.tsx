@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,8 @@ import {
   Bell,
   Search,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  Store
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -109,6 +109,10 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleBackToStore = () => {
+    navigate('/');
+  };
+
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_amount), 0);
   const totalOrders = orders.length;
   const totalProducts = products.length;
@@ -120,9 +124,19 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-6">
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-gray-300 mt-1">Manage your Gadget Genie store</p>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              onClick={handleBackToStore}
+              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+            >
+              <Store className="w-4 h-4 mr-2" />
+              Back to Store
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+              <p className="text-gray-300 mt-1">Manage your Gadget Genie store</p>
+            </div>
           </div>
           <div className="flex items-center space-x-4">
             <NotificationDropdown />
