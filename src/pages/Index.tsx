@@ -18,8 +18,10 @@ import MobileNavigation from '../components/MobileNavigation';
 import MobileQuickCategories from '../components/MobileQuickCategories';
 import MobileTopDeals from '../components/MobileTopDeals';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
+  const isMobile = useIsMobile();
   const { data: allProducts = [] } = useProducts();
   const { data: flashSaleProducts = [] } = useFlashSaleProducts();
   const { data: featuredProducts = [] } = useFeaturedProducts();
@@ -96,17 +98,13 @@ const Index = () => {
             
             <main className="flex-1 min-w-0 w-full">
               <div className="w-full">
-                <HeroBanner />
+                {/* Hero Banner - Desktop Only */}
+                {!isMobile && <HeroBanner />}
                 
                 {/* Mobile-specific components */}
                 <div className="md:hidden space-y-6 mt-6">
                   <MobileQuickCategories />
                   <MobileTopDeals />
-                </div>
-                
-                {/* Desktop Banners - Show after hero banner on mobile */}
-                <div className="block xl:hidden">
-                  <SideBanners />
                 </div>
                 
                 <FeaturedBrands />
@@ -148,8 +146,11 @@ const Index = () => {
           </div>
         </div>
 
-        <Newsletter />
-        <Footer />
+        {/* Newsletter - Desktop Only */}
+        {!isMobile && <Newsletter />}
+        
+        {/* Footer - Desktop Only */}
+        {!isMobile && <Footer />}
         
         {/* Mobile Navigation */}
         <MobileNavigation />
