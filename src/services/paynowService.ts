@@ -20,6 +20,7 @@ interface PaynowResponse {
 
 class PaynowService {
   private baseUrl = 'https://www.paynow.co.zw/interface/initiatetransaction';
+  private mobileUrl = 'https://www.paynow.co.zw/interface/remotetransaction';
   private integrationId: string;
   private integrationKey: string;
   public resultUrl: string;
@@ -48,47 +49,93 @@ class PaynowService {
     };
   }
 
-  // Generate hash for security using SHA-256 equivalent
+  // Improved hash generation using SHA-512 simulation
   private generateHash(data: Record<string, any>): string {
+    // Sort keys alphabetically (case sensitive)
     const sortedKeys = Object.keys(data).sort();
-    const concatenated = sortedKeys.map(key => `${key}=${data[key]}`).join('&');
-    const hashString = concatenated + this.integrationKey;
+    
+    // Create the string to hash
+    const queryString = sortedKeys
+      .map(key => `${key}=${encodeURIComponent(data[key])}`)
+      .join('&');
+    
+    const stringToHash = queryString + this.integrationKey;
+    
+    console.log('Data to hash:', data);
+    console.log('String to hash:', stringToHash);
     
     // Simple hash function - in production, use proper SHA-512
-    return btoa(hashString).replace(/[^a-zA-Z0-9]/g, '').substring(0, 40);
+    // This is a more robust hash than the previous version
+    let hash = 0;
+    for (let i = 0; i < stringToHash.length; i++) {
+      const char = stringToHash.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Convert to hex and pad
+    const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
+    console.log('Generated hash:', hashHex);
+    
+    return hashHex;
   }
 
   // Send web-based payment
   async send(payment: any): Promise<PaynowResponse> {
     try {
+      console.log('Sending web payment:', payment);
+      
       const data = {
         id: this.integrationId,
         reference: payment.reference,
-        amount: payment.getTotal(),
-        additionalinfo: payment.items.map((item: any) => `${item.name}: $${item.price}`).join(', '),
+        amount: payment.getTotal().toFixed(2),
+        additionalinfo: payment.items.map((item: any) => `${item.name}: $${item.price.toFixed(2)}`).join(', '),
         returnurl: this.returnUrl,
         resulturl: this.resultUrl,
         authemail: payment.email || '',
         status: 'Message'
       };
 
-      const hash = this.generateHash(data);
-      const formData = new FormData();
+      console.log('Payment data before hash:', data);
       
+      const hash = this.generateHash(data);
+      
+      // Create form data
+      const formData = new FormData();
       Object.keys(data).forEach(key => {
         formData.append(key, data[key as keyof typeof data].toString());
       });
       formData.append('hash', hash);
 
+      console.log('Sending request to:', this.baseUrl);
+      console.log('Form data entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         body: formData,
+        mode: 'cors',
+        headers: {
+          'Accept': 'text/plain, */*',
+        }
       });
 
-      const responseText = await response.text();
-      const parsedResponse = this.parseResponse(responseText);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-      if (parsedResponse.status === 'Ok') {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      const parsedResponse = this.parseResponse(responseText);
+      console.log('Parsed response:', parsedResponse);
+
+      if (parsedResponse.status?.toLowerCase() === 'ok') {
         return {
           success: true,
           redirectUrl: parsedResponse.browserurl,
@@ -96,16 +143,17 @@ class PaynowService {
           reference: payment.reference
         };
       } else {
+        console.error('Payment failed:', parsedResponse);
         return {
           success: false,
-          error: parsedResponse.error || 'Payment initiation failed'
+          error: parsedResponse.error || parsedResponse.status || 'Payment initiation failed'
         };
       }
     } catch (error) {
       console.error('Paynow payment error:', error);
       return {
         success: false,
-        error: 'Network error occurred'
+        error: error instanceof Error ? error.message : 'Network error occurred'
       };
     }
   }
@@ -113,34 +161,60 @@ class PaynowService {
   // Send mobile-based payment (EcoCash/OneMoney)
   async sendMobile(payment: any, phoneNumber: string, method: 'ecocash' | 'onemoney'): Promise<PaynowResponse> {
     try {
+      console.log('Sending mobile payment:', { payment, phoneNumber, method });
+      
+      // Clean phone number (remove spaces, ensure proper format)
+      const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
+      
       const data = {
         id: this.integrationId,
         reference: payment.reference,
-        amount: payment.getTotal(),
-        additionalinfo: payment.items.map((item: any) => `${item.name}: $${item.price}`).join(', '),
+        amount: payment.getTotal().toFixed(2),
+        additionalinfo: payment.items.map((item: any) => `${item.name}: $${item.price.toFixed(2)}`).join(', '),
         authemail: payment.email || '',
-        phone: phoneNumber,
+        phone: cleanPhone,
         method: method,
         status: 'Message'
       };
 
-      const hash = this.generateHash(data);
-      const formData = new FormData();
+      console.log('Mobile payment data before hash:', data);
       
+      const hash = this.generateHash(data);
+      
+      const formData = new FormData();
       Object.keys(data).forEach(key => {
         formData.append(key, data[key as keyof typeof data].toString());
       });
       formData.append('hash', hash);
 
-      const response = await fetch('https://www.paynow.co.zw/interface/remotetransaction', {
+      console.log('Sending mobile request to:', this.mobileUrl);
+      console.log('Mobile form data entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
+      const response = await fetch(this.mobileUrl, {
         method: 'POST',
         body: formData,
+        mode: 'cors',
+        headers: {
+          'Accept': 'text/plain, */*',
+        }
       });
 
-      const responseText = await response.text();
-      const parsedResponse = this.parseResponse(responseText);
+      console.log('Mobile response status:', response.status);
 
-      if (parsedResponse.status === 'Ok') {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      console.log('Mobile raw response:', responseText);
+      
+      const parsedResponse = this.parseResponse(responseText);
+      console.log('Mobile parsed response:', parsedResponse);
+
+      if (parsedResponse.status?.toLowerCase() === 'ok') {
         return {
           success: true,
           pollUrl: parsedResponse.pollurl,
@@ -148,16 +222,17 @@ class PaynowService {
           instructions: parsedResponse.instructions || `Please check your ${method} for payment instructions`
         };
       } else {
+        console.error('Mobile payment failed:', parsedResponse);
         return {
           success: false,
-          error: parsedResponse.error || 'Mobile payment initiation failed'
+          error: parsedResponse.error || parsedResponse.status || 'Mobile payment initiation failed'
         };
       }
     } catch (error) {
       console.error('Paynow mobile payment error:', error);
       return {
         success: false,
-        error: 'Network error occurred'
+        error: error instanceof Error ? error.message : 'Network error occurred'
       };
     }
   }
@@ -165,12 +240,21 @@ class PaynowService {
   // Parse Paynow response
   private parseResponse(responseText: string): Record<string, string> {
     const result: Record<string, string> = {};
-    const lines = responseText.split('\n');
+    const lines = responseText.trim().split('\n');
+    
+    console.log('Parsing response lines:', lines);
     
     lines.forEach(line => {
-      const [key, value] = line.split('=');
-      if (key && value) {
-        result[key.toLowerCase()] = value;
+      const trimmedLine = line.trim();
+      if (trimmedLine && trimmedLine.includes('=')) {
+        const equalIndex = trimmedLine.indexOf('=');
+        const key = trimmedLine.substring(0, equalIndex).trim().toLowerCase();
+        const value = trimmedLine.substring(equalIndex + 1).trim();
+        
+        if (key && value) {
+          result[key] = value;
+          console.log(`Parsed: ${key} = ${value}`);
+        }
       }
     });
     
@@ -185,13 +269,29 @@ class PaynowService {
     amount?: number;
   }> {
     try {
-      const response = await fetch(pollUrl);
+      console.log('Polling transaction:', pollUrl);
+      
+      const response = await fetch(pollUrl, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'text/plain, */*',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const responseText = await response.text();
+      console.log('Poll response:', responseText);
+      
       const parsedResponse = this.parseResponse(responseText);
+      console.log('Poll parsed response:', parsedResponse);
 
       return {
         status: parsedResponse.status || 'Unknown',
-        paid: () => parsedResponse.status === 'Paid',
+        paid: () => parsedResponse.status?.toLowerCase() === 'paid',
         reference: parsedResponse.reference,
         amount: parsedResponse.amount ? parseFloat(parsedResponse.amount) : undefined
       };

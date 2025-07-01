@@ -51,7 +51,49 @@ const Checkout = () => {
     }, 0);
   };
 
+  const validatePaymentData = () => {
+    const errors: string[] = [];
+    
+    if (!formData.email || !formData.email.includes('@')) {
+      errors.push('Valid email address is required');
+    }
+    
+    if (!formData.firstName.trim()) {
+      errors.push('First name is required');
+    }
+    
+    if (!formData.lastName.trim()) {
+      errors.push('Last name is required');
+    }
+    
+    if (!formData.address.trim()) {
+      errors.push('Address is required');
+    }
+    
+    if (!formData.city.trim()) {
+      errors.push('City is required');
+    }
+    
+    if ((paymentMethod === 'paynow_mobile' || paymentMethod === 'paynow_web') && !formData.phone.trim()) {
+      errors.push('Phone number is required for Paynow payments');
+    }
+    
+    if (paymentMethod === 'paynow_mobile') {
+      const cleanPhone = formData.phone.replace(/\s+/g, '').replace(/^\+263/, '0');
+      if (mobileMethod === 'ecocash' && !cleanPhone.startsWith('077')) {
+        errors.push('EcoCash requires an Econet number starting with 077');
+      }
+      if (mobileMethod === 'onemoney' && !cleanPhone.startsWith('071')) {
+        errors.push('OneMoney requires a NetOne number starting with 071');
+      }
+    }
+    
+    return errors;
+  };
+
   const handlePaynowWebPayment = async (orderId: string) => {
+    console.log('Starting Paynow web payment for order:', orderId);
+    
     const paymentData = {
       reference: `ORD-${orderId}`,
       amount: getTotalPrice(),
@@ -62,11 +104,17 @@ const Checkout = () => {
       resultUrl: `${window.location.origin}/api/paynow-callback`
     };
 
+    console.log('Payment data:', paymentData);
+    
     const response = await initiateWebPayment(paymentData);
+    console.log('Web payment response:', response);
+    
     return response.success;
   };
 
   const handlePaynowMobilePayment = async (orderId: string) => {
+    console.log('Starting Paynow mobile payment for order:', orderId);
+    
     if (!formData.phone) {
       toast({
         title: "Phone Number Required",
@@ -84,12 +132,19 @@ const Checkout = () => {
       additionalInfo: `Order ${orderId} - Gadget Genie`
     };
 
+    console.log('Mobile payment data:', paymentData);
+    
     const response = await initiateMobilePayment(paymentData, formData.phone, mobileMethod);
+    console.log('Mobile payment response:', response);
+    
     return response.success;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('Form submitted with method:', paymentMethod);
+    console.log('Form data:', formData);
     
     if (!user) {
       toast({
@@ -101,9 +156,22 @@ const Checkout = () => {
       return;
     }
 
+    // Validate form data
+    const validationErrors = validatePaymentData();
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: validationErrors.join(', '),
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
+      console.log('Creating order in database...');
+      
       // Create order in database
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -134,7 +202,12 @@ const Checkout = () => {
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw orderError;
+      }
+      
+      console.log('Order created:', order);
 
       // Create order items
       const orderItems = cartItems.map(item => ({
@@ -144,14 +217,20 @@ const Checkout = () => {
         price: item.products.price
       }));
 
+      console.log('Creating order items:', orderItems);
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Order items creation error:', itemsError);
+        throw itemsError;
+      }
 
       // Handle payment based on method
       if (paymentMethod === 'paynow_web') {
+        console.log('Processing Paynow web payment...');
         const paymentSuccess = await handlePaynowWebPayment(order.id);
         if (!paymentSuccess) {
           throw new Error('Paynow web payment failed');
@@ -160,6 +239,7 @@ const Checkout = () => {
       }
 
       if (paymentMethod === 'paynow_mobile') {
+        console.log('Processing Paynow mobile payment...');
         const paymentSuccess = await handlePaynowMobilePayment(order.id);
         if (!paymentSuccess) {
           throw new Error('Paynow mobile payment failed');
@@ -174,12 +254,16 @@ const Checkout = () => {
       }
 
       // Clear cart after successful order (for non-Paynow payments)
+      console.log('Clearing cart...');
       const { error: clearCartError } = await supabase
         .from('cart_items')
         .delete()
         .eq('user_id', user.id);
 
-      if (clearCartError) throw clearCartError;
+      if (clearCartError) {
+        console.error('Clear cart error:', clearCartError);
+        throw clearCartError;
+      }
 
       const successMessage = paymentMethod === 'pay_on_delivery' 
         ? "Your order has been placed! You'll pay when your items are delivered."
@@ -477,16 +561,26 @@ const Checkout = () => {
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="ecocash" id="ecocash" />
-                        <Label htmlFor="ecocash" className="text-sm">EcoCash (Econet)</Label>
+                        <Label htmlFor="ecocash" className="text-sm">EcoCash (Econet - 077 numbers)</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="onemoney" id="onemoney" />
-                        <Label htmlFor="onemoney" className="text-sm">OneMoney (NetOne)</Label>
+                        <Label htmlFor="onemoney" className="text-sm">OneMoney (NetOne - 071 numbers)</Label>
                       </div>
                     </RadioGroup>
                     <p className="text-xs text-purple-600 mt-2">
                       Payment instructions will be sent to your phone
                     </p>
+                    {mobileMethod === 'ecocash' && !formData.phone.replace(/\s+/g, '').replace(/^\+263/, '0').startsWith('077') && formData.phone && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Please ensure your phone number starts with 077 for EcoCash
+                      </p>
+                    )}
+                    {mobileMethod === 'onemoney' && !formData.phone.replace(/\s+/g, '').replace(/^\+263/, '0').startsWith('071') && formData.phone && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Please ensure your phone number starts with 071 for OneMoney
+                      </p>
+                    )}
                   </div>
                 )}
               </CardContent>
