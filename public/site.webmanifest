@@ -1,0 +1,22 @@
+
+{
+  "name": "Gadget Genie",
+  "short_name": "Gadget Genie",
+  "description": "Your Ultimate Tech Destination",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#3B82F6",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}
