@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -46,12 +47,12 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-white">Shop</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">Daily Deals</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Flash Sales</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">New Arrivals</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Smartphones</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Electronics</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Audio & Headphones</a></li>
+              <li><Link to="/deals" className="hover:text-white transition-colors">Daily Deals</Link></li>
+              <li><Link to="/deals" className="hover:text-white transition-colors">Flash Sales</Link></li>
+              <li><Link to="/categories" className="hover:text-white transition-colors">New Arrivals</Link></li>
+              <li><Link to="/phones" className="hover:text-white transition-colors">Smartphones</Link></li>
+              <li><Link to="/categories" className="hover:text-white transition-colors">Electronics</Link></li>
+              <li><Link to="/audio" className="hover:text-white transition-colors">Audio & Headphones</Link></li>
             </ul>
           </div>
 
@@ -59,12 +60,12 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-white">Customer Service</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">Help Centre</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Track Order</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Returns & Refunds</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Shipping Info</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Warranty</a></li>
+              <li><Link to="/help-centre" className="hover:text-white transition-colors">Help Centre</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link to="/track-order" className="hover:text-white transition-colors">Track Order</Link></li>
+              <li><Link to="/returns" className="hover:text-white transition-colors">Returns & Refunds</Link></li>
+              <li><Link to="/shipping-info" className="hover:text-white transition-colors">Shipping Info</Link></li>
+              <li><Link to="/warranty" className="hover:text-white transition-colors">Warranty</Link></li>
             </ul>
           </div>
 
@@ -72,10 +73,10 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-white">Company</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Sell with Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Press & Media</a></li>
+              <li><Link to="/about-us" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
+              <li><Link to="/sell-with-us" className="hover:text-white transition-colors">Sell with Us</Link></li>
+              <li><Link to="/press" className="hover:text-white transition-colors">Press & Media</Link></li>
             </ul>
             
             <div className="mt-6">
@@ -120,10 +121,10 @@ const Footer = () => {
           
           <div className="flex flex-col md:flex-row justify-center items-center mt-4 pt-4 border-t border-gray-800">
             <div className="flex flex-wrap justify-center space-x-6 text-xs text-gray-500">
-              <a href="#" className="hover:text-gray-300">Privacy Policy</a>
-              <a href="#" className="hover:text-gray-300">Terms of Service</a>
-              <a href="#" className="hover:text-gray-300">Cookie Policy</a>
-              <a href="#" className="hover:text-gray-300">Accessibility</a>
+              <Link to="/privacy-policy" className="hover:text-gray-300">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-gray-300">Terms of Service</Link>
+              <Link to="/cookie-policy" className="hover:text-gray-300">Cookie Policy</Link>
+              <Link to="/accessibility" className="hover:text-gray-300">Accessibility</Link>
             </div>
           </div>
         </div>

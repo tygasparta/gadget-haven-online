@@ -19,6 +19,20 @@ import Audio from "./pages/Audio";
 import Phones from "./pages/Phones";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
+import AboutUs from "./pages/AboutUs";
+import Careers from "./pages/Careers";
+import SellWithUs from "./pages/SellWithUs";
+import Press from "./pages/Press";
+import Contact from "./pages/Contact";
+import HelpCentre from "./pages/HelpCentre";
+import TrackOrder from "./pages/TrackOrder";
+import Returns from "./pages/Returns";
+import ShippingInfo from "./pages/ShippingInfo";
+import Warranty from "./pages/Warranty";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
+import Accessibility from "./pages/Accessibility";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +57,20 @@ const App = () => (
               <Route path="/audio" element={<Audio />} />
               <Route path="/phones" element={<Phones />} />
               <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/sell-with-us" element={<SellWithUs />} />
+              <Route path="/press" element={<Press />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/help-centre" element={<HelpCentre />} />
+              <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="/returns" element={<Returns />} />
+              <Route path="/shipping-info" element={<ShippingInfo />} />
+              <Route path="/warranty" element={<Warranty />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/accessibility" element={<Accessibility />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
