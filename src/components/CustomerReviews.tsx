@@ -1,10 +1,42 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, Quote, ThumbsUp, Verified } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useProducts } from '@/hooks/useProducts';
 
 const CustomerReviews = () => {
-  const reviews = [
+  const { data: products = [] } = useProducts();
+  const [likedReviews, setLikedReviews] = useState<number[]>([]);
+
+  // Create reviews based on actual products
+  const createReviewsFromProducts = () => {
+    const customerNames = [
+      "Sarah Johnson", "Mike Chen", "Emma Davis", "Alex Rodriguez", 
+      "Lisa Wang", "David Kim", "Maria Garcia", "James Park"
+    ];
+    
+    const reviewTexts = [
+      "Amazing product quality! Fast shipping and excellent customer service.",
+      "Best purchase I've made this year. Works perfectly for my needs!",
+      "Great value for money and the performance exceeded my expectations.",
+      "Highly recommend! The build quality is outstanding.",
+      "Perfect for what I needed. Delivery was super quick.",
+      "Excellent product, exactly as described. Very satisfied!"
+    ];
+
+    return products.slice(0, 3).map((product, index) => ({
+      id: index + 1,
+      name: customerNames[index],
+      product: product.name,
+      rating: Math.min(5, Math.max(4, Math.round(product.rating || 4.5))),
+      text: reviewTexts[index % reviewTexts.length],
+      date: `${index + 1} day${index > 0 ? 's' : ''} ago`,
+      verified: true,
+      likes: Math.floor(Math.random() * 20) + 5
+    }));
+  };
+
+  const reviews = products.length > 0 ? createReviewsFromProducts() : [
     {
       id: 1,
       name: "Sarah Johnson",
@@ -36,6 +68,25 @@ const CustomerReviews = () => {
       likes: 15
     }
   ];
+
+  const handleLikeReview = (reviewId: number) => {
+    setLikedReviews(prev => 
+      prev.includes(reviewId) 
+        ? prev.filter(id => id !== reviewId)
+        : [...prev, reviewId]
+    );
+  };
+
+  const calculateAverageRating = () => {
+    if (products.length === 0) return 4.8;
+    const totalRating = products.reduce((sum, product) => sum + (product.rating || 4.5), 0);
+    return (totalRating / products.length).toFixed(1);
+  };
+
+  const getTotalReviews = () => {
+    if (products.length === 0) return 2547;
+    return products.reduce((sum, product) => sum + (product.reviews || 100), 0);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
@@ -89,10 +140,15 @@ const CustomerReviews = () => {
                 
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>{review.date}</span>
-                  <div className="flex items-center gap-1">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>{review.likes}</span>
-                  </div>
+                  <button 
+                    className={`flex items-center gap-1 hover:text-blue-600 transition-colors ${
+                      likedReviews.includes(review.id) ? 'text-blue-600' : ''
+                    }`}
+                    onClick={() => handleLikeReview(review.id)}
+                  >
+                    <ThumbsUp className={`w-3 h-3 ${likedReviews.includes(review.id) ? 'fill-current' : ''}`} />
+                    <span>{review.likes + (likedReviews.includes(review.id) ? 1 : 0)}</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -102,7 +158,7 @@ const CustomerReviews = () => {
 
       <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl text-center">
         <p className="text-sm font-medium text-gray-700">
-          ⭐ 4.8/5 average rating from 2,547+ reviews
+          ⭐ {calculateAverageRating()}/5 average rating from {getTotalReviews().toLocaleString()}+ reviews
         </p>
       </div>
     </div>

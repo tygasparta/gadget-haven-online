@@ -3,8 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Zap, Gift, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
+import { useFlashSaleProducts } from '@/hooks/useProducts';
 
 const LiveDeals = () => {
+  const navigate = useNavigate();
+  const { data: flashSaleProducts = [] } = useFlashSaleProducts();
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 45,
@@ -28,24 +32,55 @@ const LiveDeals = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const deals = [
-    {
-      title: "Flash Sale",
-      discount: "70% OFF",
-      claimed: 156,
-      total: 200,
-      icon: Zap,
-      color: "from-red-500 to-pink-500"
-    },
-    {
-      title: "Daily Deal",
-      discount: "50% OFF",
-      claimed: 89,
-      total: 150,
-      icon: Gift,
-      color: "from-blue-500 to-purple-500"
+  // Create deals based on flash sale products or default deals
+  const createDealsFromProducts = () => {
+    if (flashSaleProducts.length === 0) {
+      return [
+        {
+          title: "Flash Sale",
+          discount: "70% OFF",
+          claimed: 156,
+          total: 200,
+          icon: Zap,
+          color: "from-red-500 to-pink-500"
+        },
+        {
+          title: "Daily Deal",
+          discount: "50% OFF",
+          claimed: 89,
+          total: 150,
+          icon: Gift,
+          color: "from-blue-500 to-purple-500"
+        }
+      ];
     }
-  ];
+
+    return flashSaleProducts.slice(0, 2).map((product, index) => ({
+      title: index === 0 ? "Flash Sale" : "Daily Deal",
+      discount: `${product.discount_percentage || 50}% OFF`,
+      claimed: Math.floor(Math.random() * 150) + 50,
+      total: 200,
+      icon: index === 0 ? Zap : Gift,
+      color: index === 0 ? "from-red-500 to-pink-500" : "from-blue-500 to-purple-500",
+      productId: product.id
+    }));
+  };
+
+  const deals = createDealsFromProducts();
+
+  const handleGrabDeal = (deal: any) => {
+    if (deal.productId) {
+      // Navigate to specific product
+      console.log(`Navigate to product ${deal.productId}`);
+    } else {
+      // Navigate to deals page
+      navigate('/deals');
+    }
+  };
+
+  const handleViewAllDeals = () => {
+    navigate('/deals');
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
@@ -104,7 +139,11 @@ const LiveDeals = () => {
                 <Progress value={progress} className="h-2" />
               </div>
 
-              <Button size="sm" className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black">
+              <Button 
+                size="sm" 
+                className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black"
+                onClick={() => handleGrabDeal(deal)}
+              >
                 <ShoppingBag className="w-4 h-4 mr-2" />
                 Grab Deal
               </Button>
@@ -112,6 +151,13 @@ const LiveDeals = () => {
           );
         })}
       </div>
+
+      <Button 
+        className="w-full mt-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+        onClick={handleViewAllDeals}
+      >
+        View All Live Deals
+      </Button>
     </div>
   );
 };
