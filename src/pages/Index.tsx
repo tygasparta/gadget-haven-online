@@ -9,10 +9,6 @@ import Newsletter from '../components/Newsletter';
 import Footer from '../components/Footer';
 import SideBanners from '../components/SideBanners';
 import CartSidebar from '../components/CartSidebar';
-import TrendingCarousel from '../components/TrendingCarousel';
-import PromoBanners from '../components/PromoBanners';
-import Testimonials from '../components/Testimonials';
-import TechNews from '../components/TechNews';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 
 const Index = () => {
@@ -59,7 +55,7 @@ const Index = () => {
           </div>
           
           <main className="flex-1 min-w-0 w-full">
-            <div className="w-full space-y-8">
+            <div className="w-full">
               <HeroBanner />
               
               {/* Mobile Banners - Show after hero banner on mobile */}
@@ -68,9 +64,6 @@ const Index = () => {
               </div>
               
               <FeaturedBrands />
-              
-              {/* Promotional Banners */}
-              <PromoBanners />
               
               {transformedFlashSale.length > 0 && (
                 <div className="w-full">
@@ -83,9 +76,6 @@ const Index = () => {
                 </div>
               )}
               
-              {/* Trending Products Carousel */}
-              <TrendingCarousel />
-              
               {newArrivals.length > 0 && (
                 <div className="w-full">
                   <ProductSection
@@ -97,9 +87,6 @@ const Index = () => {
                 </div>
               )}
               
-              {/* Customer Testimonials */}
-              <Testimonials />
-              
               {transformedFeatured.length > 0 && (
                 <div className="w-full">
                   <ProductSection
@@ -110,9 +97,6 @@ const Index = () => {
                   />
                 </div>
               )}
-              
-              {/* Tech News Section */}
-              <TechNews />
             </div>
           </main>
         </div>
