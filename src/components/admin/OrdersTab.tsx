@@ -176,74 +176,74 @@ const OrdersTab = () => {
     <div className="space-y-6">
       {/* Order Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border-blue-400/20">
+        <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-200">Total Orders</p>
-                <p className="text-2xl font-bold text-white">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-200">Total Orders</p>
+                <p className="text-3xl font-bold text-white">{stats.total}</p>
               </div>
-              <Package className="w-8 h-8 text-blue-400" />
+              <Package className="w-10 h-10 text-blue-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 backdrop-blur-sm border-yellow-400/20">
+        <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-yellow-200">Pending</p>
-                <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
+                <p className="text-sm font-medium text-gray-200">Pending</p>
+                <p className="text-3xl font-bold text-yellow-400">{stats.pending}</p>
               </div>
-              <Clock className="w-8 h-8 text-yellow-400" />
+              <Clock className="w-10 h-10 text-yellow-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border-blue-400/20">
+        <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-200">Shipped</p>
-                <p className="text-2xl font-bold text-blue-400">{stats.shipped}</p>
+                <p className="text-sm font-medium text-gray-200">Shipped</p>
+                <p className="text-3xl font-bold text-blue-400">{stats.shipped}</p>
               </div>
-              <Truck className="w-8 h-8 text-blue-400" />
+              <Truck className="w-10 h-10 text-blue-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-600/20 to-green-800/20 backdrop-blur-sm border-green-400/20">
+        <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-200">Completed</p>
-                <p className="text-2xl font-bold text-green-400">{stats.completed}</p>
+                <p className="text-sm font-medium text-gray-200">Completed</p>
+                <p className="text-3xl font-bold text-green-400">{stats.completed}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-400" />
+              <CheckCircle className="w-10 h-10 text-green-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-600/20 to-red-800/20 backdrop-blur-sm border-red-400/20">
+        <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-red-200">Cancelled</p>
-                <p className="text-2xl font-bold text-red-400">{stats.cancelled}</p>
+                <p className="text-sm font-medium text-gray-200">Cancelled</p>
+                <p className="text-3xl font-bold text-red-400">{stats.cancelled}</p>
               </div>
-              <XCircle className="w-8 h-8 text-red-400" />
+              <XCircle className="w-10 h-10 text-red-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 backdrop-blur-sm border-emerald-400/20">
+        <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-200">Revenue</p>
-                <p className="text-2xl font-bold text-emerald-400">${stats.totalRevenue.toFixed(2)}</p>
+                <p className="text-sm font-medium text-gray-200">Revenue</p>
+                <p className="text-3xl font-bold text-emerald-400">${stats.totalRevenue.toFixed(2)}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-emerald-400" />
+              <DollarSign className="w-10 h-10 text-emerald-400" />
             </div>
           </CardContent>
         </Card>
