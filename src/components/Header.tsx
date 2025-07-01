@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings, Phone } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings, Phone, Star, Zap, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
@@ -119,12 +119,12 @@ const Header = () => {
   }, []);
 
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Grid3X3, label: 'Categories', path: '/categories' },
-    { icon: Tag, label: 'Deals', path: '/deals' },
-    { icon: Headphones, label: 'Audio', path: '/audio' },
-    { icon: Smartphone, label: 'Phones', path: '/phones' },
-    { icon: Phone, label: 'Contact', path: '/contact' },
+    { icon: Home, label: 'Home', path: '/', gradient: 'from-blue-500 to-purple-600', bgColor: 'bg-blue-50' },
+    { icon: Grid3X3, label: 'Categories', path: '/categories', gradient: 'from-green-500 to-teal-600', bgColor: 'bg-green-50' },
+    { icon: Tag, label: 'Deals', path: '/deals', gradient: 'from-red-500 to-pink-600', bgColor: 'bg-red-50' },
+    { icon: Headphones, label: 'Audio', path: '/audio', gradient: 'from-purple-500 to-indigo-600', bgColor: 'bg-purple-50' },
+    { icon: Smartphone, label: 'Phones', path: '/phones', gradient: 'from-orange-500 to-yellow-600', bgColor: 'bg-orange-50' },
+    { icon: Phone, label: 'Contact', path: '/contact', gradient: 'from-cyan-500 to-blue-600', bgColor: 'bg-cyan-50' },
   ];
 
   return (
@@ -293,13 +293,21 @@ const Header = () => {
                 </>
               )}
               
-              {/* Mobile Menu Button */}
+              {/* Enhanced Mobile Menu Button */}
               <Button 
                 variant="ghost" 
-                className="p-2 md:hidden"
+                className={`p-2 md:hidden relative transition-all duration-300 ${
+                  isMobileMenuOpen ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-110' : 'hover:bg-gray-100'
+                }`}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                <div className="relative">
+                  {isMobileMenuOpen ? (
+                    <X className="w-5 h-5 transform rotate-180 transition-transform duration-300" />
+                  ) : (
+                    <Menu className="w-5 h-5 transition-transform duration-300" />
+                  )}
+                </div>
               </Button>
             </div>
           </div>
@@ -321,90 +329,167 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
+        {/* Enhanced Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black/50 z-50 md:hidden" onClick={closeMobileMenu}>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden" onClick={closeMobileMenu}>
             <div 
-              className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out"
+              className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 shadow-2xl transform transition-all duration-500 ease-out"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 border-b">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
-                  <Button variant="ghost" size="sm" onClick={closeMobileMenu}>
-                    <X className="w-5 h-5" />
-                  </Button>
+              {/* Animated Header */}
+              <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-blue-500 to-purple-600 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">G</span>
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold">Menu</h2>
+                        <p className="text-white/80 text-sm">Explore & Shop</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={closeMobileMenu}
+                      className="hover:bg-white/20 text-white p-2 rounded-lg"
+                    >
+                      <X className="w-6 h-6" />
+                    </Button>
+                  </div>
+                  
+                  {/* User Info Section */}
+                  {user && (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">Welcome back!</p>
+                          <p className="text-white/70 text-sm truncate">{user.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex flex-col p-4 space-y-2">
-                {/* Navigation Menu Items */}
-                {menuItems.map((item) => (
+              {/* Enhanced Navigation Menu */}
+              <div className="flex flex-col p-4 space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
+                {menuItems.map((item, index) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                    className={`group flex items-center p-4 rounded-2xl transition-all duration-300 hover:scale-105 transform ${item.bgColor} hover:shadow-lg border border-gray-200/50`}
                     onClick={closeMobileMenu}
+                    style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <item.icon className="w-5 h-5 mr-3 text-blue-600" />
-                    <span className="text-gray-700">{item.label}</span>
+                    <div className={`w-12 h-12 bg-gradient-to-r ${item.gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <item.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <span className="text-gray-800 font-semibold text-lg group-hover:text-gray-900 transition-colors">
+                        {item.label}
+                      </span>
+                      <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300 mt-1"></div>
+                    </div>
+                    <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
+                      <Star className="w-5 h-5" />
+                    </div>
                   </Link>
                 ))}
 
-                {/* Divider */}
-                <div className="border-t my-4"></div>
-
-                {/* User Actions */}
-                {user ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      className="justify-start p-3 h-auto"
-                      onClick={handleAccountClick}
-                    >
-                      <User className="w-5 h-5 mr-3" />
-                      <span>My Account</span>
-                    </Button>
-                    
-                    {/* Admin Dashboard - Mobile - Very prominent */}
-                    {isAdmin && (
+                {/* Special Actions Section */}
+                <div className="pt-4 border-t border-gray-200/50 space-y-3">
+                  {user ? (
+                    <>
                       <Button
-                        onClick={handleAdminClick}
-                        className="justify-start p-3 h-auto w-full bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg"
+                        variant="ghost"
+                        className="w-full justify-start p-4 h-auto bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200/50 rounded-2xl group"
+                        onClick={handleAccountClick}
                       >
-                        <Settings className="w-5 h-5 mr-3" />
-                        <span className="font-bold">ADMIN DASHBOARD</span>
+                        <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-gray-800 font-semibold">My Account</span>
                       </Button>
-                    )}
-                    
-                    <Button
-                      variant="ghost"
-                      className="justify-start p-3 h-auto"
-                      onClick={handleWishlistClick}
-                    >
-                      <Heart className="w-5 h-5 mr-3" />
-                      <span>Wishlist</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start p-3 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="w-5 h-5 mr-3" />
-                      <span>Logout</span>
-                    </Button>
-                  </>
-                ) : (
-                  <Link to="/auth" onClick={closeMobileMenu}>
-                    <Button
-                      variant="ghost"
-                      className="justify-start p-3 h-auto w-full"
-                    >
-                      <User className="w-5 h-5 mr-3" />
-                      <span>Login / Sign Up</span>
-                    </Button>
-                  </Link>
-                )}
+                      
+                      {/* Admin Dashboard - Mobile - Very prominent */}
+                      {isAdmin && (
+                        <Button
+                          onClick={handleAdminClick}
+                          className="w-full justify-start p-4 h-auto bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg rounded-2xl group border-0"
+                        >
+                          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                            <Settings className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="font-bold">ADMIN DASHBOARD</span>
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start p-4 h-auto bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 border border-pink-200/50 rounded-2xl group"
+                        onClick={handleWishlistClick}
+                      >
+                        <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                          <Heart className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-gray-800 font-semibold">Wishlist</span>
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start p-4 h-auto bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 text-red-600 hover:text-red-700 border border-red-200/50 rounded-2xl group"
+                        onClick={handleLogout}
+                      >
+                        <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                          <LogOut className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="font-semibold">Logout</span>
+                      </Button>
+                    </>
+                  ) : (
+                    <Link to="/auth" onClick={closeMobileMenu}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start p-4 h-auto bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200/50 rounded-2xl group"
+                      >
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-gray-800 font-semibold">Login / Sign Up</span>
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Quick Stats/Features */}
+                <div className="mt-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200/50">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mb-2">
+                        <Zap className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-gray-600">Fast Delivery</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mb-2">
+                        <Gift className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-gray-600">Best Deals</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center mb-2">
+                        <Star className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-gray-600">Top Rated</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
