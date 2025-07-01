@@ -31,10 +31,13 @@ export const useAuth = () => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         }
@@ -58,6 +61,24 @@ export const useAuth = () => {
     return { error };
   };
 
+  const resetPassword = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/auth?mode=reset`;
+    
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+    
+    return { data, error };
+  };
+
+  const updatePassword = async (password: string) => {
+    const { data, error } = await supabase.auth.updateUser({
+      password: password
+    });
+    
+    return { data, error };
+  };
+
   return {
     user,
     session,
@@ -65,5 +86,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 };

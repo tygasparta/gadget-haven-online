@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { useFlashSaleProducts } from '@/hooks/useProducts';
-import { useCart } from '@/contexts/CartContext';
+import { useAddToCart } from '@/hooks/useCart';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const LiveDeals = () => {
   const navigate = useNavigate();
   const { data: flashSaleProducts = [] } = useFlashSaleProducts();
-  const { addToCart } = useCart();
+  const addToCartMutation = useAddToCart();
+  const { user } = useAuthContext();
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 45,
@@ -73,14 +75,17 @@ const LiveDeals = () => {
   const deals = createDealsFromProducts();
 
   const handleGrabDeal = async (deal: any) => {
+    if (!user) {
+      toast.error("Please log in to add items to cart");
+      navigate('/auth');
+      return;
+    }
+
     if (deal.product) {
       try {
-        await addToCart(deal.product);
-        toast.success(`${deal.product.name} added to cart!`, {
-          description: `You saved ${deal.discount} on this deal!`
-        });
+        await addToCartMutation.mutateAsync({ productId: deal.product.id });
+        // Toast is handled by the mutation
       } catch (error) {
-        toast.error("Failed to add item to cart");
         console.error("Error adding to cart:", error);
       }
     } else {
@@ -158,9 +163,10 @@ const LiveDeals = () => {
                 size="sm" 
                 className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black"
                 onClick={() => handleGrabDeal(deal)}
+                disabled={addToCartMutation.isPending}
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
-                {deal.product ? "Add to Cart" : "Grab Deal"}
+                {addToCartMutation.isPending ? "Adding..." : (deal.product ? "Add to Cart" : "Grab Deal")}
               </Button>
             </div>
           );
