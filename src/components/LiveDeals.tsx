@@ -75,7 +75,7 @@ const LiveDeals = () => {
   const handleGrabDeal = async (deal: any) => {
     if (deal.product) {
       try {
-        await addToCart(deal.product, 1);
+        await addToCart(deal.product);
         toast.success(`${deal.product.name} added to cart!`, {
           description: `You saved ${deal.discount} on this deal!`
         });
