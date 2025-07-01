@@ -18,9 +18,10 @@ const Checkout = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { initiatePayment, isProcessing: paynowProcessing } = usePaynow();
+  const { initiateWebPayment, initiateMobilePayment, isProcessing: paynowProcessing } = usePaynow();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [mobileMethod, setMobileMethod] = useState<'ecocash' | 'onemoney'>('ecocash');
   
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -50,7 +51,7 @@ const Checkout = () => {
     }, 0);
   };
 
-  const handlePaynowPayment = async (orderId: string) => {
+  const handlePaynowWebPayment = async (orderId: string) => {
     const paymentData = {
       reference: `ORD-${orderId}`,
       amount: getTotalPrice(),
@@ -61,7 +62,29 @@ const Checkout = () => {
       resultUrl: `${window.location.origin}/api/paynow-callback`
     };
 
-    const response = await initiatePayment(paymentData);
+    const response = await initiateWebPayment(paymentData);
+    return response.success;
+  };
+
+  const handlePaynowMobilePayment = async (orderId: string) => {
+    if (!formData.phone) {
+      toast({
+        title: "Phone Number Required",
+        description: "Please provide your phone number for mobile payment",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    const paymentData = {
+      reference: `ORD-${orderId}`,
+      amount: getTotalPrice(),
+      email: formData.email,
+      phone: formData.phone,
+      additionalInfo: `Order ${orderId} - Gadget Genie`
+    };
+
+    const response = await initiateMobilePayment(paymentData, formData.phone, mobileMethod);
     return response.success;
   };
 
@@ -128,16 +151,29 @@ const Checkout = () => {
       if (itemsError) throw itemsError;
 
       // Handle payment based on method
-      if (paymentMethod === 'paynow') {
-        const paymentSuccess = await handlePaynowPayment(order.id);
+      if (paymentMethod === 'paynow_web') {
+        const paymentSuccess = await handlePaynowWebPayment(order.id);
         if (!paymentSuccess) {
-          throw new Error('Paynow payment failed');
+          throw new Error('Paynow web payment failed');
         }
-        // Paynow will handle the redirect
+        return; // Paynow will handle the redirect
+      }
+
+      if (paymentMethod === 'paynow_mobile') {
+        const paymentSuccess = await handlePaynowMobilePayment(order.id);
+        if (!paymentSuccess) {
+          throw new Error('Paynow mobile payment failed');
+        }
+        // For mobile payments, we stay on the page and show instructions
+        toast({
+          title: "Payment Instructions Sent",
+          description: "Please check your phone and follow the payment instructions",
+          duration: 15000
+        });
         return;
       }
 
-      // Clear cart after successful order
+      // Clear cart after successful order (for non-Paynow payments)
       const { error: clearCartError } = await supabase
         .from('cart_items')
         .delete()
@@ -323,12 +359,23 @@ const Checkout = () => {
                   </div>
 
                   <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <RadioGroupItem value="paynow" id="paynow" />
+                    <RadioGroupItem value="paynow_web" id="paynow_web" />
                     <div className="flex items-center space-x-2">
                       <Smartphone className="w-5 h-5 text-green-600" />
                       <div>
-                        <Label htmlFor="paynow" className="font-medium">Paynow</Label>
-                        <p className="text-sm text-gray-500">Pay with mobile money or bank transfer</p>
+                        <Label htmlFor="paynow_web" className="font-medium">Paynow (Web)</Label>
+                        <p className="text-sm text-gray-500">Pay via Paynow website</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="paynow_mobile" id="paynow_mobile" />
+                    <div className="flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <Label htmlFor="paynow_mobile" className="font-medium">Mobile Money</Label>
+                        <p className="text-sm text-gray-500">EcoCash or OneMoney</p>
                       </div>
                     </div>
                   </div>
@@ -395,11 +442,11 @@ const Checkout = () => {
                   </div>
                 )}
 
-                {paymentMethod === 'paynow' && (
+                {paymentMethod === 'paynow_web' && (
                   <div className="p-4 border rounded-lg bg-green-50">
                     <div className="flex items-center space-x-2 mb-2">
                       <Smartphone className="w-5 h-5 text-green-600" />
-                      <span className="font-medium text-green-800">Paynow Payment</span>
+                      <span className="font-medium text-green-800">Paynow Web Payment</span>
                     </div>
                     <p className="text-sm text-green-700">
                       You'll be redirected to Paynow to complete your payment using:
@@ -409,7 +456,37 @@ const Checkout = () => {
                       <li>OneMoney</li>
                       <li>Telecash</li>
                       <li>Bank Transfer</li>
+                      <li>Visa/Mastercard</li>
                     </ul>
+                  </div>
+                )}
+
+                {paymentMethod === 'paynow_mobile' && (
+                  <div className="p-4 border rounded-lg bg-purple-50">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Smartphone className="w-5 h-5 text-purple-600" />
+                      <span className="font-medium text-purple-800">Mobile Money Payment</span>
+                    </div>
+                    <p className="text-sm text-purple-700 mb-3">
+                      Choose your mobile money provider:
+                    </p>
+                    <RadioGroup
+                      value={mobileMethod}
+                      onValueChange={(value) => setMobileMethod(value as 'ecocash' | 'onemoney')}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ecocash" id="ecocash" />
+                        <Label htmlFor="ecocash" className="text-sm">EcoCash (Econet)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="onemoney" id="onemoney" />
+                        <Label htmlFor="onemoney" className="text-sm">OneMoney (NetOne)</Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-purple-600 mt-2">
+                      Payment instructions will be sent to your phone
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -469,10 +546,16 @@ const Checkout = () => {
                   <span>No online payment required - pay when delivered</span>
                 </div>
               )}
-              {paymentMethod === 'paynow' && (
+              {paymentMethod === 'paynow_web' && (
                 <div className="flex items-center space-x-3 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
                   <Smartphone className="w-5 h-5" />
                   <span>Secure local payment via Paynow</span>
+                </div>
+              )}
+              {paymentMethod === 'paynow_mobile' && (
+                <div className="flex items-center space-x-3 text-sm text-purple-600 bg-purple-50 p-3 rounded-lg">
+                  <Smartphone className="w-5 h-5" />
+                  <span>Direct mobile money payment</span>
                 </div>
               )}
             </div>
@@ -486,8 +569,10 @@ const Checkout = () => {
                 {isProcessing || paynowProcessing ? 'Processing...' : 
                  paymentMethod === 'pay_on_delivery' 
                    ? `Place Order - Pay $${getTotalPrice().toFixed(2)} on Delivery`
-                   : paymentMethod === 'paynow'
+                   : paymentMethod === 'paynow_web'
                    ? `Pay $${getTotalPrice().toFixed(2)} with Paynow`
+                   : paymentMethod === 'paynow_mobile'
+                   ? `Pay $${getTotalPrice().toFixed(2)} with ${mobileMethod.toUpperCase()}`
                    : `Complete Order - $${getTotalPrice().toFixed(2)}`
                 }
               </Button>
