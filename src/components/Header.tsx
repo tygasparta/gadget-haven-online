@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
@@ -123,6 +124,7 @@ const Header = () => {
     { icon: Tag, label: 'Deals', path: '/deals' },
     { icon: Headphones, label: 'Audio', path: '/audio' },
     { icon: Smartphone, label: 'Phones', path: '/phones' },
+    { icon: Phone, label: 'Contact', path: '/contact' },
   ];
 
   return (
@@ -132,8 +134,7 @@ const Header = () => {
         <span className="block sm:inline">Free delivery on orders over $50</span>
         <div className="hidden lg:float-right lg:block">
           <span className="mr-4">Help Centre</span>
-          <span className="mr-4">Track Order</span>
-          <span>Sell on Gadget Genie</span>
+          <span>Track Order</span>
         </div>
       </div>
       
