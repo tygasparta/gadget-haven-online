@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,17 +6,19 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CreditCard, Truck, Shield, Banknote } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, Shield, Banknote, Smartphone } from 'lucide-react';
 import Header from '@/components/Header';
 import { useCartItems } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import usePaynow from '@/hooks/usePaynow';
 
 const Checkout = () => {
   const { data: cartItems = [] } = useCartItems();
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { initiatePayment, isProcessing: paynowProcessing } = usePaynow();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   
@@ -28,7 +29,8 @@ const Checkout = () => {
     address: '',
     city: '',
     zipCode: '',
-    country: 'United States',
+    country: 'Zimbabwe',
+    phone: '',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
@@ -46,6 +48,21 @@ const Checkout = () => {
     return cartItems.reduce((total, item) => {
       return total + (item.products.price * item.quantity);
     }, 0);
+  };
+
+  const handlePaynowPayment = async (orderId: string) => {
+    const paymentData = {
+      reference: `ORD-${orderId}`,
+      amount: getTotalPrice(),
+      email: formData.email,
+      phone: formData.phone,
+      additionalInfo: `Order ${orderId} - Gadget Genie`,
+      returnUrl: `${window.location.origin}/order-success`,
+      resultUrl: `${window.location.origin}/api/paynow-callback`
+    };
+
+    const response = await initiatePayment(paymentData);
+    return response.success;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +95,8 @@ const Checkout = () => {
             address: formData.address,
             city: formData.city,
             zipCode: formData.zipCode,
-            country: formData.country
+            country: formData.country,
+            phone: formData.phone
           },
           billing_address: {
             firstName: formData.firstName,
@@ -86,7 +104,8 @@ const Checkout = () => {
             address: formData.address,
             city: formData.city,
             zipCode: formData.zipCode,
-            country: formData.country
+            country: formData.country,
+            phone: formData.phone
           }
         })
         .select()
@@ -107,6 +126,16 @@ const Checkout = () => {
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
+
+      // Handle payment based on method
+      if (paymentMethod === 'paynow') {
+        const paymentSuccess = await handlePaynowPayment(order.id);
+        if (!paymentSuccess) {
+          throw new Error('Paynow payment failed');
+        }
+        // Paynow will handle the redirect
+        return;
+      }
 
       // Clear cart after successful order
       const { error: clearCartError } = await supabase
@@ -198,6 +227,18 @@ const Checkout = () => {
                     required
                   />
                 </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+263 77 123 4567"
+                    required
+                  />
+                </div>
               </CardContent>
             </Card>
 
@@ -280,6 +321,17 @@ const Checkout = () => {
                       <Label htmlFor="credit_card" className="font-medium">Credit Card</Label>
                     </div>
                   </div>
+
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="paynow" id="paynow" />
+                    <div className="flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5 text-green-600" />
+                      <div>
+                        <Label htmlFor="paynow" className="font-medium">Paynow</Label>
+                        <p className="text-sm text-gray-500">Pay with mobile money or bank transfer</p>
+                      </div>
+                    </div>
+                  </div>
                   
                   <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                     <RadioGroupItem value="pay_on_delivery" id="pay_on_delivery" />
@@ -342,6 +394,24 @@ const Checkout = () => {
                     </div>
                   </div>
                 )}
+
+                {paymentMethod === 'paynow' && (
+                  <div className="p-4 border rounded-lg bg-green-50">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Smartphone className="w-5 h-5 text-green-600" />
+                      <span className="font-medium text-green-800">Paynow Payment</span>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      You'll be redirected to Paynow to complete your payment using:
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-green-700 mt-2 space-y-1">
+                      <li>EcoCash</li>
+                      <li>OneMoney</li>
+                      <li>Telecash</li>
+                      <li>Bank Transfer</li>
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -399,17 +469,25 @@ const Checkout = () => {
                   <span>No online payment required - pay when delivered</span>
                 </div>
               )}
+              {paymentMethod === 'paynow' && (
+                <div className="flex items-center space-x-3 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+                  <Smartphone className="w-5 h-5" />
+                  <span>Secure local payment via Paynow</span>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleSubmit}>
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
-                disabled={isProcessing}
+                disabled={isProcessing || paynowProcessing}
               >
-                {isProcessing ? 'Processing...' : 
+                {isProcessing || paynowProcessing ? 'Processing...' : 
                  paymentMethod === 'pay_on_delivery' 
                    ? `Place Order - Pay $${getTotalPrice().toFixed(2)} on Delivery`
+                   : paymentMethod === 'paynow'
+                   ? `Pay $${getTotalPrice().toFixed(2)} with Paynow`
                    : `Complete Order - $${getTotalPrice().toFixed(2)}`
                 }
               </Button>

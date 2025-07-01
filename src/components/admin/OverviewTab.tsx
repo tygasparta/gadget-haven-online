@@ -14,9 +14,77 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const OverviewTab = () => {
   const { data: analytics, isLoading } = useAnalytics();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleReviewLowStock = () => {
+    // Navigate to products tab and show low stock filter
+    window.location.hash = '#products';
+    toast({
+      title: "Low Stock Review",
+      description: "Showing products with low stock levels",
+    });
+  };
+
+  const handleProcessPendingOrders = () => {
+    // Navigate to orders tab and show pending orders
+    window.location.hash = '#orders';
+    toast({
+      title: "Processing Orders",
+      description: "Showing pending orders that need attention",
+    });
+  };
+
+  const handleWelcomeNewCustomers = async () => {
+    try {
+      // Create welcome notifications for new customers
+      const { data: newUsers } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(5);
+
+      if (newUsers && newUsers.length > 0) {
+        // Create welcome notifications
+        const notifications = newUsers.map(user => ({
+          user_id: user.id,
+          title: 'Welcome to Gadget Genie!',
+          message: 'Thank you for joining us. Explore our amazing deals and products!',
+          type: 'welcome'
+        }));
+
+        await supabase.from('notifications').insert(notifications);
+        
+        toast({
+          title: "Welcome Messages Sent",
+          description: `Sent welcome messages to ${newUsers.length} new customers`,
+        });
+      } else {
+        toast({
+          title: "No New Customers",
+          description: "No new customers to welcome today",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send welcome messages",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleViewAllOrders = () => {
+    window.location.hash = '#orders';
+  };
 
   if (isLoading) {
     return (
@@ -164,7 +232,12 @@ const OverviewTab = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold">Recent Orders</h3>
-              <Button variant="outline" size="sm" className="bg-blue-600 hover:bg-blue-700 border-blue-500">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 border-blue-500"
+                onClick={handleViewAllOrders}
+              >
                 <Eye className="w-4 h-4 mr-2" />
                 View All
               </Button>
@@ -214,7 +287,12 @@ const OverviewTab = () => {
                       {analytics.lowStockItems} products are running low on stock
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" className="bg-red-600 hover:bg-red-700 border-red-500">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-red-600 hover:bg-red-700 border-red-500"
+                    onClick={handleReviewLowStock}
+                  >
                     Review
                   </Button>
                 </div>
@@ -229,7 +307,12 @@ const OverviewTab = () => {
                       {analytics.pendingOrders} orders need your attention
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" className="bg-yellow-600 hover:bg-yellow-700 border-yellow-500">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-yellow-600 hover:bg-yellow-700 border-yellow-500"
+                    onClick={handleProcessPendingOrders}
+                  >
                     Process
                   </Button>
                 </div>
@@ -244,7 +327,12 @@ const OverviewTab = () => {
                       {analytics.newCustomersToday} new customers joined today
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" className="bg-green-600 hover:bg-green-700 border-green-500">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-green-600 hover:bg-green-700 border-green-500"
+                    onClick={handleWelcomeNewCustomers}
+                  >
                     Welcome
                   </Button>
                 </div>
