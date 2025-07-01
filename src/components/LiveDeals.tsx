@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { useFlashSaleProducts } from '@/hooks/useProducts';
+import { useCart } from '@/hooks/useCart';
+import { toast } from 'sonner';
 
 const LiveDeals = () => {
   const navigate = useNavigate();
   const { data: flashSaleProducts = [] } = useFlashSaleProducts();
+  const { addToCart } = useCart();
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 45,
@@ -62,19 +65,28 @@ const LiveDeals = () => {
       total: 200,
       icon: index === 0 ? Zap : Gift,
       color: index === 0 ? "from-red-500 to-pink-500" : "from-blue-500 to-purple-500",
-      productId: product.id
+      productId: product.id,
+      product: product
     }));
   };
 
   const deals = createDealsFromProducts();
 
-  const handleGrabDeal = (deal: any) => {
-    if (deal.productId) {
-      // Navigate to specific product
-      console.log(`Navigate to product ${deal.productId}`);
+  const handleGrabDeal = async (deal: any) => {
+    if (deal.product) {
+      try {
+        await addToCart(deal.product, 1);
+        toast.success(`${deal.product.name} added to cart!`, {
+          description: `You saved ${deal.discount} on this deal!`
+        });
+      } catch (error) {
+        toast.error("Failed to add item to cart");
+        console.error("Error adding to cart:", error);
+      }
     } else {
-      // Navigate to deals page
+      // Navigate to deals page for generic deals
       navigate('/deals');
+      toast.info("Redirecting to deals page...");
     }
   };
 
@@ -128,6 +140,9 @@ const LiveDeals = () => {
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-800">{deal.title}</h4>
                   <span className="text-lg font-bold text-red-600">{deal.discount}</span>
+                  {deal.product && (
+                    <p className="text-xs text-gray-600 truncate">{deal.product.name}</p>
+                  )}
                 </div>
               </div>
               
@@ -145,7 +160,7 @@ const LiveDeals = () => {
                 onClick={() => handleGrabDeal(deal)}
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
-                Grab Deal
+                {deal.product ? "Add to Cart" : "Grab Deal"}
               </Button>
             </div>
           );

@@ -1,8 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Zap, Shield, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const HeroBanner = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [{
     id: 1,
@@ -16,7 +20,8 @@ const HeroBanner = () => {
     buttonText: "Shop Now",
     validUntil: "Valid 27 June Only",
     bgGradient: "from-purple-500 via-purple-600 to-indigo-700",
-    image: "/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png"
+    image: "/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png",
+    category: "audio"
   }, {
     id: 2,
     title: "FLASH SALE",
@@ -29,7 +34,8 @@ const HeroBanner = () => {
     buttonText: "Shop Now",
     validUntil: "Valid Today Only",
     bgGradient: "from-blue-500 via-cyan-600 to-teal-700",
-    image: "/lovable-uploads/b38403c0-7408-4a79-bc6c-e23ef6f347bb.png"
+    image: "/lovable-uploads/b38403c0-7408-4a79-bc6c-e23ef6f347bb.png",
+    category: "phones"
   }, {
     id: 3,
     title: "FLASH SALE",
@@ -42,20 +48,46 @@ const HeroBanner = () => {
     buttonText: "Shop Now",
     validUntil: "Limited Time Only",
     bgGradient: "from-red-500 via-pink-600 to-purple-700",
-    image: "/lovable-uploads/ec24a873-3717-4a20-b741-b2588778cbd8.png"
+    image: "/lovable-uploads/ec24a873-3717-4a20-b741-b2588778cbd8.png",
+    category: "gaming"
   }];
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
   const nextSlide = () => {
     setCurrentSlide(prev => (prev + 1) % slides.length);
   };
+
   const prevSlide = () => {
     setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
   };
+
+  const handleShopNow = (slide: any) => {
+    // Navigate based on the slide category
+    switch (slide.category) {
+      case 'audio':
+        navigate('/audio');
+        toast.success(`Browsing ${slide.subtitle} deals!`);
+        break;
+      case 'phones':
+        navigate('/phones');
+        toast.success(`Browsing ${slide.subtitle} deals!`);
+        break;
+      case 'gaming':
+        navigate('/deals');
+        toast.success(`Browsing ${slide.subtitle} deals!`);
+        break;
+      default:
+        navigate('/deals');
+        toast.success("Browsing all deals!");
+    }
+  };
+
   return (
     <div className="relative h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] overflow-hidden rounded-2xl mb-8 shadow-xl">
       {slides.map((slide, index) => (
@@ -111,7 +143,10 @@ const HeroBanner = () => {
 
                   {/* Action Button & Validity */}
                   <div className="flex flex-col items-center lg:items-start gap-2 sm:gap-4">
-                    <Button className="bg-white text-black hover:bg-gray-100 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    <Button 
+                      className="bg-white text-black hover:bg-gray-100 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      onClick={() => handleShopNow(slide)}
+                    >
                       {slide.buttonText}
                     </Button>
                     <div className="text-yellow-300 text-xs sm:text-sm font-semibold">

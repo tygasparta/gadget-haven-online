@@ -8,25 +8,26 @@ const CustomerReviews = () => {
   const { data: products = [] } = useProducts();
   const [likedReviews, setLikedReviews] = useState<number[]>([]);
 
-  // Create reviews based on actual products
+  // Create reviews based on actual products with Zimbabwean names
   const createReviewsFromProducts = () => {
-    const customerNames = [
-      "Sarah Johnson", "Mike Chen", "Emma Davis", "Alex Rodriguez", 
-      "Lisa Wang", "David Kim", "Maria Garcia", "James Park"
+    const zimbabweanNames = [
+      "Tendai Mukamuri", "Chipo Madzima", "Tafadzwa Nyambi", "Rutendo Chikwanha", 
+      "Blessing Mutasa", "Farai Zimunya", "Tinashe Dhliwayo", "Memory Gumbo",
+      "Tatenda Mapfumo", "Privilege Mhango", "Takudzwa Sibanda", "Nyasha Moyo"
     ];
     
     const reviewTexts = [
-      "Amazing product quality! Fast shipping and excellent customer service.",
-      "Best purchase I've made this year. Works perfectly for my needs!",
-      "Great value for money and the performance exceeded my expectations.",
-      "Highly recommend! The build quality is outstanding.",
-      "Perfect for what I needed. Delivery was super quick.",
-      "Excellent product, exactly as described. Very satisfied!"
+      "Amazing product quality! Fast delivery to Harare and excellent customer service.",
+      "Best purchase I've made this year. Works perfectly for my needs in Bulawayo!",
+      "Great value for money and the performance exceeded my expectations. Highly recommend!",
+      "Outstanding build quality! The delivery to Mutare was super quick.",
+      "Perfect for what I needed. Customer service was very helpful and professional.",
+      "Excellent product, exactly as described. Very satisfied with my purchase!"
     ];
 
     return products.slice(0, 3).map((product, index) => ({
       id: index + 1,
-      name: customerNames[index],
+      name: zimbabweanNames[index],
       product: product.name,
       rating: Math.min(5, Math.max(4, Math.round(product.rating || 4.5))),
       text: reviewTexts[index % reviewTexts.length],
@@ -39,30 +40,30 @@ const CustomerReviews = () => {
   const reviews = products.length > 0 ? createReviewsFromProducts() : [
     {
       id: 1,
-      name: "Sarah Johnson",
+      name: "Tendai Mukamuri",
       product: "iPhone 15 Pro",
       rating: 5,
-      text: "Amazing product quality! Fast shipping and excellent customer service.",
+      text: "Amazing product quality! Fast delivery to Harare and excellent customer service.",
       date: "2 days ago",
       verified: true,
       likes: 12
     },
     {
       id: 2,
-      name: "Mike Chen",
+      name: "Chipo Madzima",
       product: "MacBook Air M2",
       rating: 5,
-      text: "Best purchase I've made this year. Works perfectly for my needs!",
+      text: "Best purchase I've made this year. Works perfectly for my needs in Bulawayo!",
       date: "1 week ago",
       verified: true,
       likes: 8
     },
     {
       id: 3,
-      name: "Emma Davis",
+      name: "Tafadzwa Nyambi",
       product: "AirPods Pro",
       rating: 4,
-      text: "Great sound quality and the noise cancellation is impressive.",
+      text: "Great sound quality and the noise cancellation is impressive. Delivery to Mutare was quick!",
       date: "3 days ago",
       verified: true,
       likes: 15
