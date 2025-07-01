@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CreditCard, Truck, Shield } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, Shield, Banknote } from 'lucide-react';
 import Header from '@/components/Header';
 import { useCartItems } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -18,6 +19,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('credit_card');
   
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -68,8 +70,8 @@ const Checkout = () => {
         .insert({
           user_id: user.id,
           total_amount: getTotalPrice(),
-          status: 'confirmed',
-          payment_method: 'credit_card',
+          status: paymentMethod === 'pay_on_delivery' ? 'pending' : 'confirmed',
+          payment_method: paymentMethod,
           shipping_address: {
             firstName: formData.firstName,
             lastName: formData.lastName,
@@ -114,15 +116,20 @@ const Checkout = () => {
 
       if (clearCartError) throw clearCartError;
 
+      const successMessage = paymentMethod === 'pay_on_delivery' 
+        ? "Your order has been placed! You'll pay when your items are delivered."
+        : "Your order has been placed successfully.";
+
       toast({
         title: "Order Confirmed!",
-        description: `Your order has been placed successfully.`
+        description: successMessage
       });
       
       navigate('/order-success', { 
         state: { 
           orderId: order.id, 
-          total: getTotalPrice() 
+          total: getTotalPrice(),
+          paymentMethod: paymentMethod
         } 
       });
     } catch (error: any) {
@@ -258,57 +265,83 @@ const Checkout = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Payment Information
-                </CardTitle>
+                <CardTitle>Payment Method</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="cardNumber">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    name="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={formData.cardNumber}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="expiryDate">Expiry Date</Label>
-                    <Input
-                      id="expiryDate"
-                      name="expiryDate"
-                      placeholder="MM/YY"
-                      value={formData.expiryDate}
-                      onChange={handleInputChange}
-                      required
-                    />
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={setPaymentMethod}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="credit_card" id="credit_card" />
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="w-5 h-5 text-blue-600" />
+                      <Label htmlFor="credit_card" className="font-medium">Credit Card</Label>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="cvv">CVV</Label>
-                    <Input
-                      id="cvv"
-                      name="cvv"
-                      placeholder="123"
-                      value={formData.cvv}
-                      onChange={handleInputChange}
-                      required
-                    />
+                  
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="pay_on_delivery" id="pay_on_delivery" />
+                    <div className="flex items-center space-x-2">
+                      <Banknote className="w-5 h-5 text-green-600" />
+                      <div>
+                        <Label htmlFor="pay_on_delivery" className="font-medium">Pay on Delivery</Label>
+                        <p className="text-sm text-gray-500">Pay with cash when your order arrives</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="nameOnCard">Name on Card</Label>
-                  <Input
-                    id="nameOnCard"
-                    name="nameOnCard"
-                    value={formData.nameOnCard}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
+                </RadioGroup>
+                
+                {paymentMethod === 'credit_card' && (
+                  <div className="space-y-4 mt-4 p-4 border rounded-lg bg-gray-50">
+                    <div>
+                      <Label htmlFor="cardNumber">Card Number</Label>
+                      <Input
+                        id="cardNumber"
+                        name="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={formData.cardNumber}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="expiryDate">Expiry Date</Label>
+                        <Input
+                          id="expiryDate"
+                          name="expiryDate"
+                          placeholder="MM/YY"
+                          value={formData.expiryDate}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cvv">CVV</Label>
+                        <Input
+                          id="cvv"
+                          name="cvv"
+                          placeholder="123"
+                          value={formData.cvv}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="nameOnCard">Name on Card</Label>
+                      <Input
+                        id="nameOnCard"
+                        name="nameOnCard"
+                        value={formData.nameOnCard}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -358,8 +391,14 @@ const Checkout = () => {
               </div>
               <div className="flex items-center space-x-3 text-sm text-gray-600">
                 <Shield className="w-5 h-5" />
-                <span>Secure 256-bit SSL encryption</span>
+                <span>Secure checkout & delivery</span>
               </div>
+              {paymentMethod === 'pay_on_delivery' && (
+                <div className="flex items-center space-x-3 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+                  <Banknote className="w-5 h-5" />
+                  <span>No online payment required - pay when delivered</span>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -368,7 +407,11 @@ const Checkout = () => {
                 className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
                 disabled={isProcessing}
               >
-                {isProcessing ? 'Processing...' : `Complete Order - $${getTotalPrice().toFixed(2)}`}
+                {isProcessing ? 'Processing...' : 
+                 paymentMethod === 'pay_on_delivery' 
+                   ? `Place Order - Pay $${getTotalPrice().toFixed(2)} on Delivery`
+                   : `Complete Order - $${getTotalPrice().toFixed(2)}`
+                }
               </Button>
             </form>
           </div>
