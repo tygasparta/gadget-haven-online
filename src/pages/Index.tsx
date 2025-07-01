@@ -9,6 +9,11 @@ import Newsletter from '../components/Newsletter';
 import Footer from '../components/Footer';
 import SideBanners from '../components/SideBanners';
 import CartSidebar from '../components/CartSidebar';
+import TrendingCarousel from '../components/TrendingCarousel';
+import LiveDeals from '../components/LiveDeals';
+import QuickCategories from '../components/QuickCategories';
+import CustomerReviews from '../components/CustomerReviews';
+import SpecialOffers from '../components/SpecialOffers';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 
 const Index = () => {
@@ -47,11 +52,21 @@ const Index = () => {
       <Header />
       <CartSidebar />
       
-      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
-        <div className="flex flex-col lg:flex-row gap-3 sm:gap-6">
-          {/* Sidebar - Hidden on mobile, shown as collapsible on tablet+ */}
-          <div className="hidden lg:block lg:w-64 flex-shrink-0">
-            <Sidebar />
+      <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 py-3 sm:py-6">
+        <div className="flex flex-col xl:flex-row gap-3 sm:gap-6">
+          {/* Left Sidebar - Enhanced with new components */}
+          <div className="hidden xl:block xl:w-80 flex-shrink-0">
+            <div className="space-y-6">
+              {/* Original Sidebar */}
+              <Sidebar />
+              
+              {/* New Left Side Components */}
+              <TrendingCarousel />
+              <LiveDeals />
+              <QuickCategories />
+              <CustomerReviews />
+              <SpecialOffers />
+            </div>
           </div>
           
           <main className="flex-1 min-w-0 w-full">
@@ -59,7 +74,7 @@ const Index = () => {
               <HeroBanner />
               
               {/* Mobile Banners - Show after hero banner on mobile */}
-              <div className="block lg:hidden">
+              <div className="block xl:hidden">
                 <SideBanners />
               </div>
               
