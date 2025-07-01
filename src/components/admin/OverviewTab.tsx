@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,59 +29,87 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
   const queryClient = useQueryClient();
 
   const handleReviewLowStock = () => {
+    console.log('Review Low Stock clicked');
     if (onTabChange) {
       onTabChange('products');
       toast({
         title: "Low Stock Review",
-        description: "Showing products with low stock levels",
+        description: "Switched to Products tab to review low stock items",
       });
     }
   };
 
   const handleProcessPendingOrders = () => {
+    console.log('Process Pending Orders clicked');
     if (onTabChange) {
       onTabChange('orders');
       toast({
         title: "Processing Orders",
-        description: "Showing pending orders that need attention",
+        description: "Switched to Orders tab to process pending orders",
       });
     }
   };
 
   const handleWelcomeNewCustomers = async () => {
+    console.log('Welcome New Customers clicked');
     try {
-      // Create welcome notifications for new customers
-      const { data: newUsers } = await supabase
+      // Get new users from the last 24 hours
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const { data: newUsers, error } = await supabase
         .from('profiles')
-        .select('id, email')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .limit(5);
+        .select('id, email, full_name')
+        .gte('created_at', yesterday.toISOString())
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching new users:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch new customers",
+          variant: "destructive"
+        });
+        return;
+      }
 
       if (newUsers && newUsers.length > 0) {
-        // Create welcome notifications
+        // Create welcome notifications for new customers
         const notifications = newUsers.map(user => ({
           user_id: user.id,
           title: 'Welcome to Gadget Genie!',
-          message: 'Thank you for joining us. Explore our amazing deals and products!',
+          message: `Hello ${user.full_name || 'valued customer'}! Thank you for joining us. Explore our amazing deals and products. Enjoy exclusive offers and premium support!`,
           type: 'welcome'
         }));
 
-        await supabase.from('notifications').insert(notifications);
-        
-        toast({
-          title: "Welcome Messages Sent",
-          description: `Sent welcome messages to ${newUsers.length} new customers`,
-        });
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Error creating notifications:', notificationError);
+          toast({
+            title: "Partial Success",
+            description: `Found ${newUsers.length} new customers, but couldn't send all welcome messages`,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Welcome Messages Sent!",
+            description: `Successfully sent welcome messages to ${newUsers.length} new customers`,
+          });
+        }
       } else {
         toast({
           title: "No New Customers",
-          description: "No new customers to welcome today",
+          description: "No new customers found in the last 24 hours",
         });
       }
     } catch (error) {
+      console.error('Error in handleWelcomeNewCustomers:', error);
       toast({
         title: "Error",
-        description: "Failed to send welcome messages",
+        description: "Failed to process welcome messages",
         variant: "destructive"
       });
     }
@@ -306,7 +333,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
             <div className="space-y-4">
               {analytics.lowStockItems > 0 && (
                 <div className="flex items-center p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-red-400 mr-3" />
+                  <AlertTriangle className="w-5 h-5 text-red-400 mr-3 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-medium text-red-400">Low Stock Alert</p>
                     <p className="text-sm text-gray-300">
@@ -316,7 +343,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="bg-red-600 hover:bg-red-700 border-red-500"
+                    className="bg-red-600 hover:bg-red-700 border-red-500 text-white"
                     onClick={handleReviewLowStock}
                   >
                     Review
@@ -326,7 +353,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
               
               {analytics.pendingOrders > 0 && (
                 <div className="flex items-center p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-                  <ShoppingCart className="w-5 h-5 text-yellow-400 mr-3" />
+                  <ShoppingCart className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-medium text-yellow-400">Pending Orders</p>
                     <p className="text-sm text-gray-300">
@@ -336,7 +363,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="bg-yellow-600 hover:bg-yellow-700 border-yellow-500"
+                    className="bg-yellow-600 hover:bg-yellow-700 border-yellow-500 text-white"
                     onClick={handleProcessPendingOrders}
                   >
                     Process
@@ -346,7 +373,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
 
               {analytics.newCustomersToday > 0 && (
                 <div className="flex items-center p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-                  <UserPlus className="w-5 h-5 text-green-400 mr-3" />
+                  <UserPlus className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-medium text-green-400">New Customers</p>
                     <p className="text-sm text-gray-300">
@@ -356,7 +383,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="bg-green-600 hover:bg-green-700 border-green-500"
+                    className="bg-green-600 hover:bg-green-700 border-green-500 text-white"
                     onClick={handleWelcomeNewCustomers}
                   >
                     Welcome
