@@ -1,34 +1,124 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Gadget Genie - Your Ultimate Tech Destination</title>
-    <meta name="description" content="Shop the latest smartphones, electronics, and home appliances at Gadget Genie. Zimbabwe's premier tech destination with competitive prices and fast delivery." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Gadget Genie - Your Ultimate Tech Destination | Electronics, Smartphones & More</title>
+    <meta name="description" content="Discover the latest smartphones, electronics, and gadgets at Gadget Genie. Shop premium tech products with fast delivery, competitive prices, and excellent customer service." />
+    <meta name="keywords" content="electronics, smartphones, gadgets, tech store, online shopping, audio equipment, mobile phones, tablets, accessories" />
     <meta name="author" content="Gadget Genie" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="EN" />
+    <meta name="revisit-after" content="7 days" />
     
-    <!-- Animated Favicon -->
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="/favicon.png" type="image/png">
-    <link rel="apple-touch-icon" href="/favicon.png">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <meta property="og:title" content="Gadget Genie - Your Ultimate Tech Destination" />
-    <meta property="og:description" content="Shop the latest smartphones, electronics, and home appliances with fast delivery nationwide" />
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@gadgetgenie" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:url" content="https://gadget-genie.com/" />
+    <meta property="og:title" content="Gadget Genie - Your Ultimate Tech Destination" />
+    <meta property="og:description" content="Discover the latest smartphones, electronics, and gadgets at unbeatable prices. Free shipping on orders over $50!" />
+    <meta property="og:image" content="https://gadget-genie.com/og-image.jpg" />
+    <meta property="og:site_name" content="Gadget Genie" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://gadget-genie.com/" />
+    <meta property="twitter:title" content="Gadget Genie - Your Ultimate Tech Destination" />
+    <meta property="twitter:description" content="Discover the latest smartphones, electronics, and gadgets at unbeatable prices. Free shipping on orders over $50!" />
+    <meta property="twitter:image" content="https://gadget-genie.com/twitter-image.jpg" />
+    
+    <!-- Mobile Optimization -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Gadget Genie" />
+    <meta name="theme-color" content="#3B82F6" />
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    
+    <!-- Critical CSS inline for better performance -->
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .loading { display: flex; justify-content: center; align-items: center; height: 100vh; }
+    </style>
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Gadget Genie",
+      "description": "Your Ultimate Tech Destination for Electronics, Smartphones & More",
+      "url": "https://gadget-genie.com",
+      "logo": "https://gadget-genie.com/logo.svg",
+      "image": "https://gadget-genie.com/og-image.jpg",
+      "telephone": "+1-800-GADGETS",
+      "email": "support@gadget-genie.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "123 Tech Street",
+        "addressLocality": "San Francisco",
+        "addressRegion": "CA",
+        "postalCode": "94105",
+        "addressCountry": "US"
+      },
+      "openingHours": "Mo-Su 00:00-23:59",
+      "paymentAccepted": "Credit Card, PayPal, Apple Pay, Google Pay",
+      "priceRange": "$",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Electronics & Gadgets",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Smartphones"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Audio Equipment"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Electronics"
+            }
+          }
+        ]
+      }
+    }
+    </script>
   </head>
-
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading">
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3B82F6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </body>
 </html>

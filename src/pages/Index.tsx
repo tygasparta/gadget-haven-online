@@ -14,6 +14,9 @@ import LiveDeals from '../components/LiveDeals';
 import QuickCategories from '../components/QuickCategories';
 import CustomerReviews from '../components/CustomerReviews';
 import SpecialOffers from '../components/SpecialOffers';
+import MobileNavigation from '../components/MobileNavigation';
+import MobileQuickCategories from '../components/MobileQuickCategories';
+import MobileTopDeals from '../components/MobileTopDeals';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 
 const Index = () => {
@@ -48,78 +51,110 @@ const Index = () => {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative">
-      <Header />
-      <CartSidebar />
-      
-      <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 py-3 sm:py-6">
-        <div className="flex flex-col xl:flex-row gap-3 sm:gap-6">
-          {/* Left Sidebar - Enhanced with new components */}
-          <div className="hidden xl:block xl:w-80 flex-shrink-0">
-            <div className="space-y-6">
-              {/* Original Sidebar */}
-              <Sidebar />
-              
-              {/* New Left Side Components */}
-              <TrendingCarousel />
-              <LiveDeals />
-              <QuickCategories />
-              <CustomerReviews />
-              <SpecialOffers />
-            </div>
-          </div>
-          
-          <main className="flex-1 min-w-0 w-full">
-            <div className="w-full">
-              <HeroBanner />
-              
-              {/* Mobile Banners - Show after hero banner on mobile */}
-              <div className="block xl:hidden">
-                <SideBanners />
-              </div>
-              
-              <FeaturedBrands />
-              
-              {transformedFlashSale.length > 0 && (
-                <div className="w-full">
-                  <ProductSection
-                    title="Flash Sale ⚡"
-                    subtitle="Limited time offers. Grab your deal now!"
-                    products={transformedFlashSale}
-                    sectionColor="red"
-                  />
-                </div>
-              )}
-              
-              {newArrivals.length > 0 && (
-                <div className="w-full">
-                  <ProductSection
-                    title="New Arrivals 🆕"
-                    subtitle="Discover the latest tech arrivals in our store."
-                    products={newArrivals}
-                    sectionColor="blue"
-                  />
-                </div>
-              )}
-              
-              {transformedFeatured.length > 0 && (
-                <div className="w-full">
-                  <ProductSection
-                    title="Best Sellers 🔥"
-                    subtitle="Most popular products this month"
-                    products={transformedFeatured}
-                    sectionColor="green"
-                  />
-                </div>
-              )}
-            </div>
-          </main>
-        </div>
-      </div>
+    <>
+      {/* SEO structured data for homepage */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Gadget Genie - Home",
+          "description": "Shop the latest electronics, smartphones, and gadgets at Gadget Genie. Flash sales, new arrivals, and best sellers available now.",
+          "url": "https://gadget-genie.com/",
+          "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": transformedFlashSale.map((product, index) => ({
+              "@type": "Product",
+              "position": index + 1,
+              "name": product.name,
+              "offers": {
+                "@type": "Offer",
+                "price": product.price,
+                "priceCurrency": "USD"
+              }
+            }))
+          }
+        })}
+      </script>
 
-      <Newsletter />
-      <Footer />
-    </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative">
+        <Header />
+        <CartSidebar />
+        
+        <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 py-3 sm:py-6 pb-20 md:pb-6">
+          <div className="flex flex-col xl:flex-row gap-3 sm:gap-6">
+            {/* Left Sidebar - Desktop Only */}
+            <div className="hidden xl:block xl:w-80 flex-shrink-0">
+              <div className="space-y-6">
+                <Sidebar />
+                <TrendingCarousel />
+                <LiveDeals />
+                <QuickCategories />
+                <CustomerReviews />
+                <SpecialOffers />
+              </div>
+            </div>
+            
+            <main className="flex-1 min-w-0 w-full">
+              <div className="w-full">
+                <HeroBanner />
+                
+                {/* Mobile-specific components */}
+                <div className="md:hidden space-y-6 mt-6">
+                  <MobileQuickCategories />
+                  <MobileTopDeals />
+                </div>
+                
+                {/* Desktop Banners - Show after hero banner on mobile */}
+                <div className="block xl:hidden">
+                  <SideBanners />
+                </div>
+                
+                <FeaturedBrands />
+                
+                {transformedFlashSale.length > 0 && (
+                  <div className="w-full">
+                    <ProductSection
+                      title="Flash Sale ⚡"
+                      subtitle="Limited time offers. Grab your deal now!"
+                      products={transformedFlashSale}
+                      sectionColor="red"
+                    />
+                  </div>
+                )}
+                
+                {newArrivals.length > 0 && (
+                  <div className="w-full">
+                    <ProductSection
+                      title="New Arrivals 🆕"
+                      subtitle="Discover the latest tech arrivals in our store."
+                      products={newArrivals}
+                      sectionColor="blue"
+                    />
+                  </div>
+                )}
+                
+                {transformedFeatured.length > 0 && (
+                  <div className="w-full">
+                    <ProductSection
+                      title="Best Sellers 🔥"
+                      subtitle="Most popular products this month"
+                      products={transformedFeatured}
+                      sectionColor="green"
+                    />
+                  </div>
+                )}
+              </div>
+            </main>
+          </div>
+        </div>
+
+        <Newsletter />
+        <Footer />
+        
+        {/* Mobile Navigation */}
+        <MobileNavigation />
+      </div>
+    </>
   );
 };
 
