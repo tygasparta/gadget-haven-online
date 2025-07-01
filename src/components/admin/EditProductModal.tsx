@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,6 +17,20 @@ interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const PRODUCT_CATEGORIES = [
+  'Smartphones',
+  'Laptops',
+  'Tablets',
+  'Headphones',
+  'Cameras',
+  'Gaming',
+  'Accessories',
+  'Smart Watches',
+  'Audio',
+  'Home & Garden',
+  'Electronics'
+];
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, onClose }) => {
   const { toast } = useToast();
@@ -186,12 +202,18 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-gray-300">Category</Label>
-                <Input
-                  id="category"
-                  value={editProduct.category}
-                  onChange={(e) => setEditProduct({...editProduct, category: e.target.value})}
-                  className="bg-gray-800 border-gray-600 text-white"
-                />
+                <Select value={editProduct.category} onValueChange={(value) => setEditProduct({...editProduct, category: value})}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    {PRODUCT_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category} className="text-white hover:bg-gray-700">
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="discount_percentage" className="text-gray-300">Discount %</Label>
