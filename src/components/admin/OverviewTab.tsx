@@ -19,28 +19,34 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
-const OverviewTab = () => {
+interface OverviewTabProps {
+  onTabChange?: (tab: string) => void;
+}
+
+const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
   const { data: analytics, isLoading } = useAnalytics();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const handleReviewLowStock = () => {
-    // Navigate to products tab and show low stock filter
-    window.location.hash = '#products';
-    toast({
-      title: "Low Stock Review",
-      description: "Showing products with low stock levels",
-    });
+    if (onTabChange) {
+      onTabChange('products');
+      toast({
+        title: "Low Stock Review",
+        description: "Showing products with low stock levels",
+      });
+    }
   };
 
   const handleProcessPendingOrders = () => {
-    // Navigate to orders tab and show pending orders
-    window.location.hash = '#orders';
-    toast({
-      title: "Processing Orders",
-      description: "Showing pending orders that need attention",
-    });
+    if (onTabChange) {
+      onTabChange('orders');
+      toast({
+        title: "Processing Orders",
+        description: "Showing pending orders that need attention",
+      });
+    }
   };
 
   const handleWelcomeNewCustomers = async () => {
@@ -83,7 +89,27 @@ const OverviewTab = () => {
   };
 
   const handleViewAllOrders = () => {
-    window.location.hash = '#orders';
+    if (onTabChange) {
+      onTabChange('orders');
+    }
+  };
+
+  const handleViewProducts = () => {
+    if (onTabChange) {
+      onTabChange('products');
+    }
+  };
+
+  const handleViewUsers = () => {
+    if (onTabChange) {
+      onTabChange('users');
+    }
+  };
+
+  const handleViewAnalytics = () => {
+    if (onTabChange) {
+      onTabChange('analytics');
+    }
   };
 
   if (isLoading) {
@@ -106,7 +132,7 @@ const OverviewTab = () => {
     <div className="space-y-6">
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 border-none text-white">
+        <Card className="bg-gradient-to-r from-green-500 to-green-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewAnalytics}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -119,7 +145,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 border-none text-white">
+        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewAllOrders}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -132,7 +158,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 border-none text-white">
+        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewUsers}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -145,7 +171,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 border-none text-white">
+        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewProducts}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -158,7 +184,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-pink-500 to-pink-600 border-none text-white">
+        <Card className="bg-gradient-to-r from-pink-500 to-pink-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewAnalytics}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -174,7 +200,7 @@ const OverviewTab = () => {
 
       {/* Secondary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleViewAnalytics}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -188,7 +214,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleProcessPendingOrders}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -200,7 +226,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleReviewLowStock}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -212,7 +238,7 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleViewUsers}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>

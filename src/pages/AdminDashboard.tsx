@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -171,7 +172,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content based on active tab */}
-        {activeTab === 'overview' && <OverviewTab />}
+        {activeTab === 'overview' && <OverviewTab onTabChange={setActiveTab} />}
         {activeTab === 'products' && (
           <ProductsTab 
             onAddProduct={() => setShowAddProduct(true)}
