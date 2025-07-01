@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Star, TrendingUp, Fire, Clock } from 'lucide-react';
+import { Star, TrendingUp, Flame, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
