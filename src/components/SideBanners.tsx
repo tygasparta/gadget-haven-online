@@ -3,17 +3,17 @@ import { Gift, Zap, Trophy, ShoppingBag, Star, Crown, Headphones, Smartphone, Pe
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { Badge } from '@/components/ui/badge';
-
 const SideBanners = () => {
-  const { items: cartItems, isCartOpen, setIsCartOpen } = useCart();
+  const {
+    items: cartItems,
+    isCartOpen,
+    setIsCartOpen
+  } = useCart();
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
   };
-
-  return (
-    <>
+  return <>
       {/* Desktop Left Side Banner */}
       <div className="fixed left-4 top-1/2 -translate-y-1/2 z-20 hidden xl:block">
         <div className="bg-white text-gray-800 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer p-6 w-28 h-[480px] flex flex-col items-center justify-between overflow-hidden relative group border border-gray-100">
@@ -96,20 +96,14 @@ const SideBanners = () => {
                   </div>
                 </div>
               </div>
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-3 shadow-lg rounded-xl hover:scale-105 transition-all duration-200 hidden sm:block"
-              >
+              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-3 shadow-lg rounded-xl hover:scale-105 transition-all duration-200 hidden sm:block">
                 Shop Now
               </Button>
             </div>
             
             {/* Mobile Shop Button */}
             <div className="block sm:hidden mt-4">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold w-full py-3 shadow-lg rounded-xl"
-              >
+              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold w-full py-3 shadow-lg rounded-xl">
                 Shop Now
               </Button>
             </div>
@@ -130,10 +124,7 @@ const SideBanners = () => {
                   EXCLUSIVE
                 </div>
                 <p className="text-sm opacity-90 mb-4">Premium benefits & early access</p>
-                <Button 
-                  size="sm" 
-                  className="bg-white text-purple-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2"
-                >
+                <Button size="sm" className="bg-white text-purple-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2">
                   Join VIP
                 </Button>
               </div>
@@ -152,10 +143,7 @@ const SideBanners = () => {
                   LIMITED
                 </div>
                 <p className="text-sm opacity-90 mb-4">Up to 60% off selected items</p>
-                <Button 
-                  size="sm" 
-                  className="bg-white text-emerald-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2"
-                >
+                <Button size="sm" className="bg-white text-emerald-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2">
                   Browse
                 </Button>
               </div>
@@ -176,10 +164,7 @@ const SideBanners = () => {
                   NEW
                 </div>
                 <p className="text-sm opacity-90 mb-4">Premium sound experience</p>
-                <Button 
-                  size="sm" 
-                  className="bg-white text-purple-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2"
-                >
+                <Button size="sm" className="bg-white text-purple-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2">
                   Explore
                 </Button>
               </div>
@@ -197,10 +182,7 @@ const SideBanners = () => {
                   LATEST
                 </div>
                 <p className="text-sm opacity-90 mb-4">Newest smartphone tech</p>
-                <Button 
-                  size="sm" 
-                  className="bg-white text-orange-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2"
-                >
+                <Button size="sm" className="bg-white text-orange-600 hover:bg-gray-100 text-sm w-full font-semibold rounded-lg py-2">
                   View All
                 </Button>
               </div>
@@ -232,20 +214,8 @@ const SideBanners = () => {
 
       {/* Floating Action Button - Now Functional */}
       <div className="fixed bottom-6 right-6 z-30 lg:hidden">
-        <div 
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 cursor-pointer border-4 border-white relative"
-          onClick={toggleCart}
-        >
-          <ShoppingBag className="w-6 h-6" />
-          {totalItems > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-6 h-6 flex items-center justify-center">
-              {totalItems}
-            </Badge>
-          )}
-        </div>
+        
       </div>
-    </>
-  );
+    </>;
 };
-
 export default SideBanners;
