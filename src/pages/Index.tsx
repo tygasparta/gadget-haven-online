@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import HeroBanner from '../components/HeroBanner';
@@ -17,14 +17,37 @@ import SpecialOffers from '../components/SpecialOffers';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileQuickCategories from '../components/MobileQuickCategories';
 import MobileTopDeals from '../components/MobileTopDeals';
+import MobileLoadingScreen from '../components/MobileLoadingScreen';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const { data: allProducts = [] } = useProducts();
-  const { data: flashSaleProducts = [] } = useFlashSaleProducts();
-  const { data: featuredProducts = [] } = useFeaturedProducts();
+  const { data: allProducts = [], isLoading: productsLoading } = useProducts();
+  const { data: flashSaleProducts = [], isLoading: flashLoading } = useFlashSaleProducts();
+  const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts();
+  const [showMobileLoading, setShowMobileLoading] = useState(true);
+
+  // Show loading screen on mobile for a short duration
+  useEffect(() => {
+    if (isMobile) {
+      const timer = setTimeout(() => {
+        setShowMobileLoading(false);
+      }, 2000); // Show loading for 2 seconds
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowMobileLoading(false);
+    }
+  }, [isMobile]);
+
+  // Show loading if data is still loading or mobile loading screen is active
+  const isLoading = productsLoading || flashLoading || featuredLoading || (isMobile && showMobileLoading);
+
+  // Show mobile loading screen
+  if (isMobile && showMobileLoading) {
+    return <MobileLoadingScreen />;
+  }
 
   // Transform products to match the expected format
   const transformProduct = (product: any) => ({
@@ -152,7 +175,7 @@ const Index = () => {
         {/* Footer - Desktop Only */}
         {!isMobile && <Footer />}
         
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Always visible on mobile */}
         <MobileNavigation />
       </div>
     </>

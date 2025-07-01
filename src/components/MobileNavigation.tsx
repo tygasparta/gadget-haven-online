@@ -62,11 +62,11 @@ const MobileNavigation = () => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-50 safe-area-pb shadow-2xl">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-[999] shadow-2xl">
       {/* Decorative top border */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
       
-      <div className="flex items-center justify-around py-2 px-2 relative">
+      <div className="flex items-center justify-around py-2 px-2 relative safe-area-pb">
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-blue-50/30 via-transparent to-transparent pointer-events-none"></div>
         
