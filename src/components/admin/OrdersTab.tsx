@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, Mail } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, Mail, MoreHorizontal, Edit, Trash2, Download, RefreshCw } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 
 const OrdersTab = () => {
@@ -69,6 +77,60 @@ const OrdersTab = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Order deleted successfully",
+        description: "The order has been permanently removed",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting order",
+        description: error.message || "Failed to delete order",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const exportOrderData = (order: any) => {
+    const orderData = {
+      id: order.id,
+      date: new Date(order.created_at).toLocaleDateString(),
+      customer: order.user_id,
+      total: order.total_amount,
+      status: order.status,
+      items: order.order_items?.length || 0
+    };
+    
+    const dataStr = JSON.stringify(orderData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `order-${order.id.slice(-8)}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+
+    toast({
+      title: "Order exported",
+      description: "Order data has been downloaded as JSON file",
+    });
+  };
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.user_id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -78,11 +140,11 @@ const OrdersTab = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-600 hover:bg-green-700';
-      case 'shipped': return 'bg-blue-600 hover:bg-blue-700';
-      case 'pending': return 'bg-yellow-600 hover:bg-yellow-700';
-      case 'cancelled': return 'bg-red-600 hover:bg-red-700';
-      default: return 'bg-gray-600 hover:bg-gray-700';
+      case 'completed': return 'bg-green-600 hover:bg-green-700 text-white';
+      case 'shipped': return 'bg-blue-600 hover:bg-blue-700 text-white';
+      case 'pending': return 'bg-yellow-600 hover:bg-yellow-700 text-white';
+      case 'cancelled': return 'bg-red-600 hover:bg-red-700 text-white';
+      default: return 'bg-gray-600 hover:bg-gray-700 text-white';
     }
   };
 
@@ -114,11 +176,11 @@ const OrdersTab = () => {
     <div className="space-y-6">
       {/* Order Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10">
+        <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border-blue-400/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Total Orders</p>
+                <p className="text-sm font-medium text-blue-200">Total Orders</p>
                 <p className="text-2xl font-bold text-white">{stats.total}</p>
               </div>
               <Package className="w-8 h-8 text-blue-400" />
@@ -126,11 +188,11 @@ const OrdersTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10">
+        <Card className="bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 backdrop-blur-sm border-yellow-400/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Pending</p>
+                <p className="text-sm font-medium text-yellow-200">Pending</p>
                 <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
               </div>
               <Clock className="w-8 h-8 text-yellow-400" />
@@ -138,11 +200,11 @@ const OrdersTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10">
+        <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border-blue-400/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Shipped</p>
+                <p className="text-sm font-medium text-blue-200">Shipped</p>
                 <p className="text-2xl font-bold text-blue-400">{stats.shipped}</p>
               </div>
               <Truck className="w-8 h-8 text-blue-400" />
@@ -150,11 +212,11 @@ const OrdersTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10">
+        <Card className="bg-gradient-to-br from-green-600/20 to-green-800/20 backdrop-blur-sm border-green-400/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Completed</p>
+                <p className="text-sm font-medium text-green-200">Completed</p>
                 <p className="text-2xl font-bold text-green-400">{stats.completed}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-400" />
@@ -162,11 +224,11 @@ const OrdersTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10">
+        <Card className="bg-gradient-to-br from-red-600/20 to-red-800/20 backdrop-blur-sm border-red-400/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Cancelled</p>
+                <p className="text-sm font-medium text-red-200">Cancelled</p>
                 <p className="text-2xl font-bold text-red-400">{stats.cancelled}</p>
               </div>
               <XCircle className="w-8 h-8 text-red-400" />
@@ -174,100 +236,112 @@ const OrdersTab = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10">
+        <Card className="bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 backdrop-blur-sm border-emerald-400/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Revenue</p>
-                <p className="text-2xl font-bold text-green-400">${stats.totalRevenue.toFixed(2)}</p>
+                <p className="text-sm font-medium text-emerald-200">Revenue</p>
+                <p className="text-2xl font-bold text-emerald-400">${stats.totalRevenue.toFixed(2)}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-green-400" />
+              <DollarSign className="w-8 h-8 text-emerald-400" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Orders Management */}
-      <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+      <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-700/50">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h3 className="text-xl font-bold">Order Management</h3>
+            <div>
+              <h3 className="text-2xl font-bold text-white">Order Management</h3>
+              <p className="text-gray-400 mt-1">Manage and track all customer orders</p>
+            </div>
             <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Search orders..."
+                  placeholder="Search by Order ID or Customer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/10 border-white/20 text-white placeholder-gray-400 w-full md:w-64"
+                  className="pl-10 bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 w-full md:w-80 focus:border-blue-400"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-white/10 border-white/20 text-white w-full md:w-40">
+                <SelectTrigger className="bg-gray-800/50 border-gray-600 text-white w-full md:w-40 focus:border-blue-400">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="all">All Orders</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="all" className="text-white hover:bg-gray-700">All Orders</SelectItem>
+                  <SelectItem value="pending" className="text-white hover:bg-gray-700">Pending</SelectItem>
+                  <SelectItem value="shipped" className="text-white hover:bg-gray-700">Shipped</SelectItem>
+                  <SelectItem value="completed" className="text-white hover:bg-gray-700">Completed</SelectItem>
+                  <SelectItem value="cancelled" className="text-white hover:bg-gray-700">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
+              <Button 
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="bg-gray-800/30 rounded-lg border border-gray-700/50 overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/20 hover:bg-white/5">
-                  <TableHead className="text-gray-300">Order ID</TableHead>
-                  <TableHead className="text-gray-300">Date</TableHead>
-                  <TableHead className="text-gray-300">Customer</TableHead>
-                  <TableHead className="text-gray-300">Items</TableHead>
-                  <TableHead className="text-gray-300">Total</TableHead>
-                  <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-gray-300">Payment</TableHead>
-                  <TableHead className="text-gray-300">Actions</TableHead>
+                <TableRow className="border-gray-700/50 bg-gray-800/50">
+                  <TableHead className="text-gray-300 font-semibold">Order ID</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Date</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Customer</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Items</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Total</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Status</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Payment</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="border-white/10 hover:bg-white/5">
+                  <TableRow key={order.id} className="border-gray-700/30 hover:bg-gray-800/40 transition-colors">
                     <TableCell>
-                      <div className="font-medium text-white">
+                      <div className="font-mono text-blue-400 font-medium">
                         #{order.id.slice(-8).toUpperCase()}
                       </div>
                     </TableCell>
                     <TableCell className="text-gray-300">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(order.created_at).toLocaleDateString()}
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="font-medium">{new Date(order.created_at).toLocaleDateString()}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-gray-300">
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        Customer {order.user_id.slice(-4)}
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span className="font-medium">Customer {order.user_id.slice(-4)}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-gray-300">
+                    <TableCell className="text-gray-300 font-medium">
                       {order.order_items?.length || 0} items
                     </TableCell>
-                    <TableCell className="text-white font-medium">
-                      ${Number(order.total_amount).toFixed(2)}
+                    <TableCell>
+                      <span className="text-green-400 font-bold text-lg">
+                        ${Number(order.total_amount).toFixed(2)}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <Badge className={`${getStatusColor(order.status || 'pending')} text-white flex items-center gap-1 w-fit`}>
+                      <Badge className={`${getStatusColor(order.status || 'pending')} flex items-center gap-1 w-fit font-medium`}>
                         {getStatusIcon(order.status || 'pending')}
                         {(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-300">
                       <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4" />
-                        {order.payment_method || 'Card'}
+                        <CreditCard className="w-4 h-4 text-gray-400" />
+                        <span className="font-medium">{order.payment_method || 'Card'}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -277,10 +351,11 @@ const OrdersTab = () => {
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="bg-blue-600 hover:bg-blue-700 border-blue-500 text-white"
+                              className="bg-blue-600 hover:bg-blue-700 border-blue-500 text-white font-medium"
                               onClick={() => setSelectedOrder(order)}
                             >
-                              <Eye className="w-4 h-4" />
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -488,21 +563,72 @@ const OrdersTab = () => {
                           </DialogContent>
                         </Dialog>
                         
-                        <Select
-                          value={order.status || 'pending'}
-                          onValueChange={(value) => handleUpdateOrderStatus(order.id, value)}
-                          disabled={updatingStatus}
-                        >
-                          <SelectTrigger className="bg-gray-700 text-white text-sm border-gray-600 w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 border-gray-700">
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="bg-gray-700 hover:bg-gray-600 border-gray-600 text-white font-medium"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent 
+                            className="bg-gray-800 border-gray-600 text-white min-w-[160px]" 
+                            align="end"
+                          >
+                            <DropdownMenuLabel className="text-gray-300 font-semibold">
+                              Order Actions
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-gray-600" />
+                            
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-700 cursor-pointer"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem 
+                              className="text-white hover:bg-gray-700 cursor-pointer"
+                              onClick={() => exportOrderData(order)}
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Export Data
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator className="bg-gray-600" />
+                            
+                            <DropdownMenuItem 
+                              className="text-blue-400 hover:bg-gray-700 cursor-pointer"
+                              onClick={() => handleUpdateOrderStatus(order.id, 'shipped')}
+                              disabled={order.status === 'shipped'}
+                            >
+                              <Truck className="w-4 h-4 mr-2" />
+                              Mark as Shipped
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem 
+                              className="text-green-400 hover:bg-gray-700 cursor-pointer"
+                              onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                              disabled={order.status === 'completed'}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Mark as Completed
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator className="bg-gray-600" />
+                            
+                            <DropdownMenuItem 
+                              className="text-red-400 hover:bg-red-900/50 cursor-pointer"
+                              onClick={() => handleDeleteOrder(order.id)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Order
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -512,9 +638,9 @@ const OrdersTab = () => {
           </div>
 
           {filteredOrders.length === 0 && (
-            <div className="text-center py-8">
-              <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">No orders found</p>
+            <div className="text-center py-12">
+              <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-300 mb-2">No orders found</h3>
               <p className="text-gray-500">Try adjusting your search or filter criteria</p>
             </div>
           )}
