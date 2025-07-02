@@ -60,11 +60,11 @@ const MobileNavigation = () => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-[999] shadow-2xl">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-[999] shadow-2xl h-16">
       {/* Decorative top border */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
       
-      <div className="flex items-center justify-around py-2 px-2 relative safe-area-pb">
+      <div className="flex items-center justify-around py-1 px-2 h-full relative">
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-blue-50/30 via-transparent to-transparent pointer-events-none"></div>
         
@@ -72,7 +72,7 @@ const MobileNavigation = () => {
           <Link
             key={item.key}
             to={item.path}
-            className={`relative flex flex-col items-center py-3 px-3 rounded-2xl transition-all duration-300 transform hover:scale-110 group ${
+            className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-110 group ${
               isActive(item.path)
                 ? `${item.activeColor} shadow-lg scale-105`
                 : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -84,12 +84,12 @@ const MobileNavigation = () => {
             )}
             
             {/* Icon container with gradient background for active state */}
-            <div className={`relative mb-1 p-1 rounded-xl transition-all duration-300 ${
+            <div className={`relative mb-1 p-1 rounded-lg transition-all duration-300 ${
               isActive(item.path) 
                 ? `bg-gradient-to-r ${item.gradient} shadow-lg` 
                 : 'group-hover:bg-gray-100'
             }`}>
-              <item.icon className={`w-5 h-5 transition-all duration-300 ${
+              <item.icon className={`w-4 h-4 transition-all duration-300 ${
                 isActive(item.path) ? 'text-white' : 'text-current'
               }`} />
               
@@ -115,20 +115,20 @@ const MobileNavigation = () => {
         {/* Enhanced Cart button with special styling */}
         <button
           onClick={handleCartClick}
-          className="relative flex flex-col items-center py-3 px-3 rounded-2xl transition-all duration-300 transform hover:scale-110 text-gray-600 hover:text-gray-800 hover:bg-gray-50 group"
+          className="relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-110 text-gray-600 hover:text-gray-800 hover:bg-gray-50 group"
         >
           {/* Special cart icon container */}
-          <div className="relative mb-1 p-1 rounded-xl transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-orange-500 group-hover:to-red-600 group-hover:shadow-lg">
-            <ShoppingBag className="w-5 h-5 transition-all duration-300 group-hover:text-white" />
+          <div className="relative mb-1 p-1 rounded-lg transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-orange-500 group-hover:to-red-600 group-hover:shadow-lg">
+            <ShoppingBag className="w-4 h-4 transition-all duration-300 group-hover:text-white" />
             
             {/* Cart badge with enhanced styling */}
             {cartCount > 0 && (
               <>
-                <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full min-w-5 h-5 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-4 h-4 flex items-center justify-center font-bold shadow-lg animate-pulse text-[10px]">
                   {cartCount}
                 </Badge>
                 {/* Pulsing ring effect */}
-                <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-400 rounded-full animate-ping opacity-30"></div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-400 rounded-full animate-ping opacity-30"></div>
               </>
             )}
           </div>
@@ -143,9 +143,6 @@ const MobileNavigation = () => {
           )}
         </button>
       </div>
-      
-      {/* Bottom safe area with gradient */}
-      <div className="h-2 bg-gradient-to-t from-gray-100/50 to-transparent"></div>
     </div>
   );
 };

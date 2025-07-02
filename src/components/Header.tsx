@@ -237,10 +237,10 @@ const Header = () => {
                   {isAdmin && (
                     <Button 
                       onClick={handleAdminClick}
-                      className="p-2 hidden sm:flex bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0 shadow-lg"
+                      className="p-2 hidden sm:flex bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0 shadow-lg animate-pulse hover:animate-none"
                     >
                       <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
-                      <span className="ml-2 font-bold text-sm">ADMIN</span>
+                      <span className="ml-2 font-bold text-sm">ADMIN PANEL</span>
                     </Button>
                   )}
                   

@@ -2,11 +2,14 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import MobileNavigation from '../components/MobileNavigation';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Grid3X3, Smartphone, Headphones, Laptop, Watch, Camera, Gamepad2, Tv, Zap } from 'lucide-react';
 
 const Categories = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const categories = [
     {
@@ -91,7 +94,7 @@ const Categories = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Product Categories</h1>
           <p className="text-gray-600">Explore our wide range of tech products</p>
@@ -147,7 +150,11 @@ const Categories = () => {
         </div>
       </div>
 
-      <Footer />
+      {/* Footer - Desktop Only */}
+      {!isMobile && <Footer />}
+      
+      {/* Mobile Navigation - Always visible on mobile */}
+      <MobileNavigation />
     </div>
   );
 };

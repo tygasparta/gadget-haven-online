@@ -123,6 +123,6 @@
 /* Prevent scroll when mobile navigation is present */
 @media (max-width: 768px) {
   body {
-    padding-bottom: env(safe-area-inset-bottom, 80px);
+    padding-bottom: env(safe-area-inset-bottom, 64px);
   }
 }
