@@ -42,11 +42,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : 0;
 
   const handleAddToCart = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
     addToCart({ productId: product.id });
   };
 
@@ -163,7 +158,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           onClick={handleAddToCart}
         >
           <ShoppingCart className="w-4 h-4 mr-2" />
-          {user ? 'Add to Cart' : 'Login to Buy'}
+          Add to Cart
         </Button>
       </div>
     </div>

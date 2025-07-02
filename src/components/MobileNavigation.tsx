@@ -4,11 +4,13 @@ import { Home, Grid3X3, Heart, User, ShoppingBag, Star, Zap } from 'lucide-react
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartItems } from '@/hooks/useCart';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Badge } from '@/components/ui/badge';
 
 const MobileNavigation = () => {
   const location = useLocation();
   const { user } = useAuthContext();
+  const { isAdmin } = useUserRole();
   const { data: cartItems = [] } = useCartItems();
   
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -41,10 +43,10 @@ const MobileNavigation = () => {
     { 
       icon: User, 
       label: 'Account', 
-      path: user ? '/dashboard' : '/auth', 
+      path: user ? (isAdmin ? '/admin' : '/dashboard') : '/auth', 
       key: 'account',
-      gradient: 'from-purple-500 to-indigo-600',
-      activeColor: 'text-purple-600 bg-purple-50'
+      gradient: isAdmin ? 'from-red-500 to-pink-600' : 'from-purple-500 to-indigo-600',
+      activeColor: isAdmin ? 'text-red-600 bg-red-50' : 'text-purple-600 bg-purple-50'
     },
   ];
 
@@ -54,10 +56,6 @@ const MobileNavigation = () => {
   };
 
   const handleCartClick = () => {
-    if (!user) {
-      window.location.href = '/auth';
-      return;
-    }
     window.dispatchEvent(new Event('openCart'));
   };
 
