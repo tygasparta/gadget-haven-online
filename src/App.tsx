@@ -18,6 +18,11 @@ import Deals from "./pages/Deals";
 import Audio from "./pages/Audio";
 import Phones from "./pages/Phones";
 import Wishlist from "./pages/Wishlist";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
+import PaymentMethods from "./pages/PaymentMethods";
+import Addresses from "./pages/Addresses";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import AboutUs from "./pages/AboutUs";
 import Careers from "./pages/Careers";
@@ -57,6 +62,11 @@ const App = () => (
               <Route path="/audio" element={<Audio />} />
               <Route path="/phones" element={<Phones />} />
               <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/payment-methods" element={<PaymentMethods />} />
+              <Route path="/addresses" element={<Addresses />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/about-us" element={<AboutUs />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/sell-with-us" element={<SellWithUs />} />
