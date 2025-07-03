@@ -2,15 +2,18 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import MobileNavigation from '../components/MobileNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, ShoppingCart, Trash2, Star } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Wishlist = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   // Mock wishlist data - in a real app, this would come from a database
   const [wishlistItems, setWishlistItems] = useState([
@@ -76,7 +79,7 @@ const Wishlist = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         <div className="flex items-center mb-8">
           <Heart className="w-8 h-8 text-red-500 mr-3" />
           <div>
@@ -162,7 +165,11 @@ const Wishlist = () => {
         )}
       </div>
 
-      <Footer />
+      {/* Footer - Desktop Only */}
+      {!isMobile && <Footer />}
+      
+      {/* Mobile Navigation - Always visible on mobile */}
+      <MobileNavigation />
     </div>
   );
 };

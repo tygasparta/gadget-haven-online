@@ -15,6 +15,9 @@ const MobileNavigation = () => {
   
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
+  // Don't show admin access on mobile - redirect to regular user dashboard
+  const accountPath = user ? '/dashboard' : '/auth';
+
   const navItems = [
     { 
       icon: Home, 
@@ -43,10 +46,10 @@ const MobileNavigation = () => {
     { 
       icon: User, 
       label: 'Account', 
-      path: user ? (isAdmin ? '/admin' : '/dashboard') : '/auth', 
+      path: accountPath, 
       key: 'account',
-      gradient: isAdmin ? 'from-red-500 to-pink-600' : 'from-purple-500 to-indigo-600',
-      activeColor: isAdmin ? 'text-red-600 bg-red-50' : 'text-purple-600 bg-purple-50'
+      gradient: 'from-purple-500 to-indigo-600',
+      activeColor: 'text-purple-600 bg-purple-50'
     },
   ];
 
@@ -60,7 +63,7 @@ const MobileNavigation = () => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-[999] shadow-2xl h-16">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-[50] shadow-2xl h-16">
       {/* Decorative top border */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
       
