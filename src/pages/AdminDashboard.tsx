@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,15 +20,13 @@ import {
   Search,
   Eye,
   AlertTriangle,
-  Store,
-  Smartphone
+  Store
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useProducts } from '@/hooks/useProducts';
 import { useOrders } from '@/hooks/useOrders';
 import { useUsers } from '@/hooks/useUsers';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -47,7 +44,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuthContext();
   const { isAdmin, loading: roleLoading } = useUserRole();
-  const isMobile = useIsMobile();
   const { data: products = [] } = useProducts();
   const { data: orders = [] } = useOrders();
   const { data: users = [] } = useUsers();
@@ -63,45 +59,7 @@ const AdminDashboard = () => {
     console.log('AdminDashboard: User:', user?.email);
     console.log('AdminDashboard: Is Admin:', isAdmin);
     console.log('AdminDashboard: Role Loading:', roleLoading);
-    console.log('AdminDashboard: Is Mobile:', isMobile);
-  }, [user, isAdmin, roleLoading, isMobile]);
-
-  // Block mobile access
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white max-w-md w-full">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto">
-              <Smartphone className="w-10 h-10 text-orange-400" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Desktop Required</h2>
-              <p className="text-gray-300 mb-6">
-                The admin dashboard is only available on desktop devices for security and usability reasons.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <Button 
-                onClick={() => navigate('/')}
-                className="w-full bg-blue-600 hover:bg-blue-700"
-              >
-                <Store className="w-4 h-4 mr-2" />
-                Back to Store
-              </Button>
-              <Button 
-                onClick={() => navigate('/dashboard')}
-                variant="outline"
-                className="w-full bg-white/10 text-white border-white/20 hover:bg-white/20"
-              >
-                Go to Account
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  }, [user, isAdmin, roleLoading]);
 
   // Redirect if not authenticated or not admin
   React.useEffect(() => {

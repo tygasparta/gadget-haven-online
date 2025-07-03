@@ -1,42 +1,28 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { 
-  ShoppingCart, 
-  CreditCard, 
-  MapPin, 
-  User, 
-  ArrowLeft,
-  Plus,
-  Minus,
-  Trash2,
-  Star,
-  Shield,
-  Truck
-} from 'lucide-react';
-import { useCartItems, useUpdateCartItem, useRemoveFromCart } from '@/hooks/useCart';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, CreditCard, Truck, Shield, Banknote, Smartphone } from 'lucide-react';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCartItems } from '@/hooks/useCart';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import usePaynow from '@/hooks/usePaynow';
 
 const Checkout = () => {
+  const { data: cartItems = [] } = useCartItems();
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const { data: cartItems = [] } = useCartItems();
-  const updateCartItem = useUpdateCartItem();
-  const removeFromCart = useRemoveFromCart();
+  const { toast } = useToast();
+  const { initiateWebPayment, initiateMobilePayment, isProcessing: paynowProcessing } = usePaynow();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [mobileMethod, setMobileMethod] = useState<'ecocash' | 'onemoney'>('ecocash');
   
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: '',
@@ -44,25 +30,19 @@ const Checkout = () => {
     address: '',
     city: '',
     zipCode: '',
+    country: 'Zimbabwe',
+    phone: '',
     cardNumber: '',
     expiryDate: '',
-    cvv: ''
+    cvv: '',
+    nameOnCard: ''
   });
 
-  React.useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-
-  if (!user) return null;
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    updateCartItem.mutate({ id, quantity: newQuantity });
-  };
-
-  const handleRemoveFromCart = (id: string) => {
-    removeFromCart.mutate(id);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const getTotalPrice = () => {
@@ -71,47 +51,266 @@ const Checkout = () => {
     }, 0);
   };
 
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  const validatePaymentData = () => {
+    const errors: string[] = [];
+    
+    if (!formData.email || !formData.email.includes('@')) {
+      errors.push('Valid email address is required');
+    }
+    
+    if (!formData.firstName.trim()) {
+      errors.push('First name is required');
+    }
+    
+    if (!formData.lastName.trim()) {
+      errors.push('Last name is required');
+    }
+    
+    if (!formData.address.trim()) {
+      errors.push('Address is required');
+    }
+    
+    if (!formData.city.trim()) {
+      errors.push('City is required');
+    }
+    
+    if ((paymentMethod === 'paynow_mobile' || paymentMethod === 'paynow_web') && !formData.phone.trim()) {
+      errors.push('Phone number is required for Paynow payments');
+    }
+    
+    if (paymentMethod === 'paynow_mobile') {
+      const cleanPhone = formData.phone.replace(/\s+/g, '').replace(/^\+263/, '0');
+      if (mobileMethod === 'ecocash' && !cleanPhone.startsWith('077')) {
+        errors.push('EcoCash requires an Econet number starting with 077');
+      }
+      if (mobileMethod === 'onemoney' && !cleanPhone.startsWith('071')) {
+        errors.push('OneMoney requires a NetOne number starting with 071');
+      }
+    }
+    
+    return errors;
   };
 
-  const getSavings = () => {
-    return cartItems.reduce((savings, item) => {
-      const originalPrice = item.products.original_price || item.products.price;
-      return savings + ((originalPrice - item.products.price) * item.quantity);
-    }, 0);
+  const handlePaynowWebPayment = async (orderId: string) => {
+    console.log('Starting Paynow web payment for order:', orderId);
+    
+    const paymentData = {
+      reference: `ORD-${orderId}`,
+      amount: getTotalPrice(),
+      email: formData.email,
+      phone: formData.phone,
+      additionalInfo: `Order ${orderId} - Gadget Genie`,
+      returnUrl: `${window.location.origin}/order-success`,
+      resultUrl: `${window.location.origin}/api/paynow-callback`
+    };
+
+    console.log('Payment data:', paymentData);
+    
+    const response = await initiateWebPayment(paymentData);
+    console.log('Web payment response:', response);
+    
+    return response.success;
   };
 
-  const totalPrice = getTotalPrice();
-  const totalItems = getTotalItems();
-  const savings = getSavings();
-  const shipping = totalPrice >= 50 ? 0 : 9.99;
-  const tax = totalPrice * 0.08;
-  const finalTotal = totalPrice + shipping + tax;
+  const handlePaynowMobilePayment = async (orderId: string) => {
+    console.log('Starting Paynow mobile payment for order:', orderId);
+    
+    if (!formData.phone) {
+      toast({
+        title: "Phone Number Required",
+        description: "Please provide your phone number for mobile payment",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    const paymentData = {
+      reference: `ORD-${orderId}`,
+      amount: getTotalPrice(),
+      email: formData.email,
+      phone: formData.phone,
+      additionalInfo: `Order ${orderId} - Gadget Genie`
+    };
+
+    console.log('Mobile payment data:', paymentData);
+    
+    const response = await initiateMobilePayment(paymentData, formData.phone, mobileMethod);
+    console.log('Mobile payment response:', response);
+    
+    return response.success;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    console.log('Form submitted with method:', paymentMethod);
+    console.log('Form data:', formData);
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to complete your order",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    // Validate form data
+    const validationErrors = validatePaymentData();
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: validationErrors.join(', '),
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      console.log('Creating order in database...');
+      
+      // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total_amount: getTotalPrice(),
+          status: paymentMethod === 'pay_on_delivery' ? 'pending' : 'confirmed',
+          payment_method: paymentMethod,
+          shipping_address: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            address: formData.address,
+            city: formData.city,
+            zipCode: formData.zipCode,
+            country: formData.country,
+            phone: formData.phone
+          },
+          billing_address: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            address: formData.address,
+            city: formData.city,
+            zipCode: formData.zipCode,
+            country: formData.country,
+            phone: formData.phone
+          }
+        })
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw orderError;
+      }
+      
+      console.log('Order created:', order);
+
+      // Create order items
+      const orderItems = cartItems.map(item => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.products.price
+      }));
+
+      console.log('Creating order items:', orderItems);
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('Order items creation error:', itemsError);
+        throw itemsError;
+      }
+
+      // Handle payment based on method
+      if (paymentMethod === 'paynow_web') {
+        console.log('Processing Paynow web payment...');
+        const paymentSuccess = await handlePaynowWebPayment(order.id);
+        if (!paymentSuccess) {
+          throw new Error('Paynow web payment failed');
+        }
+        return; // Paynow will handle the redirect
+      }
+
+      if (paymentMethod === 'paynow_mobile') {
+        console.log('Processing Paynow mobile payment...');
+        const paymentSuccess = await handlePaynowMobilePayment(order.id);
+        if (!paymentSuccess) {
+          throw new Error('Paynow mobile payment failed');
+        }
+        // For mobile payments, we stay on the page and show instructions
+        toast({
+          title: "Payment Instructions Sent",
+          description: "Please check your phone and follow the payment instructions",
+          duration: 15000
+        });
+        return;
+      }
+
+      // Clear cart after successful order (for non-Paynow payments)
+      console.log('Clearing cart...');
+      const { error: clearCartError } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (clearCartError) {
+        console.error('Clear cart error:', clearCartError);
+        throw clearCartError;
+      }
+
+      const successMessage = paymentMethod === 'pay_on_delivery' 
+        ? "Your order has been placed! You'll pay when your items are delivered."
+        : "Your order has been placed successfully.";
+
+      toast({
+        title: "Order Confirmed!",
+        description: successMessage
+      });
+      
+      navigate('/order-success', { 
+        state: { 
+          orderId: order.id, 
+          total: getTotalPrice(),
+          paymentMethod: paymentMethod
+        } 
+      });
+    } catch (error: any) {
+      console.error('Order creation error:', error);
+      toast({
+        title: "Order Failed",
+        description: error.message || "There was an error processing your order. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Redirect to auth if not logged in
+  if (!user) {
+    navigate('/auth');
+    return null;
+  }
 
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className={`max-w-2xl mx-auto px-4 py-16 text-center ${isMobile ? 'pb-20' : ''}`}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <ShoppingCart className="w-24 h-24 mx-auto text-gray-300" />
-            <h1 className="text-3xl font-bold text-gray-900">Your cart is empty</h1>
-            <p className="text-gray-600">Start shopping to add items to your cart</p>
-            <Button 
-              onClick={() => navigate('/')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
+            <Button onClick={() => navigate('/')}>
               Continue Shopping
             </Button>
-          </motion.div>
+          </div>
         </div>
-        {!isMobile && <Footer />}
-        <MobileNavigation />
       </div>
     );
   }
@@ -119,214 +318,362 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Mobile Header */}
-        {isMobile && (
-          <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold">Shopping Cart</h1>
-            <Badge className="bg-blue-100 text-blue-800">
-              {totalItems} items
-            </Badge>
-          </div>
-        )}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/')}
+          className="mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Shopping
+        </Button>
 
-        {/* Desktop Header */}
-        {!isMobile && (
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-3">
-              <ShoppingCart className="w-8 h-8 text-blue-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-                <p className="text-gray-600">{totalItems} items in your cart</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Continue Shopping
-            </Button>
-          </div>
-        )}
-
-        <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-1 lg:grid-cols-3 gap-8'}`}>
-          {/* Cart Items */}
-          <div className={isMobile ? 'order-1' : 'lg:col-span-2'}>
-            <Card className="shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center justify-between">
-                  <span>Your Items</span>
-                  {savings > 0 && (
-                    <Badge className="bg-green-100 text-green-800">
-                      Save ${savings.toFixed(2)}
-                    </Badge>
-                  )}
-                </CardTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Checkout Form */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <AnimatePresence>
-                  {cartItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -100 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center space-x-4 p-4 bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all"
-                    >
-                      <div className="relative">
-                        <img
-                          src={item.products.image}
-                          alt={item.products.name}
-                          className={`object-cover rounded-lg ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}`}
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                          }}
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+263 77 123 4567"
+                    required
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Shipping Address</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="zipCode">ZIP Code</Label>
+                    <Input
+                      id="zipCode"
+                      name="zipCode"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Method</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={setPaymentMethod}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="credit_card" id="credit_card" />
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="w-5 h-5 text-blue-600" />
+                      <Label htmlFor="credit_card" className="font-medium">Credit Card</Label>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="paynow_web" id="paynow_web" />
+                    <div className="flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5 text-green-600" />
+                      <div>
+                        <Label htmlFor="paynow_web" className="font-medium">Paynow (Web)</Label>
+                        <p className="text-sm text-gray-500">Pay via Paynow website</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="paynow_mobile" id="paynow_mobile" />
+                    <div className="flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <Label htmlFor="paynow_mobile" className="font-medium">Mobile Money</Label>
+                        <p className="text-sm text-gray-500">EcoCash or OneMoney</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="pay_on_delivery" id="pay_on_delivery" />
+                    <div className="flex items-center space-x-2">
+                      <Banknote className="w-5 h-5 text-green-600" />
+                      <div>
+                        <Label htmlFor="pay_on_delivery" className="font-medium">Pay on Delivery</Label>
+                        <p className="text-sm text-gray-500">Pay with cash when your order arrives</p>
+                      </div>
+                    </div>
+                  </div>
+                </RadioGroup>
+                
+                {paymentMethod === 'credit_card' && (
+                  <div className="space-y-4 mt-4 p-4 border rounded-lg bg-gray-50">
+                    <div>
+                      <Label htmlFor="cardNumber">Card Number</Label>
+                      <Input
+                        id="cardNumber"
+                        name="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={formData.cardNumber}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="expiryDate">Expiry Date</Label>
+                        <Input
+                          id="expiryDate"
+                          name="expiryDate"
+                          placeholder="MM/YY"
+                          value={formData.expiryDate}
+                          onChange={handleInputChange}
+                          required
                         />
-                        {item.products.original_price && item.products.original_price > item.products.price && (
-                          <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            Sale
-                          </div>
-                        )}
                       </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{item.products.name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-lg font-bold text-blue-600">${item.products.price}</span>
-                          {item.products.original_price && item.products.original_price > item.products.price && (
-                            <span className="text-gray-400 line-through text-sm">${item.products.original_price}</span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-gray-200"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="w-8 text-center font-medium">{item.quantity}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-gray-200"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleRemoveFromCart(item.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                      <div>
+                        <Label htmlFor="cvv">CVV</Label>
+                        <Input
+                          id="cvv"
+                          name="cvv"
+                          placeholder="123"
+                          value={formData.cvv}
+                          onChange={handleInputChange}
+                          required
+                        />
                       </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                    </div>
+                    <div>
+                      <Label htmlFor="nameOnCard">Name on Card</Label>
+                      <Input
+                        id="nameOnCard"
+                        name="nameOnCard"
+                        value={formData.nameOnCard}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'paynow_web' && (
+                  <div className="p-4 border rounded-lg bg-green-50">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Smartphone className="w-5 h-5 text-green-600" />
+                      <span className="font-medium text-green-800">Paynow Web Payment</span>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      You'll be redirected to Paynow to complete your payment using:
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-green-700 mt-2 space-y-1">
+                      <li>EcoCash</li>
+                      <li>OneMoney</li>
+                      <li>Telecash</li>
+                      <li>Bank Transfer</li>
+                      <li>Visa/Mastercard</li>
+                    </ul>
+                  </div>
+                )}
+
+                {paymentMethod === 'paynow_mobile' && (
+                  <div className="p-4 border rounded-lg bg-purple-50">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Smartphone className="w-5 h-5 text-purple-600" />
+                      <span className="font-medium text-purple-800">Mobile Money Payment</span>
+                    </div>
+                    <p className="text-sm text-purple-700 mb-3">
+                      Choose your mobile money provider:
+                    </p>
+                    <RadioGroup
+                      value={mobileMethod}
+                      onValueChange={(value) => setMobileMethod(value as 'ecocash' | 'onemoney')}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ecocash" id="ecocash" />
+                        <Label htmlFor="ecocash" className="text-sm">EcoCash (Econet - 077 numbers)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="onemoney" id="onemoney" />
+                        <Label htmlFor="onemoney" className="text-sm">OneMoney (NetOne - 071 numbers)</Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-purple-600 mt-2">
+                      Payment instructions will be sent to your phone
+                    </p>
+                    {mobileMethod === 'ecocash' && !formData.phone.replace(/\s+/g, '').replace(/^\+263/, '0').startsWith('077') && formData.phone && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Please ensure your phone number starts with 077 for EcoCash
+                      </p>
+                    )}
+                    {mobileMethod === 'onemoney' && !formData.phone.replace(/\s+/g, '').replace(/^\+263/, '0').startsWith('071') && formData.phone && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Please ensure your phone number starts with 071 for OneMoney
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
           {/* Order Summary */}
-          <div className={isMobile ? 'order-2' : ''}>
-            <Card className="sticky top-4 shadow-lg">
+          <div className="space-y-6">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="w-5 h-5" />
-                  <span>Order Summary</span>
-                </CardTitle>
+                <CardTitle>Order Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal ({totalItems} items)</span>
-                    <span className="font-medium">${totalPrice.toFixed(2)}</span>
-                  </div>
-                  
-                  {savings > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>You Save</span>
-                      <span className="font-medium">-${savings.toFixed(2)}</span>
+              <CardContent>
+                <div className="space-y-4">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-4">
+                      <img
+                        src={item.products.image}
+                        alt={item.products.name}
+                        className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                        }}
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-sm">{item.products.name}</h3>
+                        <p className="text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">${(item.products.price * item.quantity).toFixed(2)}</p>
+                      </div>
                     </div>
-                  )}
+                  ))}
                   
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium">
-                      {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex justify-between items-center text-lg font-bold">
-                    <span>Total</span>
-                    <span className="text-blue-600">${finalTotal.toFixed(2)}</span>
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between items-center text-lg font-bold">
+                      <span>Total:</span>
+                      <span className="text-blue-600">${getTotalPrice().toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
-
-                {/* Shipping Info */}
-                {totalPrice >= 50 ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
-                    <Truck className="w-5 h-5 text-green-600" />
-                    <span className="text-sm text-green-700 font-medium">You qualify for FREE shipping!</span>
-                  </div>
-                ) : (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
-                    <Star className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm text-blue-700">
-                      Add ${(50 - totalPrice).toFixed(2)} more for FREE shipping
-                    </span>
-                  </div>
-                )}
-
-                {/* Security Badge */}
-                <div className="bg-gray-50 rounded-lg p-3 flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-gray-600" />
-                  <span className="text-sm text-gray-600">Secure checkout guaranteed</span>
-                </div>
-
-                <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => navigate('/checkout/details')}
-                >
-                  Proceed to Checkout
-                </Button>
               </CardContent>
             </Card>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 text-sm text-gray-600">
+                <Truck className="w-5 h-5" />
+                <span>Free shipping on orders over $50</span>
+              </div>
+              <div className="flex items-center space-x-3 text-sm text-gray-600">
+                <Shield className="w-5 h-5" />
+                <span>Secure checkout & delivery</span>
+              </div>
+              {paymentMethod === 'pay_on_delivery' && (
+                <div className="flex items-center space-x-3 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+                  <Banknote className="w-5 h-5" />
+                  <span>No online payment required - pay when delivered</span>
+                </div>
+              )}
+              {paymentMethod === 'paynow_web' && (
+                <div className="flex items-center space-x-3 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+                  <Smartphone className="w-5 h-5" />
+                  <span>Secure local payment via Paynow</span>
+                </div>
+              )}
+              {paymentMethod === 'paynow_mobile' && (
+                <div className="flex items-center space-x-3 text-sm text-purple-600 bg-purple-50 p-3 rounded-lg">
+                  <Smartphone className="w-5 h-5" />
+                  <span>Direct mobile money payment</span>
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
+                disabled={isProcessing || paynowProcessing}
+              >
+                {isProcessing || paynowProcessing ? 'Processing...' : 
+                 paymentMethod === 'pay_on_delivery' 
+                   ? `Place Order - Pay $${getTotalPrice().toFixed(2)} on Delivery`
+                   : paymentMethod === 'paynow_web'
+                   ? `Pay $${getTotalPrice().toFixed(2)} with Paynow`
+                   : paymentMethod === 'paynow_mobile'
+                   ? `Pay $${getTotalPrice().toFixed(2)} with ${mobileMethod.toUpperCase()}`
+                   : `Complete Order - $${getTotalPrice().toFixed(2)}`
+                }
+              </Button>
+            </form>
           </div>
         </div>
       </div>
-
-      {/* Footer - Desktop Only */}
-      {!isMobile && <Footer />}
-      
-      {/* Mobile Navigation */}
-      <MobileNavigation />
     </div>
   );
 };
