@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Star, Award, Shield, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
 const Footer = () => {
-  return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+  return <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500 rounded-full -translate-x-32 -translate-y-32"></div>
@@ -67,9 +64,7 @@ const Footer = () => {
                   <span className="text-white font-bold text-xl drop-shadow-lg">G</span>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    Gadget Genie
-                  </h3>
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">GadgetGenie</h3>
                   <p className="text-sm text-gray-400">
                     Your Ultimate Tech Destination
                   </p>
@@ -110,24 +105,30 @@ const Footer = () => {
                 Shop
               </h4>
               <ul className="space-y-3 text-sm text-gray-300">
-                {[
-                  { name: 'Daily Deals', path: '/deals' },
-                  { name: 'Flash Sales', path: '/deals' },
-                  { name: 'New Arrivals', path: '/categories' },
-                  { name: 'Smartphones', path: '/phones' },
-                  { name: 'Electronics', path: '/categories' },
-                  { name: 'Audio & Headphones', path: '/audio' }
-                ].map((item, index) => (
-                  <li key={index}>
-                    <Link 
-                      to={item.path} 
-                      className="hover:text-white hover:translate-x-2 transition-all duration-300 flex items-center group"
-                    >
+                {[{
+                name: 'Daily Deals',
+                path: '/deals'
+              }, {
+                name: 'Flash Sales',
+                path: '/deals'
+              }, {
+                name: 'New Arrivals',
+                path: '/categories'
+              }, {
+                name: 'Smartphones',
+                path: '/phones'
+              }, {
+                name: 'Electronics',
+                path: '/categories'
+              }, {
+                name: 'Audio & Headphones',
+                path: '/audio'
+              }].map((item, index) => <li key={index}>
+                    <Link to={item.path} className="hover:text-white hover:translate-x-2 transition-all duration-300 flex items-center group">
                       <div className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-300"></div>
                       {item.name}
                     </Link>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
             </div>
 
@@ -138,24 +139,30 @@ const Footer = () => {
                 Customer Service
               </h4>
               <ul className="space-y-3 text-sm text-gray-300">
-                {[
-                  { name: 'Help Centre', path: '/help-centre' },
-                  { name: 'Contact Us', path: '/contact' },
-                  { name: 'Track Order', path: '/track-order' },
-                  { name: 'Returns & Refunds', path: '/returns' },
-                  { name: 'Shipping Info', path: '/shipping-info' },
-                  { name: 'Warranty', path: '/warranty' }
-                ].map((item, index) => (
-                  <li key={index}>
-                    <Link 
-                      to={item.path} 
-                      className="hover:text-white hover:translate-x-2 transition-all duration-300 flex items-center group"
-                    >
+                {[{
+                name: 'Help Centre',
+                path: '/help-centre'
+              }, {
+                name: 'Contact Us',
+                path: '/contact'
+              }, {
+                name: 'Track Order',
+                path: '/track-order'
+              }, {
+                name: 'Returns & Refunds',
+                path: '/returns'
+              }, {
+                name: 'Shipping Info',
+                path: '/shipping-info'
+              }, {
+                name: 'Warranty',
+                path: '/warranty'
+              }].map((item, index) => <li key={index}>
+                    <Link to={item.path} className="hover:text-white hover:translate-x-2 transition-all duration-300 flex items-center group">
                       <div className="w-1 h-1 bg-green-400 rounded-full mr-3 group-hover:w-2 transition-all duration-300"></div>
                       {item.name}
                     </Link>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
             </div>
 
@@ -166,41 +173,52 @@ const Footer = () => {
                 Company
               </h4>
               <ul className="space-y-3 text-sm text-gray-300 mb-8">
-                {[
-                  { name: 'About Us', path: '/about-us' },
-                  { name: 'Careers', path: '/careers' },
-                  { name: 'Sell with Us', path: '/sell-with-us' },
-                  { name: 'Press & Media', path: '/press' }
-                ].map((item, index) => (
-                  <li key={index}>
-                    <Link 
-                      to={item.path} 
-                      className="hover:text-white hover:translate-x-2 transition-all duration-300 flex items-center group"
-                    >
+                {[{
+                name: 'About Us',
+                path: '/about-us'
+              }, {
+                name: 'Careers',
+                path: '/careers'
+              }, {
+                name: 'Sell with Us',
+                path: '/sell-with-us'
+              }, {
+                name: 'Press & Media',
+                path: '/press'
+              }].map((item, index) => <li key={index}>
+                    <Link to={item.path} className="hover:text-white hover:translate-x-2 transition-all duration-300 flex items-center group">
                       <div className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-300"></div>
                       {item.name}
                     </Link>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
               
               <div>
                 <h5 className="font-bold mb-4 text-white">Follow Us</h5>
                 <div className="flex space-x-3">
-                  {[
-                    { Icon: Facebook, color: 'hover:bg-blue-600', iconColor: 'text-blue-400' },
-                    { Icon: Twitter, color: 'hover:bg-blue-400', iconColor: 'text-blue-400' },
-                    { Icon: Instagram, color: 'hover:bg-pink-600', iconColor: 'text-pink-400' },
-                    { Icon: Youtube, color: 'hover:bg-red-600', iconColor: 'text-red-400' }
-                  ].map(({ Icon, color, iconColor }, index) => (
-                    <a 
-                      key={index}
-                      href="#" 
-                      className={`bg-gray-800 p-3 rounded-xl ${color} transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-xl`}
-                    >
+                  {[{
+                  Icon: Facebook,
+                  color: 'hover:bg-blue-600',
+                  iconColor: 'text-blue-400'
+                }, {
+                  Icon: Twitter,
+                  color: 'hover:bg-blue-400',
+                  iconColor: 'text-blue-400'
+                }, {
+                  Icon: Instagram,
+                  color: 'hover:bg-pink-600',
+                  iconColor: 'text-pink-400'
+                }, {
+                  Icon: Youtube,
+                  color: 'hover:bg-red-600',
+                  iconColor: 'text-red-400'
+                }].map(({
+                  Icon,
+                  color,
+                  iconColor
+                }, index) => <a key={index} href="#" className={`bg-gray-800 p-3 rounded-xl ${color} transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-xl`}>
                       <Icon className={`w-5 h-5 ${iconColor}`} />
-                    </a>
-                  ))}
+                    </a>)}
                 </div>
               </div>
             </div>
@@ -219,21 +237,27 @@ const Footer = () => {
                 <div className="flex items-center space-x-3">
                   <span className="text-sm text-gray-400">Secure payments:</span>
                   <div className="flex space-x-2">
-                    {[
-                      { name: 'VISA', color: 'text-blue-400' },
-                      { name: 'PayPal', color: 'text-blue-400' },
-                      { name: 'Stripe', color: 'text-purple-400' },
-                      { name: 'Apple Pay', color: 'text-gray-400' },
-                      { name: 'EcoCash', color: 'text-green-400' },
-                      { name: 'InnBucks', color: 'text-orange-400' }
-                    ].map((payment, index) => (
-                      <span 
-                        key={index}
-                        className={`bg-gray-800/80 px-3 py-1.5 rounded-lg text-xs font-semibold ${payment.color} hover:bg-gray-700 transition-colors cursor-pointer border border-gray-700 hover:border-gray-600`}
-                      >
+                    {[{
+                    name: 'VISA',
+                    color: 'text-blue-400'
+                  }, {
+                    name: 'PayPal',
+                    color: 'text-blue-400'
+                  }, {
+                    name: 'Stripe',
+                    color: 'text-purple-400'
+                  }, {
+                    name: 'Apple Pay',
+                    color: 'text-gray-400'
+                  }, {
+                    name: 'EcoCash',
+                    color: 'text-green-400'
+                  }, {
+                    name: 'InnBucks',
+                    color: 'text-orange-400'
+                  }].map((payment, index) => <span key={index} className={`bg-gray-800/80 px-3 py-1.5 rounded-lg text-xs font-semibold ${payment.color} hover:bg-gray-700 transition-colors cursor-pointer border border-gray-700 hover:border-gray-600`}>
                         {payment.name}
-                      </span>
-                    ))}
+                      </span>)}
                   </div>
                 </div>
               </div>
@@ -241,27 +265,26 @@ const Footer = () => {
             
             <div className="flex flex-wrap justify-center items-center mt-4 pt-4 border-t border-gray-700/50">
               <div className="flex flex-wrap justify-center space-x-6 text-xs text-gray-500">
-                {[
-                  { name: 'Privacy Policy', path: '/privacy-policy' },
-                  { name: 'Terms of Service', path: '/terms-of-service' },
-                  { name: 'Cookie Policy', path: '/cookie-policy' },
-                  { name: 'Accessibility', path: '/accessibility' }
-                ].map((link, index) => (
-                  <Link 
-                    key={index}
-                    to={link.path} 
-                    className="hover:text-gray-300 transition-colors duration-300 hover:underline"
-                  >
+                {[{
+                name: 'Privacy Policy',
+                path: '/privacy-policy'
+              }, {
+                name: 'Terms of Service',
+                path: '/terms-of-service'
+              }, {
+                name: 'Cookie Policy',
+                path: '/cookie-policy'
+              }, {
+                name: 'Accessibility',
+                path: '/accessibility'
+              }].map((link, index) => <Link key={index} to={link.path} className="hover:text-gray-300 transition-colors duration-300 hover:underline">
                     {link.name}
-                  </Link>
-                ))}
+                  </Link>)}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
