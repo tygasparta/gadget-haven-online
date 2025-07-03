@@ -4,17 +4,31 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, User, Calendar } from 'lucide-react';
-import Header from '@/components/Header';
+import { 
+  User, 
+  Package, 
+  ShoppingCart, 
+  Heart, 
+  Settings, 
+  LogOut,
+  CreditCard,
+  MapPin,
+  Bell,
+  Shield
+} from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useOrders } from '@/hooks/useOrders';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useIsMobile } from '@/hooks/use-mobile';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import MobileNavigation from '@/components/MobileNavigation';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const { user, signOut } = useAuthContext();
-  const { data: orders = [], isLoading } = useOrders();
+  const { isAdmin } = useUserRole();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
-  // Redirect if not authenticated
   React.useEffect(() => {
     if (!user) {
       navigate('/auth');
@@ -25,147 +39,172 @@ const Dashboard = () => {
     return null;
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'shipped':
-        return 'bg-blue-100 text-blue-800';
-      case 'delivered':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
+
+  const menuItems = [
+    {
+      title: 'Profile Settings',
+      description: 'Manage your personal information',
+      icon: User,
+      action: () => navigate('/profile'),
+      color: 'text-blue-600'
+    },
+    {
+      title: 'My Orders',
+      description: 'Track your orders and purchase history',
+      icon: Package,
+      action: () => navigate('/orders'),
+      color: 'text-green-600'
+    },
+    {
+      title: 'Wishlist',
+      description: 'View your saved items',
+      icon: Heart,
+      action: () => navigate('/wishlist'),
+      color: 'text-pink-600'
+    },
+    {
+      title: 'Payment Methods',
+      description: 'Manage your payment options',
+      icon: CreditCard,
+      action: () => navigate('/payment-methods'),
+      color: 'text-purple-600'
+    },
+    {
+      title: 'Addresses',
+      description: 'Manage shipping and billing addresses',
+      icon: MapPin,
+      action: () => navigate('/addresses'),
+      color: 'text-orange-600'
+    },
+    {
+      title: 'Notifications',
+      description: 'Control your notification preferences',
+      icon: Bell,
+      action: () => navigate('/notifications'),
+      color: 'text-yellow-600'
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Store
-        </Button>
+      
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+              {user.email?.[0].toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
+              <p className="text-gray-600">{user.email}</p>
+              {isAdmin && (
+                <Badge className="mt-2 bg-purple-100 text-purple-800">
+                  <Shield className="w-3 h-3 mr-1" />
+                  Admin
+                </Badge>
+              )}
+            </div>
+          </div>
+          
+          {isAdmin && !isMobile && (
+            <Button 
+              onClick={() => navigate('/admin')}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Admin Dashboard
+            </Button>
+          )}
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Section */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="w-5 h-5 mr-2" />
-                  Profile
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-sm">{user.email}</p>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100">Total Orders</p>
+                  <p className="text-3xl font-bold">12</p>
+                </div>
+                <Package className="w-8 h-8 text-blue-200" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100">Wishlist Items</p>
+                  <p className="text-3xl font-bold">8</p>
+                </div>
+                <Heart className="w-8 h-8 text-green-200" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100">Loyalty Points</p>
+                  <p className="text-3xl font-bold">240</p>
+                </div>
+                <Settings className="w-8 h-8 text-purple-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Menu Items */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {menuItems.map((item, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow duration-300 cursor-pointer group" onClick={item.action}>
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
+                  <div className={`p-3 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors ${item.color}`}>
+                    <item.icon className="w-6 h-6" />
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Member Since</label>
-                    <p className="text-sm">{new Date(user.created_at).toLocaleDateString()}</p>
-                  </div>
-                  <div className="pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => signOut()}
-                      className="w-full"
-                    >
-                      Sign Out
-                    </Button>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-600">{item.description}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Orders Section */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Package className="w-5 h-5 mr-2" />
-                  Order History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="text-center py-8">
-                    <p>Loading orders...</p>
-                  </div>
-                ) : orders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500 mb-4">No orders yet</p>
-                    <Button onClick={() => navigate('/')}>
-                      Start Shopping
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {orders.map((order) => (
-                      <div key={order.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
-                            <p className="text-sm text-gray-500 flex items-center">
-                              <Calendar className="w-4 h-4 mr-1" />
-                              {new Date(order.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <Badge className={getStatusColor(order.status)}>
-                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                            </Badge>
-                            <p className="font-bold text-lg mt-1">
-                              ${Number(order.total_amount).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {order.order_items && order.order_items.length > 0 && (
-                          <div className="border-t pt-3">
-                            <p className="text-sm font-medium mb-2">Items:</p>
-                            <div className="space-y-2">
-                              {order.order_items.map((item) => (
-                                <div key={item.id} className="flex items-center space-x-3">
-                                  <img
-                                    src={item.products.image}
-                                    alt={item.products.name}
-                                    className="w-10 h-10 object-cover rounded"
-                                    onError={(e) => {
-                                      e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                                    }}
-                                  />
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium">{item.products.name}</p>
-                                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                                  </div>
-                                  <p className="text-sm font-medium">
-                                    ${(Number(item.price) * item.quantity).toFixed(2)}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          ))}
         </div>
+
+        {/* Logout Button */}
+        <Card className="border-red-200">
+          <CardContent className="p-6">
+            <Button 
+              onClick={handleLogout}
+              variant="outline"
+              className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Footer - Desktop Only */}
+      {!isMobile && <Footer />}
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation />
     </div>
   );
 };
