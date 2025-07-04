@@ -18,9 +18,9 @@ export const useUsers = () => {
   return useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      console.log('Fetching users and profiles...');
+      console.log('Fetching all users from profiles and auth...');
       
-      // Get profiles with user roles
+      // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -31,22 +31,27 @@ export const useUsers = () => {
         throw profilesError;
       }
 
-      // Get user roles
+      console.log('Fetched profiles:', profiles);
+
+      // Get user roles for all users
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
       
       if (rolesError) {
         console.error('Error fetching user roles:', rolesError);
-        throw rolesError;
+        // Don't throw error, just log it and continue with empty roles
       }
 
-      // Get additional user metadata from auth.users if admin
+      console.log('Fetched user roles:', userRoles);
+
+      // Try to get additional user metadata from auth.users (admin only)
       let authUsers = [];
       try {
         const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
         if (!authError && authData?.users) {
           authUsers = authData.users;
+          console.log('Fetched auth users:', authUsers.length);
         }
       } catch (error) {
         console.log('Could not fetch auth users (expected if not admin):', error);
@@ -65,8 +70,10 @@ export const useUsers = () => {
         };
       }) || [];
 
-      console.log('Fetched users with roles:', usersWithRoles);
+      console.log('Final users with roles:', usersWithRoles);
       return usersWithRoles as User[];
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 };
