@@ -75,27 +75,11 @@ const Header = () => {
   };
 
   const handleAccountClick = () => {
-    // On mobile, always go to regular dashboard, never admin
-    if (isMobile) {
-      navigate('/dashboard');
-    } else if (isAdmin) {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
-    }
+    navigate('/dashboard');
     setIsMobileMenuOpen(false);
   };
 
   const handleAdminClick = () => {
-    // Prevent admin access on mobile
-    if (isMobile) {
-      toast({
-        title: "Admin access restricted",
-        description: "Admin panel is only available on desktop",
-        variant: "destructive"
-      });
-      return;
-    }
     console.log('Admin button clicked, navigating to /admin');
     navigate('/admin');
     setIsMobileMenuOpen(false);
@@ -241,7 +225,7 @@ const Header = () => {
                   </Button>
                   
                   {/* Admin Dashboard Button - Desktop only */}
-                  {isAdmin && !isMobile && (
+                  {isAdmin && (
                     <Button
                       onClick={handleAdminClick}
                       className="p-2 hidden sm:flex bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0 shadow-lg animate-pulse hover:animate-none"
