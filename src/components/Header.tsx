@@ -224,14 +224,14 @@ const Header = () => {
                     <span className="ml-2 hidden lg:inline">Account</span>
                   </Button>
                   
-                  {/* Admin Dashboard Button - Desktop only */}
+                  {/* Admin Dashboard Button - Visible for admins */}
                   {isAdmin && (
                     <Button
                       onClick={handleAdminClick}
                       className="p-2 hidden sm:flex bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0 shadow-lg animate-pulse hover:animate-none"
                     >
                       <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
-                      <span className="ml-2 font-bold text-sm">ADMIN PANEL</span>
+                      <span className="ml-2 font-bold text-sm">ADMIN</span>
                     </Button>
                   )}
                   
@@ -385,6 +385,16 @@ const Header = () => {
                         </div>
                         <span className="text-gray-800 font-semibold">My Account</span>
                       </Button>
+                      
+                      {/* Admin Panel Button for Mobile */}
+                      {isAdmin && (
+                        <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100 border border-red-200/50 rounded-2xl group" onClick={handleAdminClick}>
+                          <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                            <Settings className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="text-gray-800 font-semibold">Admin Panel</span>
+                        </Button>
+                      )}
                       
                       <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 border border-pink-200/50 rounded-2xl group" onClick={handleWishlistClick}>
                         <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
