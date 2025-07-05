@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Shield, UserX, UserCheck, Mail, Calendar, MoreHorizontal, Crown, Users as UsersIcon, Activity, Clock } from 'lucide-react';
+import { Search, Eye, Shield, UserX, UserCheck, Mail, Calendar, MoreHorizontal, Crown, Users as UsersIcon, Activity, Clock, TrendingUp } from 'lucide-react';
 import { 
   Table,
   TableBody,
@@ -197,7 +197,7 @@ const UsersTab = () => {
           <div className="flex justify-between items-center mb-8">
             <div className="space-y-2">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                   <UsersIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -225,41 +225,84 @@ const UsersTab = () => {
           </div>
 
           {/* Enhanced Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-blue-500/30">
-              <CardContent className="p-4 text-center">
-                <UsersIcon className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-white">{users.length}</p>
-                <p className="text-blue-300 text-sm">Total Users</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card className="bg-gradient-to-br from-blue-500/30 via-blue-600/20 to-blue-700/30 border-blue-400/40 shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+              <CardContent className="p-6 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-blue-400/10 rounded-full -translate-y-4 translate-x-4"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300/10 rounded-full translate-y-4 -translate-x-4"></div>
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                    <UsersIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-3xl font-bold text-white mb-1">{users.length}</p>
+                  <p className="text-blue-200 text-sm font-medium">Total Users</p>
+                  <div className="mt-2 flex items-center justify-center space-x-1">
+                    <TrendingUp className="w-3 h-3 text-green-400" />
+                    <span className="text-xs text-green-400">Active</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 border-purple-500/30">
-              <CardContent className="p-4 text-center">
-                <Crown className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-white">{users.filter(u => u.roles?.includes('admin')).length}</p>
-                <p className="text-purple-300 text-sm">Admins</p>
+
+            <Card className="bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 border-purple-400/40 shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+              <CardContent className="p-6 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-purple-400/10 rounded-full -translate-y-4 translate-x-4"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-purple-300/10 rounded-full translate-y-4 -translate-x-4"></div>
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                    <Crown className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-3xl font-bold text-white mb-1">{users.filter(u => u.roles?.includes('admin')).length}</p>
+                  <p className="text-purple-200 text-sm font-medium">Administrators</p>
+                  <div className="mt-2 flex items-center justify-center space-x-1">
+                    <Shield className="w-3 h-3 text-yellow-400" />
+                    <span className="text-xs text-yellow-400">Privileged</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-r from-green-500/20 to-green-600/20 border-green-500/30">
-              <CardContent className="p-4 text-center">
-                <Activity className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-white">
-                  {users.filter(u => u.created_at && new Date(u.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
-                </p>
-                <p className="text-green-300 text-sm">Recent (7d)</p>
+
+            <Card className="bg-gradient-to-br from-green-500/30 via-green-600/20 to-green-700/30 border-green-400/40 shadow-2xl hover:shadow-green-500/20 transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+              <CardContent className="p-6 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-green-400/10 rounded-full -translate-y-4 translate-x-4"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-green-300/10 rounded-full translate-y-4 -translate-x-4"></div>
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                    <Activity className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-3xl font-bold text-white mb-1">
+                    {users.filter(u => u.created_at && new Date(u.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                  </p>
+                  <p className="text-green-200 text-sm font-medium">Recent (7 days)</p>
+                  <div className="mt-2 flex items-center justify-center space-x-1">
+                    <Clock className="w-3 h-3 text-blue-400" />
+                    <span className="text-xs text-blue-400">New</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-yellow-500/30">
-              <CardContent className="p-4 text-center">
-                <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-white">{users.filter(u => u.full_name).length}</p>
-                <p className="text-yellow-300 text-sm">Complete Profiles</p>
+
+            <Card className="bg-gradient-to-br from-amber-500/30 via-amber-600/20 to-amber-700/30 border-amber-400/40 shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+              <CardContent className="p-6 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-amber-400/10 rounded-full -translate-y-4 translate-x-4"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-300/10 rounded-full translate-y-4 -translate-x-4"></div>
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                    <UserCheck className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-3xl font-bold text-white mb-1">{users.filter(u => u.full_name).length}</p>
+                  <p className="text-amber-200 text-sm font-medium">Complete Profiles</p>
+                  <div className="mt-2 flex items-center justify-center space-x-1">
+                    <Mail className="w-3 h-3 text-green-400" />
+                    <span className="text-xs text-green-400">Verified</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Enhanced Table */}
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div className="overflow-x-auto rounded-xl border border-white/10 shadow-2xl">
             <Table>
               <TableHeader>
                 <TableRow className="border-white/20 bg-white/5">
