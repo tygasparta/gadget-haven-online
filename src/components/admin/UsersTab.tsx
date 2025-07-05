@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,32 +127,23 @@ const UsersTab = () => {
   };
 
   const getStatusBadge = (user: any) => {
-    const isEmailConfirmed = !!user.email_confirmed_at;
-    const hasRecentActivity = user.last_sign_in_at && 
-      new Date(user.last_sign_in_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    // Since we can't access auth data, we'll show status based on profile creation
+    const isRecentUser = user.created_at && 
+      new Date(user.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    if (!isEmailConfirmed) {
-      return (
-        <Badge className="bg-yellow-600 text-white animate-pulse">
-          <Clock className="w-3 h-3 mr-1" />
-          Pending
-        </Badge>
-      );
-    }
-
-    if (hasRecentActivity) {
+    if (isRecentUser) {
       return (
         <Badge className="bg-green-600 text-white">
           <Activity className="w-3 h-3 mr-1" />
-          Active
+          Recent
         </Badge>
       );
     }
 
     return (
-      <Badge className="bg-gray-600 text-white">
+      <Badge className="bg-blue-600 text-white">
         <UserCheck className="w-3 h-3 mr-1" />
-        Inactive
+        Active
       </Badge>
     );
   };
@@ -252,16 +244,16 @@ const UsersTab = () => {
               <CardContent className="p-4 text-center">
                 <Activity className="w-8 h-8 text-green-400 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-white">
-                  {users.filter(u => u.last_sign_in_at && new Date(u.last_sign_in_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                  {users.filter(u => u.created_at && new Date(u.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
                 </p>
-                <p className="text-green-300 text-sm">Active (7d)</p>
+                <p className="text-green-300 text-sm">Recent (7d)</p>
               </CardContent>
             </Card>
             <Card className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border-yellow-500/30">
               <CardContent className="p-4 text-center">
                 <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-white">{users.filter(u => !u.email_confirmed_at).length}</p>
-                <p className="text-yellow-300 text-sm">Pending</p>
+                <p className="text-2xl font-bold text-white">{users.filter(u => u.full_name).length}</p>
+                <p className="text-yellow-300 text-sm">Complete Profiles</p>
               </CardContent>
             </Card>
           </div>
@@ -273,7 +265,7 @@ const UsersTab = () => {
                 <TableRow className="border-white/20 bg-white/5">
                   <TableHead className="text-gray-300 font-semibold">User</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Contact</TableHead>
-                  <TableHead className="text-gray-300 font-semibold">Activity</TableHead>
+                  <TableHead className="text-gray-300 font-semibold">Joined</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Role</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Status</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Actions</TableHead>
@@ -327,11 +319,8 @@ const UsersTab = () => {
                         <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
                           <span className="text-gray-300 text-sm">
-                            Joined {formatDate(user.created_at)}
+                            {formatDate(user.created_at)}
                           </span>
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          Last seen: {formatDate(user.last_sign_in_at)}
                         </div>
                       </div>
                     </TableCell>
@@ -494,13 +483,13 @@ const UsersTab = () => {
                           <p className="text-white">{formatDate(selectedUser.created_at)}</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium text-gray-400">Last Sign In</label>
-                          <p className="text-white">{formatDate(selectedUser.last_sign_in_at)}</p>
+                          <label className="text-sm font-medium text-gray-400">Last Updated</label>
+                          <p className="text-white">{formatDate(selectedUser.updated_at)}</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium text-gray-400">Email Confirmed</label>
+                          <label className="text-sm font-medium text-gray-400">Profile Status</label>
                           <p className="text-white">
-                            {selectedUser.email_confirmed_at ? 'Yes' : 'Pending'}
+                            {selectedUser.full_name ? 'Complete' : 'Incomplete'}
                           </p>
                         </div>
                       </div>
