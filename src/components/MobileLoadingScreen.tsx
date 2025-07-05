@@ -7,8 +7,8 @@ const MobileLoadingScreen = () => {
     <div className="md:hidden min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center justify-center px-4 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full animate-pulse animation-delay-1000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }}></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-gradient-to-br from-indigo-500/10 to-blue-500/10 rounded-full animate-ping"></div>
       </div>
 
@@ -74,10 +74,20 @@ const MobileLoadingScreen = () => {
         {/* Animated Progress Bars */}
         <div className="space-y-4">
           <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden backdrop-blur-sm">
-            <div className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full animate-pulse transform transition-all duration-2000 origin-left scale-x-0 animate-[scale-x_2s_ease-in-out_infinite]"></div>
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full animate-pulse transform transition-all duration-2000 origin-left"
+              style={{ 
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite, scaleX 2s ease-in-out infinite'
+              }}
+            ></div>
           </div>
           <div className="w-3/4 bg-white/10 rounded-full h-1.5 overflow-hidden backdrop-blur-sm mx-auto">
-            <div className="h-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse transform transition-all duration-1500 origin-left scale-x-0 animate-[scale-x_1.5s_ease-in-out_infinite_0.3s]"></div>
+            <div 
+              className="h-full bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse transform transition-all duration-1500 origin-left"
+              style={{ 
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite, scaleX 1.5s ease-in-out infinite 0.3s'
+              }}
+            ></div>
           </div>
         </div>
         
@@ -111,23 +121,9 @@ const MobileLoadingScreen = () => {
           <p className="text-xs font-medium animate-fade-in">
             Loading the best tech deals for you
           </p>
-          <div className="w-1 h-1 bg-purple-400 rounded-full animate-ping animation-delay-500"></div>
+          <div className="w-1 h-1 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
         </div>
       </div>
-
-      {/* Custom Keyframes CSS */}
-      <style jsx>{`
-        @keyframes scale-x {
-          0%, 100% { transform: scaleX(0); }
-          50% { transform: scaleX(1); }
-        }
-        .animation-delay-500 {
-          animation-delay: 0.5s;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 };
