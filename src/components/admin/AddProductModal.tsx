@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -37,6 +37,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -51,6 +52,56 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     discount_percentage: ''
   });
 
+  const resetForm = () => {
+    setNewProduct({
+      name: '',
+      description: '',
+      price: '',
+      original_price: '',
+      image: '',
+      category: '',
+      brand: '',
+      stock: '',
+      is_featured: false,
+      is_flash_sale: false,
+      discount_percentage: ''
+    });
+    setSelectedImage(null);
+    setImagePreview('');
+    setValidationErrors({});
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!newProduct.name.trim()) {
+      errors.name = 'Product name is required';
+    }
+
+    if (!newProduct.price || parseFloat(newProduct.price) <= 0) {
+      errors.price = 'Valid price is required';
+    }
+
+    if (!newProduct.stock || parseInt(newProduct.stock) < 0) {
+      errors.stock = 'Valid stock quantity is required';
+    }
+
+    if (!newProduct.category) {
+      errors.category = 'Category is required';
+    }
+
+    if (!selectedImage && !newProduct.image) {
+      errors.image = 'Product image is required';
+    }
+
+    if (newProduct.original_price && parseFloat(newProduct.original_price) <= parseFloat(newProduct.price)) {
+      errors.original_price = 'Original price must be higher than current price';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -58,7 +109,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       if (!file.type.startsWith('image/')) {
         toast({
           title: "Invalid file type",
-          description: "Please select an image file",
+          description: "Please select an image file (JPEG, PNG, GIF, etc.)",
           variant: "destructive"
         });
         return;
@@ -75,6 +126,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       }
 
       setSelectedImage(file);
+      setValidationErrors(prev => ({ ...prev, image: '' }));
       
       // Create preview
       const reader = new FileReader();
@@ -82,6 +134,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+
+      console.log('Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
     }
   };
 
@@ -91,22 +145,22 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     setIsUploading(true);
     try {
       // Generate unique filename
-      const fileExt = selectedImage.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `products/${fileName}`;
+      const fileExt = selectedImage.name.split('.').pop()?.toLowerCase();
+      const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      console.log('Uploading image to gallary bucket:', filePath);
+      console.log('Starting image upload:', fileName);
 
       const { data, error } = await supabase.storage
         .from('gallary')
-        .upload(filePath, selectedImage, {
+        .upload(fileName, selectedImage, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: selectedImage.type
         });
 
       if (error) {
         console.error('Upload error:', error);
-        throw error;
+        throw new Error(`Upload failed: ${error.message}`);
       }
 
       console.log('Upload successful:', data);
@@ -114,15 +168,20 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('gallary')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
-      console.log('Public URL:', urlData.publicUrl);
+      console.log('Public URL generated:', urlData.publicUrl);
+      
+      if (!urlData.publicUrl) {
+        throw new Error('Failed to generate public URL for uploaded image');
+      }
+
       return urlData.publicUrl;
     } catch (error: any) {
       console.error('Image upload failed:', error);
       toast({
         title: "Image upload failed",
-        description: error.message || "Failed to upload image",
+        description: error.message || "Failed to upload image to storage",
         variant: "destructive"
       });
       return null;
@@ -133,13 +192,26 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors before submitting",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
+      console.log('Starting product creation process...');
+      
       let imageUrl = newProduct.image;
 
       // Upload image if selected
       if (selectedImage) {
+        console.log('Uploading selected image...');
         const uploadedUrl = await uploadImage();
         if (!uploadedUrl) {
           setIsLoading(false);
@@ -158,55 +230,64 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         return;
       }
 
-      const { error } = await supabase
-        .from('products')
-        .insert({
-          name: newProduct.name,
-          description: newProduct.description,
-          price: parseFloat(newProduct.price),
-          original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
-          image: imageUrl,
-          category: newProduct.category,
-          brand: newProduct.brand,
-          stock: parseInt(newProduct.stock),
-          is_featured: newProduct.is_featured,
-          is_flash_sale: newProduct.is_flash_sale,
-          discount_percentage: newProduct.discount_percentage ? parseInt(newProduct.discount_percentage) : 0,
-          rating: 4.5,
-          reviews: 0
-        });
+      // Calculate discount percentage if original price is provided
+      let calculatedDiscount = 0;
+      if (newProduct.original_price && newProduct.price) {
+        const original = parseFloat(newProduct.original_price);
+        const current = parseFloat(newProduct.price);
+        calculatedDiscount = Math.round(((original - current) / original) * 100);
+      } else if (newProduct.discount_percentage) {
+        calculatedDiscount = parseInt(newProduct.discount_percentage);
+      }
 
-      if (error) throw error;
+      const productData = {
+        name: newProduct.name.trim(),
+        description: newProduct.description.trim() || null,
+        price: parseFloat(newProduct.price),
+        original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
+        image: imageUrl,
+        category: newProduct.category,
+        brand: newProduct.brand.trim() || null,
+        stock: parseInt(newProduct.stock),
+        is_featured: newProduct.is_featured,
+        is_flash_sale: newProduct.is_flash_sale,
+        discount_percentage: calculatedDiscount,
+        rating: 4.5,
+        reviews: 0
+      };
+
+      console.log('Inserting product data:', productData);
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert(productData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database insert error:', error);
+        throw new Error(`Failed to add product: ${error.message}`);
+      }
+
+      console.log('Product created successfully:', data);
 
       toast({
-        title: "Product added successfully",
-        description: "The new product has been added to the catalog"
+        title: "Product added successfully!",
+        description: `${newProduct.name} has been added to the catalog`,
       });
 
       // Reset form and close modal
-      setNewProduct({
-        name: '',
-        description: '',
-        price: '',
-        original_price: '',
-        image: '',
-        category: '',
-        brand: '',
-        stock: '',
-        is_featured: false,
-        is_flash_sale: false,
-        discount_percentage: ''
-      });
-      setSelectedImage(null);
-      setImagePreview('');
+      resetForm();
       onClose();
       
       // Refresh products list
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      
     } catch (error: any) {
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error adding product",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive"
       });
     } finally {
@@ -222,7 +303,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Add New Product</CardTitle>
           <Button
-            onClick={onClose}
+            onClick={() => {
+              resetForm();
+              onClose();
+            }}
             variant="ghost"
             size="sm"
             className="text-gray-400 hover:text-white"
@@ -234,14 +318,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name" className="text-gray-300">Product Name</Label>
+                <Label htmlFor="name" className="text-gray-300">Product Name *</Label>
                 <Input
                   id="name"
                   value={newProduct.name}
-                  onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  required
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, name: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, name: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.name ? 'border-red-500' : ''}`}
+                  placeholder="Enter product name"
                 />
+                {validationErrors.name && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.name}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="brand" className="text-gray-300">Brand</Label>
@@ -250,6 +343,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   value={newProduct.brand}
                   onChange={(e) => setNewProduct({...newProduct, brand: e.target.value})}
                   className="bg-gray-800 border-gray-600 text-white"
+                  placeholder="Enter brand name"
                 />
               </div>
             </div>
@@ -261,21 +355,33 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 value={newProduct.description}
                 onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                 className="bg-gray-800 border-gray-600 text-white"
+                placeholder="Enter product description"
+                rows={3}
               />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price" className="text-gray-300">Price</Label>
+                <Label htmlFor="price" className="text-gray-300">Price *</Label>
                 <Input
                   id="price"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={newProduct.price}
-                  onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  required
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, price: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, price: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.price ? 'border-red-500' : ''}`}
+                  placeholder="0.00"
                 />
+                {validationErrors.price && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.price}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
@@ -283,29 +389,53 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   id="original_price"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={newProduct.original_price}
-                  onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})}
-                  className="bg-gray-800 border-gray-600 text-white"
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, original_price: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, original_price: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.original_price ? 'border-red-500' : ''}`}
+                  placeholder="0.00"
                 />
+                {validationErrors.original_price && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.original_price}
+                  </p>
+                )}
               </div>
               <div>
-                <Label htmlFor="stock" className="text-gray-300">Stock</Label>
+                <Label htmlFor="stock" className="text-gray-300">Stock *</Label>
                 <Input
                   id="stock"
                   type="number"
+                  min="0"
                   value={newProduct.stock}
-                  onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  required
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, stock: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, stock: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.stock ? 'border-red-500' : ''}`}
+                  placeholder="0"
                 />
+                {validationErrors.stock && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.stock}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="category" className="text-gray-300">Category</Label>
-                <Select onValueChange={(value) => setNewProduct({...newProduct, category: value})}>
-                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <Label htmlFor="category" className="text-gray-300">Category *</Label>
+                <Select onValueChange={(value) => {
+                  setNewProduct({...newProduct, category: value});
+                  setValidationErrors(prev => ({ ...prev, category: '' }));
+                }}>
+                  <SelectTrigger className={`bg-gray-800 border-gray-600 text-white ${validationErrors.category ? 'border-red-500' : ''}`}>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-600">
@@ -316,24 +446,33 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                     ))}
                   </SelectContent>
                 </Select>
+                {validationErrors.category && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.category}
+                  </p>
+                )}
               </div>
               <div>
-                <Label htmlFor="discount_percentage" className="text-gray-300">Discount %</Label>
+                <Label htmlFor="discount_percentage" className="text-gray-300">Manual Discount %</Label>
                 <Input
                   id="discount_percentage"
                   type="number"
+                  min="0"
+                  max="100"
                   value={newProduct.discount_percentage}
                   onChange={(e) => setNewProduct({...newProduct, discount_percentage: e.target.value})}
                   className="bg-gray-800 border-gray-600 text-white"
+                  placeholder="0"
                 />
+                <p className="text-xs text-gray-400 mt-1">Auto-calculated if original price is set</p>
               </div>
             </div>
             
             {/* Image Upload Section */}
             <div className="space-y-3">
-              <Label className="text-gray-300">Product Image</Label>
+              <Label className="text-gray-300">Product Image *</Label>
               
-              {/* Image Upload */}
               <div className="flex flex-col space-y-3">
                 <div className="flex items-center space-x-3">
                   <input
@@ -384,35 +523,54 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 <Input
                   placeholder="https://example.com/image.jpg"
                   value={newProduct.image}
-                  onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
-                  className="bg-gray-800 border-gray-600 text-white"
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, image: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, image: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.image ? 'border-red-500' : ''}`}
                 />
+                
+                {validationErrors.image && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.image}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="flex space-x-4">
-              <label className="flex items-center text-gray-300">
+              <label className="flex items-center text-gray-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={newProduct.is_featured}
                   onChange={(e) => setNewProduct({...newProduct, is_featured: e.target.checked})}
-                  className="mr-2"
+                  className="mr-2 rounded"
                 />
                 Featured Product
               </label>
-              <label className="flex items-center text-gray-300">
+              <label className="flex items-center text-gray-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={newProduct.is_flash_sale}
                   onChange={(e) => setNewProduct({...newProduct, is_flash_sale: e.target.checked})}
-                  className="mr-2"
+                  className="mr-2 rounded"
                 />
                 Flash Sale
               </label>
             </div>
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose} className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
+            <div className="flex justify-end space-x-2 pt-4 border-t border-gray-700">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+                className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                disabled={isLoading || isUploading}
+              >
                 Cancel
               </Button>
               <Button 
@@ -420,7 +578,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 disabled={isLoading || isUploading} 
                 className="bg-green-600 hover:bg-green-700"
               >
-                {isLoading ? 'Adding...' : 'Add Product'}
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Adding Product...
+                  </>
+                ) : (
+                  'Add Product'
+                )}
               </Button>
             </div>
           </form>
