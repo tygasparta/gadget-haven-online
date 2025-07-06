@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -144,11 +143,20 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
     setIsUploading(true);
     try {
+      // Check current user first
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('Authentication error:', userError);
+        throw new Error('You must be logged in to upload images');
+      }
+
+      console.log('Current user:', user.email);
+
       // Generate unique filename
       const fileExt = selectedImage.name.split('.').pop()?.toLowerCase();
       const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      console.log('Starting image upload:', fileName);
+      console.log('Starting image upload to bucket "gallary":', fileName);
 
       const { data, error } = await supabase.storage
         .from('gallary')
@@ -159,7 +167,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         });
 
       if (error) {
-        console.error('Upload error:', error);
+        console.error('Storage upload error details:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error
+        });
         throw new Error(`Upload failed: ${error.message}`);
       }
 
@@ -206,6 +218,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     
     try {
       console.log('Starting product creation process...');
+      
+      // Check if user is authenticated and has admin role
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('You must be logged in to add products');
+      }
+
+      console.log('Current user authenticated:', user.email);
       
       let imageUrl = newProduct.image;
 
@@ -256,7 +276,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         reviews: 0
       };
 
-      console.log('Inserting product data:', productData);
+      console.log('Inserting product data:', JSON.stringify(productData, null, 2));
 
       const { data, error } = await supabase
         .from('products')
@@ -265,7 +285,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         .single();
 
       if (error) {
-        console.error('Database insert error:', error);
+        console.error('Database insert error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          error: error
+        });
         throw new Error(`Failed to add product: ${error.message}`);
       }
 
