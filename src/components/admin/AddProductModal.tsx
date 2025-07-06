@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Upload, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { X, Upload, AlertCircle } from 'lucide-react';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -282,6 +282,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       
       // Refresh products list
       await queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      await queryClient.invalidateQueries({ queryKey: ['flashSaleProducts'] });
       
     } catch (error: any) {
       console.error('Error in handleSubmit:', error);
