@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Search, Eye, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Eye, AlertTriangle, RefreshCw, Package } from 'lucide-react';
 import { useProducts, useDeleteProduct, Product } from '@/hooks/useProducts';
 import { useToast } from '@/hooks/use-toast';
 import ViewProductModal from './ViewProductModal';
