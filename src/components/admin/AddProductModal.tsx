@@ -175,6 +175,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           is_main: index === 0 // First image is the main image
         }));
 
+        console.log('Saving gallery data:', galleryData);
+
         const { error: galleryError } = await supabase
           .from('product_galleries')
           .insert(galleryData);
@@ -391,6 +393,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               <ProductImageGallery 
                 images={productImages}
                 onImagesChange={(images) => {
+                  console.log('Images changed:', images);
                   setProductImages(images);
                   setValidationErrors(prev => ({ ...prev, images: '' }));
                 }}

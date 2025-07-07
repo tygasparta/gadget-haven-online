@@ -27,6 +27,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const [productImage, setProductImage] = useState(product.image);
+  const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
     // Load the main gallery image if available
@@ -35,6 +36,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const loadMainGalleryImage = async () => {
     try {
+      setImageLoading(true);
+      console.log('Loading gallery image for product:', product.id);
+      
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -43,6 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         .single();
 
       if (!error && galleryData) {
+        console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
         // Fallback to first gallery image
@@ -55,12 +60,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           .single();
 
         if (!firstError && firstImage) {
+          console.log('Found first gallery image:', firstImage.image_url);
           setProductImage(firstImage.image_url);
+        } else {
+          console.log('No gallery images found, using default product image');
+          // Keep the original product image as fallback
         }
       }
     } catch (error) {
       console.error('Error loading gallery image:', error);
       // Keep the original product image as fallback
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -122,14 +133,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Product image with enhanced styling */}
       <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl">
-        <img
-          src={productImage}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          onError={(e) => {
-            e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-          }}
-        />
+        {imageLoading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <img
+            src={productImage}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            onError={(e) => {
+              console.log('Image failed to load, using fallback:', productImage);
+              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+            }}
+          />
+        )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       </div>
 
