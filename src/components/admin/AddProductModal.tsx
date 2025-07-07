@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Upload, AlertCircle } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
+import ProductImageGallery from './ProductImageGallery';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -34,16 +35,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [productImages, setProductImages] = useState<string[]>([]);
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
     price: '',
     original_price: '',
-    image: '',
     category: '',
     brand: '',
     stock: '',
@@ -58,7 +56,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       description: '',
       price: '',
       original_price: '',
-      image: '',
       category: '',
       brand: '',
       stock: '',
@@ -66,8 +63,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       is_flash_sale: false,
       discount_percentage: ''
     });
-    setSelectedImage(null);
-    setImagePreview('');
+    setProductImages([]);
     setValidationErrors({});
   };
 
@@ -90,8 +86,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       errors.category = 'Category is required';
     }
 
-    if (!selectedImage && !newProduct.image) {
-      errors.image = 'Product image is required';
+    if (productImages.length === 0) {
+      errors.images = 'At least one product image is required';
     }
 
     if (newProduct.original_price && parseFloat(newProduct.original_price) <= parseFloat(newProduct.price)) {
@@ -100,106 +96,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select an image file (JPEG, PNG, GIF, etc.)",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image smaller than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setSelectedImage(file);
-      setValidationErrors(prev => ({ ...prev, image: '' }));
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      console.log('Image selected:', file.name, 'Size:', file.size, 'Type:', file.type);
-    }
-  };
-
-  const uploadImage = async (): Promise<string | null> => {
-    if (!selectedImage) return null;
-
-    setIsUploading(true);
-    try {
-      // Check current user first
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        console.error('Authentication error:', userError);
-        throw new Error('You must be logged in to upload images');
-      }
-
-      console.log('Current user:', user.email);
-
-      // Generate unique filename
-      const fileExt = selectedImage.name.split('.').pop()?.toLowerCase();
-      const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-      console.log('Starting image upload to bucket "gallary":', fileName);
-
-      const { data, error } = await supabase.storage
-        .from('gallary')
-        .upload(fileName, selectedImage, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: selectedImage.type
-        });
-
-      if (error) {
-        console.error('Storage upload error details:', {
-          message: error.message,
-          error: error
-        });
-        throw new Error(`Upload failed: ${error.message}`);
-      }
-
-      console.log('Upload successful:', data);
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('gallary')
-        .getPublicUrl(fileName);
-
-      console.log('Public URL generated:', urlData.publicUrl);
-      
-      if (!urlData.publicUrl) {
-        throw new Error('Failed to generate public URL for uploaded image');
-      }
-
-      return urlData.publicUrl;
-    } catch (error: any) {
-      console.error('Image upload failed:', error);
-      toast({
-        title: "Image upload failed",
-        description: error.message || "Failed to upload image to storage",
-        variant: "destructive"
-      });
-      return null;
-    } finally {
-      setIsUploading(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -226,24 +122,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       }
 
       console.log('Current user authenticated:', user.email);
-      
-      let imageUrl = newProduct.image;
 
-      // Upload image if selected
-      if (selectedImage) {
-        console.log('Uploading selected image...');
-        const uploadedUrl = await uploadImage();
-        if (!uploadedUrl) {
-          setIsLoading(false);
-          return; // Upload failed, don't continue
-        }
-        imageUrl = uploadedUrl;
-      }
-
-      if (!imageUrl) {
+      if (productImages.length === 0) {
         toast({
-          title: "Image required",
-          description: "Please upload an image or provide an image URL",
+          title: "Images required",
+          description: "Please upload at least one product image",
           variant: "destructive"
         });
         setIsLoading(false);
@@ -265,7 +148,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         description: newProduct.description.trim() || null,
         price: parseFloat(newProduct.price),
         original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
-        image: imageUrl,
+        image: productImages[0], // Use first image as main image
         category: newProduct.category,
         brand: newProduct.brand.trim() || null,
         stock: parseInt(newProduct.stock),
@@ -278,7 +161,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       console.log('Inserting product data:', JSON.stringify(productData, null, 2));
 
-      const { data, error } = await supabase
+      const { data: insertedProduct, error } = await supabase
         .from('products')
         .insert(productData)
         .select()
@@ -295,11 +178,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         throw new Error(`Failed to add product: ${error.message}`);
       }
 
-      console.log('Product created successfully:', data);
+      console.log('Product created successfully:', insertedProduct);
+
+      // Store additional gallery images if there are more than one
+      if (productImages.length > 1) {
+        console.log('Storing additional gallery images:', productImages.slice(1));
+        // You can extend this to store additional images in a separate table if needed
+      }
 
       toast({
         title: "Product added successfully!",
-        description: `${newProduct.name} has been added to the catalog`,
+        description: `${newProduct.name} has been added to the catalog with ${productImages.length} image(s)`,
       });
 
       // Reset form and close modal
@@ -327,7 +216,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Add New Product</CardTitle>
           <Button
@@ -343,7 +232,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           </Button>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-gray-300">Product Name *</Label>
@@ -497,74 +386,22 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               </div>
             </div>
             
-            {/* Image Upload Section */}
+            {/* Product Image Gallery */}
             <div className="space-y-3">
-              <Label className="text-gray-300">Product Image *</Label>
-              
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer transition-colors"
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>Upload Image</span>
-                  </label>
-                  {isUploading && (
-                    <div className="flex items-center space-x-2 text-blue-400">
-                      <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-sm">Uploading...</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Image Preview */}
-                {imagePreview && (
-                  <div className="relative w-32 h-32 border-2 border-gray-600 rounded-lg overflow-hidden">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedImage(null);
-                        setImagePreview('');
-                      }}
-                      className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-
-                {/* Alternative: Manual URL Input */}
-                <div className="text-sm text-gray-400">Or provide image URL manually:</div>
-                <Input
-                  placeholder="https://example.com/image.jpg"
-                  value={newProduct.image}
-                  onChange={(e) => {
-                    setNewProduct({...newProduct, image: e.target.value});
-                    setValidationErrors(prev => ({ ...prev, image: '' }));
-                  }}
-                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.image ? 'border-red-500' : ''}`}
-                />
-                
-                {validationErrors.image && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.image}
-                  </p>
-                )}
-              </div>
+              <ProductImageGallery 
+                images={productImages}
+                onImagesChange={(images) => {
+                  setProductImages(images);
+                  setValidationErrors(prev => ({ ...prev, images: '' }));
+                }}
+                maxImages={5}
+              />
+              {validationErrors.images && (
+                <p className="text-red-400 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  {validationErrors.images}
+                </p>
+              )}
             </div>
 
             <div className="flex space-x-4">
@@ -597,13 +434,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   onClose();
                 }}
                 className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                disabled={isLoading || isUploading}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={isLoading || isUploading} 
+                disabled={isLoading} 
                 className="bg-green-600 hover:bg-green-700"
               >
                 {isLoading ? (
