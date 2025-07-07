@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -169,7 +170,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       if (error) {
         console.error('Storage upload error details:', {
           message: error.message,
-          statusCode: error.statusCode,
           error: error
         });
         throw new Error(`Upload failed: ${error.message}`);
