@@ -31,10 +31,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      console.log('Uploading image to "images" bucket:', fileName);
+      console.log('Uploading image to "gallary" bucket:', fileName);
 
       const { data, error } = await supabase.storage
-        .from('images')
+        .from('gallary')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
@@ -47,7 +47,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       }
 
       const { data: urlData } = supabase.storage
-        .from('images')
+        .from('gallary')
         .getPublicUrl(fileName);
 
       if (!urlData.publicUrl) {
