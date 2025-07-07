@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Star, Package, DollarSign, Eye, Calendar } from 'lucide-react';
+import { Star, Package, DollarSign, Eye, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 interface ViewProductModalProps {
   product: Product | null;
@@ -12,6 +14,50 @@ interface ViewProductModalProps {
 }
 
 const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, onClose }) => {
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (product && isOpen) {
+      loadGalleryImages();
+    }
+  }, [product, isOpen]);
+
+  const loadGalleryImages = async () => {
+    if (!product) return;
+    
+    setLoading(true);
+    try {
+      const { data: galleryData, error } = await supabase
+        .from('product_galleries')
+        .select('image_url')
+        .eq('product_id', product.id)
+        .order('display_order');
+
+      if (error) {
+        console.error('Error loading gallery images:', error);
+        setGalleryImages(product.image ? [product.image] : []);
+      } else {
+        const imageUrls = galleryData.map(img => img.image_url);
+        setGalleryImages(imageUrls.length > 0 ? imageUrls : (product.image ? [product.image] : []));
+      }
+    } catch (error) {
+      console.error('Failed to load gallery images:', error);
+      setGalleryImages(product.image ? [product.image] : []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+  };
+
   if (!product) return null;
 
   const discountPercentage = product.original_price 
@@ -20,24 +66,87 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">Product Details</DialogTitle>
         </DialogHeader>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Product Image */}
+          {/* Product Images Gallery */}
           <div className="space-y-4">
-            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                }}
-              />
+            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative group">
+              {loading ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : galleryImages.length > 0 ? (
+                <>
+                  <img
+                    src={galleryImages[currentImageIndex]}
+                    alt={`${product.name} - Image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                    }}
+                  />
+                  
+                  {/* Navigation arrows */}
+                  {galleryImages.length > 1 && (
+                    <>
+                      <Button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        size="sm"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        size="sm"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </>
+                  )}
+                  
+                  {/* Image counter */}
+                  {galleryImages.length > 1 && (
+                    <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                      {currentImageIndex + 1} / {galleryImages.length}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <Package className="w-16 h-16" />
+                </div>
+              )}
             </div>
+            
+            {/* Thumbnail strip */}
+            {galleryImages.length > 1 && (
+              <div className="flex space-x-2 overflow-x-auto">
+                {galleryImages.map((imageUrl, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                      index === currentImageIndex ? 'border-blue-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -52,6 +161,11 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
                   <Badge className="bg-red-500">Flash Sale</Badge>
                 )}
                 <Badge variant="outline">{product.category}</Badge>
+                {product.brand && (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    {product.brand}
+                  </Badge>
+                )}
               </div>
             </div>
 

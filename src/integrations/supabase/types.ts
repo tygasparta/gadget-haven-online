@@ -155,6 +155,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_galleries: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          is_main: boolean | null
+          product_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_main?: boolean | null
+          product_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_main?: boolean | null
+          product_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_galleries_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand: string | null

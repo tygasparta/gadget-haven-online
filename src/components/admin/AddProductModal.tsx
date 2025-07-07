@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +18,7 @@ interface AddProductModalProps {
 
 const PRODUCT_CATEGORIES = [
   'Smartphones',
-  'Laptops',
+  'Laptops', 
   'Tablets',
   'Headphones',
   'Cameras',
@@ -115,7 +114,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     try {
       console.log('Starting product creation process...');
       
-      // Check if user is authenticated and has admin role
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
         throw new Error('You must be logged in to add products');
@@ -124,13 +122,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       console.log('Current user authenticated:', user.email);
 
       if (productImages.length === 0) {
-        toast({
-          title: "Images required",
-          description: "Please upload at least one product image",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
+        throw new Error('Please upload at least one product image');
       }
 
       // Calculate discount percentage if original price is provided
@@ -168,22 +160,31 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         .single();
 
       if (error) {
-        console.error('Database insert error details:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint,
-          error: error
-        });
+        console.error('Database insert error details:', error);
         throw new Error(`Failed to add product: ${error.message}`);
       }
 
       console.log('Product created successfully:', insertedProduct);
 
-      // Store additional gallery images if there are more than one
-      if (productImages.length > 1) {
-        console.log('Storing additional gallery images:', productImages.slice(1));
-        // You can extend this to store additional images in a separate table if needed
+      // Save all gallery images to the product_galleries table
+      if (productImages.length > 0) {
+        const galleryData = productImages.map((imageUrl, index) => ({
+          product_id: insertedProduct.id,
+          image_url: imageUrl,
+          display_order: index,
+          is_main: index === 0 // First image is the main image
+        }));
+
+        const { error: galleryError } = await supabase
+          .from('product_galleries')
+          .insert(galleryData);
+
+        if (galleryError) {
+          console.error('Gallery insert error:', galleryError);
+          // Don't throw here as the product was already created successfully
+        } else {
+          console.log('Gallery images saved successfully');
+        }
       }
 
       toast({
@@ -191,7 +192,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         description: `${newProduct.name} has been added to the catalog with ${productImages.length} image(s)`,
       });
 
-      // Reset form and close modal
       resetForm();
       onClose();
       

@@ -1,10 +1,10 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProductCardProps {
   product: {
@@ -15,6 +15,7 @@ interface ProductCardProps {
     rating: number;
     reviews: number;
     image: string;
+    brand?: string;
     discount?: string;
     isFlash?: boolean;
     countdownTimer?: string;
@@ -25,6 +26,43 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { mutate: addToCart } = useAddToCart();
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const [productImage, setProductImage] = useState(product.image);
+
+  useEffect(() => {
+    // Load the main gallery image if available
+    loadMainGalleryImage();
+  }, [product.id]);
+
+  const loadMainGalleryImage = async () => {
+    try {
+      const { data: galleryData, error } = await supabase
+        .from('product_galleries')
+        .select('image_url')
+        .eq('product_id', product.id)
+        .eq('is_main', true)
+        .single();
+
+      if (!error && galleryData) {
+        setProductImage(galleryData.image_url);
+      } else {
+        // Fallback to first gallery image
+        const { data: firstImage, error: firstError } = await supabase
+          .from('product_galleries')
+          .select('image_url')
+          .eq('product_id', product.id)
+          .order('display_order')
+          .limit(1)
+          .single();
+
+        if (!firstError && firstImage) {
+          setProductImage(firstImage.image_url);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading gallery image:', error);
+      // Keep the original product image as fallback
+    }
+  };
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -85,7 +123,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Product image with enhanced styling */}
       <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl">
         <img
-          src={product.image}
+          src={productImage}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           onError={(e) => {
@@ -97,9 +135,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Enhanced product info */}
       <div className="p-5">
-        <h3 className="font-semibold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors text-sm leading-relaxed">
+        <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors text-sm leading-relaxed">
           {product.name}
         </h3>
+        
+        {/* Brand display */}
+        {product.brand && (
+          <p className="text-xs text-gray-500 mb-2 font-medium">
+            {product.brand}
+          </p>
+        )}
 
         {/* Enhanced rating */}
         <div className="flex items-center justify-between mb-3">

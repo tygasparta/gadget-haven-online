@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
+import ProductImageGallery from './ProductImageGallery';
 
 interface EditProductModalProps {
   product: Product;
@@ -36,12 +36,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
+  const [productImages, setProductImages] = useState<string[]>([]);
   const [editProduct, setEditProduct] = useState({
     name: '',
     description: '',
     price: '',
     original_price: '',
-    image: '',
     category: '',
     brand: '',
     stock: '',
@@ -57,7 +57,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         description: product.description || '',
         price: product.price.toString(),
         original_price: product.original_price?.toString() || '',
-        image: product.image || '',
         category: product.category || '',
         brand: product.brand || '',
         stock: product.stock?.toString() || '',
@@ -65,14 +64,49 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         is_flash_sale: product.is_flash_sale || false,
         discount_percentage: product.discount_percentage?.toString() || ''
       });
+      
+      // Load existing gallery images
+      loadGalleryImages();
     }
   }, [product]);
+
+  const loadGalleryImages = async () => {
+    try {
+      const { data: galleryImages, error } = await supabase
+        .from('product_galleries')
+        .select('image_url')
+        .eq('product_id', product.id)
+        .order('display_order');
+
+      if (error) {
+        console.error('Error loading gallery images:', error);
+        // Fallback to main product image
+        setProductImages(product.image ? [product.image] : []);
+      } else {
+        const imageUrls = galleryImages.map(img => img.image_url);
+        setProductImages(imageUrls.length > 0 ? imageUrls : (product.image ? [product.image] : []));
+      }
+    } catch (error) {
+      console.error('Failed to load gallery images:', error);
+      setProductImages(product.image ? [product.image] : []);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
+      // Calculate discount percentage if original price is provided
+      let calculatedDiscount = 0;
+      if (editProduct.original_price && editProduct.price) {
+        const original = parseFloat(editProduct.original_price);
+        const current = parseFloat(editProduct.price);
+        calculatedDiscount = Math.round(((original - current) / original) * 100);
+      } else if (editProduct.discount_percentage) {
+        calculatedDiscount = parseInt(editProduct.discount_percentage);
+      }
+
       const { error } = await supabase
         .from('products')
         .update({
@@ -80,17 +114,40 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           description: editProduct.description,
           price: parseFloat(editProduct.price),
           original_price: editProduct.original_price ? parseFloat(editProduct.original_price) : null,
-          image: editProduct.image,
+          image: productImages.length > 0 ? productImages[0] : product.image, // Use first gallery image as main
           category: editProduct.category,
           brand: editProduct.brand,
           stock: parseInt(editProduct.stock),
           is_featured: editProduct.is_featured,
           is_flash_sale: editProduct.is_flash_sale,
-          discount_percentage: editProduct.discount_percentage ? parseInt(editProduct.discount_percentage) : 0,
+          discount_percentage: calculatedDiscount,
         })
         .eq('id', product.id);
 
       if (error) throw error;
+
+      // Update gallery images - first clear existing ones, then add new ones
+      await supabase
+        .from('product_galleries')
+        .delete()
+        .eq('product_id', product.id);
+
+      if (productImages.length > 0) {
+        const galleryData = productImages.map((imageUrl, index) => ({
+          product_id: product.id,
+          image_url: imageUrl,
+          display_order: index,
+          is_main: index === 0
+        }));
+
+        const { error: galleryError } = await supabase
+          .from('product_galleries')
+          .insert(galleryData);
+
+        if (galleryError) {
+          console.error('Gallery update error:', galleryError);
+        }
+      }
 
       toast({
         title: "Product updated successfully",
@@ -116,7 +173,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Edit Product</CardTitle>
           <Button
@@ -129,7 +186,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           </Button>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-gray-300">Product Name</Label>
@@ -227,14 +284,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               </div>
             </div>
             
-            <div>
-              <Label htmlFor="image" className="text-gray-300">Image URL</Label>
-              <Input
-                id="image"
-                value={editProduct.image}
-                onChange={(e) => setEditProduct({...editProduct, image: e.target.value})}
-                className="bg-gray-800 border-gray-600 text-white"
-                required
+            {/* Product Image Gallery */}
+            <div className="space-y-3">
+              <ProductImageGallery 
+                images={productImages}
+                onImagesChange={setProductImages}
+                maxImages={5}
+                productId={product.id}
               />
             </div>
 

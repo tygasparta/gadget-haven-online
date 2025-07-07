@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, X, AlertCircle, Image } from 'lucide-react';
@@ -9,12 +8,14 @@ interface ProductImageGalleryProps {
   images: string[];
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
+  productId?: number; // For editing existing products
 }
 
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ 
   images, 
   onImagesChange, 
-  maxImages = 5 
+  maxImages = 5,
+  productId 
 }) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
@@ -65,6 +66,26 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     }
   };
 
+  const saveGalleryImage = async (imageUrl: string, displayOrder: number, isMain: boolean = false) => {
+    if (!productId) return; // Only save to gallery for existing products
+    
+    try {
+      const { error } = await supabase.from('product_galleries').insert({
+        product_id: productId,
+        image_url: imageUrl,
+        display_order: displayOrder,
+        is_main: isMain
+      });
+
+      if (error) {
+        console.error('Error saving gallery image:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to save gallery image:', error);
+    }
+  };
+
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
@@ -109,7 +130,16 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       const successfulUploads = uploadedUrls.filter(url => url !== null) as string[];
       
       if (successfulUploads.length > 0) {
-        onImagesChange([...images, ...successfulUploads]);
+        const newImages = [...images, ...successfulUploads];
+        onImagesChange(newImages);
+        
+        // Save to gallery if editing existing product
+        if (productId) {
+          for (let i = 0; i < successfulUploads.length; i++) {
+            await saveGalleryImage(successfulUploads[i], images.length + i, images.length === 0 && i === 0);
+          }
+        }
+        
         toast({
           title: "Images uploaded",
           description: `${successfulUploads.length} image(s) uploaded successfully`,
@@ -119,14 +149,31 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       console.error('Batch upload error:', error);
     } finally {
       setUploading(false);
-      // Reset file input
       e.target.value = '';
     }
   };
 
-  const removeImage = (indexToRemove: number) => {
+  const removeImage = async (indexToRemove: number) => {
+    const imageToRemove = images[indexToRemove];
     const newImages = images.filter((_, index) => index !== indexToRemove);
     onImagesChange(newImages);
+
+    // Remove from gallery if editing existing product
+    if (productId && imageToRemove) {
+      try {
+        const { error } = await supabase
+          .from('product_galleries')
+          .delete()
+          .eq('product_id', productId)
+          .eq('image_url', imageToRemove);
+
+        if (error) {
+          console.error('Error removing gallery image:', error);
+        }
+      } catch (error) {
+        console.error('Failed to remove gallery image:', error);
+      }
+    }
   };
 
   return (
