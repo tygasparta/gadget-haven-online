@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { X, AlertCircle, Sparkles, Plus } from 'lucide-react';
-import ProductImageGallery from './ProductImageGallery';
+import ImageSelector from './ImageSelector';
 import AIProductGenerator from './AIProductGenerator';
 
 interface AddProductModalProps {
@@ -139,7 +140,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       }
 
       if (productImages.length === 0) {
-        throw new Error('Please upload at least one product image');
+        throw new Error('Please select at least one product image');
       }
 
       let calculatedDiscount = 0;
@@ -151,7 +152,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
-      // Use first uploaded image as main product image
+      // Use first selected image as main product image
       const mainProductImage = productImages[0];
       console.log('Creating product with main image:', mainProductImage);
 
@@ -186,7 +187,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       console.log('Product inserted successfully:', insertedProduct);
 
-      // Save all images to gallery
+      // Save all selected images to gallery
       if (productImages.length > 0) {
         const galleryData = productImages.map((imageUrl, index) => ({
           product_id: insertedProduct.id,
@@ -211,7 +212,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully!",
-        description: `${newProduct.name} has been added with your uploaded images`,
+        description: `${newProduct.name} has been added with your selected images`,
       });
 
       resetForm();
@@ -425,8 +426,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 </div>
                 
                 <div className="space-y-3">
-                  <ProductImageGallery 
-                    images={productImages}
+                  <ImageSelector 
+                    selectedImages={productImages}
                     onImagesChange={(images) => {
                       console.log('Images changed in AddProductModal:', images);
                       setProductImages(images);

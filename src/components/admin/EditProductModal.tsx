@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
-import ProductImageGallery from './ProductImageGallery';
+import ImageSelector from './ImageSelector';
 
 interface EditProductModalProps {
   product: Product;
@@ -124,7 +124,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         calculatedDiscount = parseInt(editProduct.discount_percentage);
       }
 
-      // Use the first uploaded image as main product image, or keep existing if no new images
+      // Use the first selected image as main product image, or keep existing if no new images
       const mainProductImage = productImages.length > 0 ? productImages[0] : product.image;
 
       const { error } = await supabase
@@ -134,7 +134,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           description: editProduct.description,
           price: parseFloat(editProduct.price),
           original_price: editProduct.original_price ? parseFloat(editProduct.original_price) : null,
-          image: mainProductImage, // Use the actual uploaded image
+          image: mainProductImage,
           category: editProduct.category,
           brand: editProduct.brand,
           stock: parseInt(editProduct.stock),
@@ -175,7 +175,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: "The product has been updated with your images"
+        description: "The product has been updated with your selected images"
       });
 
       onClose();
@@ -307,17 +307,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                 />
               </div>
             </div>
-            
-            {/* Product Image Gallery */}
+
+            {/* Product Image Selector */}
             <div className="space-y-3">
-              <ProductImageGallery 
-                images={productImages}
+              <ImageSelector 
+                selectedImages={productImages}
                 onImagesChange={(images) => {
                   console.log('Images changed in EditProductModal:', images);
                   setProductImages(images);
                 }}
                 maxImages={5}
-                productId={product.id}
               />
             </div>
 
