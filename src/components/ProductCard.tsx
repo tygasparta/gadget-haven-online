@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
-    // Load the main gallery image if available
     loadMainGalleryImage();
   }, [product.id]);
 
@@ -47,11 +45,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         .eq('is_main', true)
         .single();
 
-      if (!error && galleryData && !galleryData.image_url.includes('unsplash.com')) {
+      if (!error && galleryData?.image_url) {
         console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
-        // Fallback to first gallery image that's not a sample
         const { data: firstImage, error: firstError } = await supabase
           .from('product_galleries')
           .select('image_url')
@@ -60,26 +57,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           .limit(1)
           .single();
 
-        if (!firstError && firstImage && !firstImage.image_url.includes('unsplash.com')) {
+        if (!firstError && firstImage?.image_url) {
           console.log('Found first gallery image:', firstImage.image_url);
           setProductImage(firstImage.image_url);
         } else {
-          console.log('Using product image (avoiding samples):', product.image);
-          // Only use the product image if it's not a sample/placeholder
-          if (!product.image.includes('unsplash.com')) {
-            setProductImage(product.image);
-          } else {
-            // If all else fails, use a generic placeholder
-            setProductImage("https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop");
-          }
+          console.log('Using default product image:', product.image);
+          setProductImage(product.image);
         }
       }
     } catch (error) {
       console.error('Error loading gallery image:', error);
-      // Use original product image if it's not a sample
-      if (!product.image.includes('unsplash.com')) {
-        setProductImage(product.image);
-      }
+      setProductImage(product.image);
     } finally {
       setImageLoading(false);
     }
@@ -154,10 +142,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             onError={(e) => {
               console.log('Image failed to load:', productImage);
-              // Only use fallback if it's not already a fallback
-              if (!productImage.includes('unsplash.com')) {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-              }
+              e.currentTarget.style.display = 'none';
             }}
             onLoad={() => {
               console.log('Successfully loaded product image:', productImage);
