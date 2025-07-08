@@ -54,27 +54,43 @@ Please provide:
 
 Format the response as JSON with keys: name, description, category, brand`;
 
+      console.log('Calling AI function with prompt:', prompt);
+
       const { data, error } = await supabase.functions.invoke('generate-product-details', {
         body: { prompt }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function invoke error:', error);
+        throw error;
+      }
+
+      console.log('AI function response:', data);
 
       if (data?.generatedData) {
-        const parsedData = JSON.parse(data.generatedData);
-        onGenerate(parsedData);
-        
-        toast({
-          title: "Product details generated!",
-          description: "AI has generated detailed product information for you.",
-        });
-        
-        // Reset form
-        setBasicInfo({
-          productType: '',
-          keyFeatures: '',
-          targetAudience: ''
-        });
+        try {
+          const parsedData = JSON.parse(data.generatedData);
+          console.log('Parsed AI data:', parsedData);
+          
+          onGenerate(parsedData);
+          
+          toast({
+            title: "Product details generated!",
+            description: "AI has generated detailed product information for you.",
+          });
+          
+          // Reset form
+          setBasicInfo({
+            productType: '',
+            keyFeatures: '',
+            targetAudience: ''
+          });
+        } catch (parseError) {
+          console.error('Failed to parse AI response:', parseError);
+          throw new Error('Invalid response format from AI');
+        }
+      } else {
+        throw new Error('No data received from AI');
       }
     } catch (error: any) {
       console.error('AI generation error:', error);

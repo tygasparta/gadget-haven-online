@@ -21,6 +21,8 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    console.log('Generating product details with prompt:', prompt);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -43,11 +45,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
       throw new Error(errorData.error?.message || 'OpenAI API request failed');
     }
 
     const data = await response.json();
     const generatedData = data.choices[0].message.content;
+
+    console.log('Generated product details:', generatedData);
 
     return new Response(JSON.stringify({ generatedData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
