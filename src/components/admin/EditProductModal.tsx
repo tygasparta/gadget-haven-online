@@ -72,6 +72,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
   const loadGalleryImages = async () => {
     try {
+      console.log('Loading gallery images for product:', product.id);
       const { data: galleryImages, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -80,15 +81,29 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       if (error) {
         console.error('Error loading gallery images:', error);
-        // Fallback to main product image
-        setProductImages(product.image ? [product.image] : []);
+        // Fallback to main product image if it exists and is not a sample image
+        if (product.image && !product.image.includes('unsplash.com')) {
+          setProductImages([product.image]);
+        }
       } else {
         const imageUrls = galleryImages.map(img => img.image_url);
-        setProductImages(imageUrls.length > 0 ? imageUrls : (product.image ? [product.image] : []));
+        console.log('Loaded gallery images:', imageUrls);
+        
+        // Filter out sample/placeholder images
+        const actualImages = imageUrls.filter(url => !url.includes('unsplash.com'));
+        
+        if (actualImages.length > 0) {
+          setProductImages(actualImages);
+        } else if (product.image && !product.image.includes('unsplash.com')) {
+          setProductImages([product.image]);
+        }
       }
     } catch (error) {
       console.error('Failed to load gallery images:', error);
-      setProductImages(product.image ? [product.image] : []);
+      // Fallback to main product image if it's not a sample
+      if (product.image && !product.image.includes('unsplash.com')) {
+        setProductImages([product.image]);
+      }
     }
   };
 
@@ -97,6 +112,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
     setIsLoading(true);
     
     try {
+      console.log('Updating product with images:', productImages);
+      
       // Calculate discount percentage if original price is provided
       let calculatedDiscount = 0;
       if (editProduct.original_price && editProduct.price) {
@@ -107,6 +124,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         calculatedDiscount = parseInt(editProduct.discount_percentage);
       }
 
+      // Use the first uploaded image as main product image, or keep existing if no new images
+      const mainProductImage = productImages.length > 0 ? productImages[0] : product.image;
+
       const { error } = await supabase
         .from('products')
         .update({
@@ -114,7 +134,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           description: editProduct.description,
           price: parseFloat(editProduct.price),
           original_price: editProduct.original_price ? parseFloat(editProduct.original_price) : null,
-          image: productImages.length > 0 ? productImages[0] : product.image, // Use first gallery image as main
+          image: mainProductImage, // Use the actual uploaded image
           category: editProduct.category,
           brand: editProduct.brand,
           stock: parseInt(editProduct.stock),
@@ -140,18 +160,22 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           is_main: index === 0
         }));
 
+        console.log('Saving updated gallery data:', galleryData);
+
         const { error: galleryError } = await supabase
           .from('product_galleries')
           .insert(galleryData);
 
         if (galleryError) {
           console.error('Gallery update error:', galleryError);
+        } else {
+          console.log('Gallery updated successfully');
         }
       }
 
       toast({
         title: "Product updated successfully",
-        description: "The product has been updated in the catalog"
+        description: "The product has been updated with your images"
       });
 
       onClose();
@@ -288,7 +312,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             <div className="space-y-3">
               <ProductImageGallery 
                 images={productImages}
-                onImagesChange={setProductImages}
+                onImagesChange={(images) => {
+                  console.log('Images changed in EditProductModal:', images);
+                  setProductImages(images);
+                }}
                 maxImages={5}
                 productId={product.id}
               />

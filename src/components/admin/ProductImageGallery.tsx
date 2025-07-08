@@ -142,8 +142,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         }
         
         toast({
-          title: "Images uploaded",
-          description: `${successfulUploads.length} image(s) uploaded successfully`,
+          title: "Images uploaded successfully",
+          description: `${successfulUploads.length} image(s) uploaded and will be displayed`,
         });
       }
     } catch (error) {
@@ -225,7 +225,11 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                   alt={`Product ${index + 1}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
+                    console.error('Failed to load uploaded image:', imageUrl);
                     e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                  }}
+                  onLoad={() => {
+                    console.log('Successfully loaded uploaded image:', imageUrl);
                   }}
                 />
               </div>

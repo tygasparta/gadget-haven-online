@@ -113,13 +113,12 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     
     try {
       console.log('Starting product creation process...');
+      console.log('Product images to save:', productImages);
       
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
         throw new Error('You must be logged in to add products');
       }
-
-      console.log('Current user authenticated:', user.email);
 
       if (productImages.length === 0) {
         throw new Error('Please upload at least one product image');
@@ -135,12 +134,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
+      // Use the first uploaded image as the main product image
+      const mainProductImage = productImages[0];
+      console.log('Using main product image:', mainProductImage);
+
       const productData = {
         name: newProduct.name.trim(),
         description: newProduct.description.trim() || null,
         price: parseFloat(newProduct.price),
         original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
-        image: productImages[0], // Use first image as main image
+        image: mainProductImage, // Use the actual uploaded image
         category: newProduct.category,
         brand: newProduct.brand.trim() || null,
         stock: parseInt(newProduct.stock),
@@ -166,7 +169,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       console.log('Product created successfully:', insertedProduct);
 
-      // Save all gallery images to the product_galleries table
+      // Save all images to the product_galleries table
       if (productImages.length > 0) {
         const galleryData = productImages.map((imageUrl, index) => ({
           product_id: insertedProduct.id,
@@ -183,7 +186,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
         if (galleryError) {
           console.error('Gallery insert error:', galleryError);
-          // Don't throw here as the product was already created successfully
         } else {
           console.log('Gallery images saved successfully');
         }
@@ -191,7 +193,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully!",
-        description: `${newProduct.name} has been added to the catalog with ${productImages.length} image(s)`,
+        description: `${newProduct.name} has been added with your uploaded images`,
       });
 
       resetForm();
@@ -393,7 +395,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               <ProductImageGallery 
                 images={productImages}
                 onImagesChange={(images) => {
-                  console.log('Images changed:', images);
+                  console.log('Images changed in AddProductModal:', images);
                   setProductImages(images);
                   setValidationErrors(prev => ({ ...prev, images: '' }));
                 }}
