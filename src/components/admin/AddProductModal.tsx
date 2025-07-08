@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +71,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   };
 
   const handleAIGeneration = (generatedData: any) => {
+    console.log('Received AI generated data:', generatedData);
     setNewProduct(prev => ({
       ...prev,
       name: generatedData.name || '',
@@ -151,7 +151,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
+      // Use first uploaded image as main product image
       const mainProductImage = productImages[0];
+      console.log('Creating product with main image:', mainProductImage);
 
       const productData = {
         name: newProduct.name.trim(),
@@ -169,6 +171,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         reviews: 0
       };
 
+      console.log('Inserting product data:', productData);
+
       const { data: insertedProduct, error } = await supabase
         .from('products')
         .insert(productData)
@@ -176,9 +180,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         .single();
 
       if (error) {
+        console.error('Product insert error:', error);
         throw new Error(`Failed to add product: ${error.message}`);
       }
 
+      console.log('Product inserted successfully:', insertedProduct);
+
+      // Save all images to gallery
       if (productImages.length > 0) {
         const galleryData = productImages.map((imageUrl, index) => ({
           product_id: insertedProduct.id,
@@ -187,12 +195,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           is_main: index === 0
         }));
 
+        console.log('Inserting gallery data:', galleryData);
+
         const { error: galleryError } = await supabase
           .from('product_galleries')
           .insert(galleryData);
 
         if (galleryError) {
           console.error('Gallery insert error:', galleryError);
+          // Don't throw error here as product is already created
+        } else {
+          console.log('Gallery images saved successfully');
         }
       }
 
@@ -415,6 +428,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   <ProductImageGallery 
                     images={productImages}
                     onImagesChange={(images) => {
+                      console.log('Images changed in AddProductModal:', images);
                       setProductImages(images);
                       setValidationErrors(prev => ({ ...prev, images: '' }));
                     }}

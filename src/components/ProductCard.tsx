@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       setImageLoading(true);
       console.log('Loading gallery image for product:', product.id);
       
+      // First try to get the main gallery image
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -49,6 +51,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
+        // Fallback to first gallery image
         const { data: firstImage, error: firstError } = await supabase
           .from('product_galleries')
           .select('image_url')
@@ -61,13 +64,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           console.log('Found first gallery image:', firstImage.image_url);
           setProductImage(firstImage.image_url);
         } else {
-          console.log('Using default product image:', product.image);
-          setProductImage(product.image);
+          console.log('No gallery images found, using product image:', product.image);
+          // Only use the main product image if it's not a sample/placeholder
+          if (product.image && !product.image.includes('unsplash.com') && !product.image.includes('picsum.photos')) {
+            setProductImage(product.image);
+          } else {
+            // If no real images are available, use a generic placeholder
+            setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
+          }
         }
       }
     } catch (error) {
       console.error('Error loading gallery image:', error);
-      setProductImage(product.image);
+      // Only use main product image if it's not a sample
+      if (product.image && !product.image.includes('unsplash.com') && !product.image.includes('picsum.photos')) {
+        setProductImage(product.image);
+      } else {
+        setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
+      }
     } finally {
       setImageLoading(false);
     }
@@ -141,8 +155,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             onError={(e) => {
-              console.log('Image failed to load:', productImage);
-              e.currentTarget.style.display = 'none';
+              console.log('Image failed to load, using fallback:', productImage);
+              // Use a generic placeholder for failed images
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
             }}
             onLoad={() => {
               console.log('Successfully loaded product image:', productImage);
