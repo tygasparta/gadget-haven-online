@@ -29,12 +29,12 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       }
 
       const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      console.log('Uploading image to "gallary" bucket:', fileName);
+      console.log('Uploading image to "product-images" bucket:', fileName);
 
       const { data, error } = await supabase.storage
-        .from('gallary')
+        .from('product-images')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
@@ -47,7 +47,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       }
 
       const { data: urlData } = supabase.storage
-        .from('gallary')
+        .from('product-images')
         .getPublicUrl(fileName);
 
       if (!urlData.publicUrl) {
@@ -55,7 +55,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       }
 
       console.log('Image uploaded successfully:', urlData.publicUrl);
-      return urlData.publicUrl;
+      return fileName; // Return just the filename for storage in database
     } catch (error: any) {
       console.error('Image upload failed:', error);
       toast({
@@ -126,9 +126,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     
     try {
       const uploadPromises = files.map(file => uploadImage(file));
-      const uploadedUrls = await Promise.all(uploadPromises);
+      const uploadedFilenames = await Promise.all(uploadPromises);
       
-      const successfulUploads = uploadedUrls.filter(url => url !== null) as string[];
+      const successfulUploads = uploadedFilenames.filter(filename => filename !== null) as string[];
       
       if (successfulUploads.length > 0) {
         const newImages = [...images, ...successfulUploads];
@@ -136,7 +136,14 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         
         if (productId) {
           for (let i = 0; i < successfulUploads.length; i++) {
-            await saveGalleryImage(successfulUploads[i], images.length + i, images.length === 0 && i === 0);
+            // Get the public URL for gallery storage
+            const { data } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(successfulUploads[i]);
+            
+            if (data?.publicUrl) {
+              await saveGalleryImage(data.publicUrl, images.length + i, images.length === 0 && i === 0);
+            }
           }
         }
         
@@ -160,19 +167,38 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
     if (productId && imageToRemove) {
       try {
-        const { error } = await supabase
-          .from('product_galleries')
-          .delete()
-          .eq('product_id', productId)
-          .eq('image_url', imageToRemove);
+        // Get the public URL to match against gallery records
+        const { data } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(imageToRemove);
 
-        if (error) {
-          console.error('Error removing gallery image:', error);
+        if (data?.publicUrl) {
+          const { error } = await supabase
+            .from('product_galleries')
+            .delete()
+            .eq('product_id', productId)
+            .eq('image_url', data.publicUrl);
+
+          if (error) {
+            console.error('Error removing gallery image:', error);
+          }
         }
       } catch (error) {
         console.error('Failed to remove gallery image:', error);
       }
     }
+  };
+
+  const getImageUrl = (imageFilename: string) => {
+    if (imageFilename.includes('http')) {
+      return imageFilename; // Already a full URL
+    }
+    
+    const { data } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(imageFilename);
+    
+    return data?.publicUrl || imageFilename;
   };
 
   return (
@@ -213,15 +239,15 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
       {images.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {images.map((imageUrl, index) => (
+          {images.map((imageFilename, index) => (
             <div key={index} className="relative group">
               <div className="aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 border-gray-600">
                 <img
-                  src={imageUrl}
+                  src={getImageUrl(imageFilename)}
                   alt={`Product ${index + 1}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    console.error('Failed to load image:', imageUrl);
+                    console.error('Failed to load image:', imageFilename);
                     e.currentTarget.style.display = 'none';
                   }}
                 />

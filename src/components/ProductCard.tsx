@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,9 +38,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       setImageLoading(true);
       console.log('Loading image for product:', product.id, 'with image filename:', product.image);
       
-      // First, try to load from product-images bucket using the filename
+      // If product.image is already a full URL, use it directly
+      if (product.image && product.image.includes('http')) {
+        console.log('Using direct URL:', product.image);
+        setProductImage(product.image);
+        setImageLoading(false);
+        return;
+      }
+      
+      // If product.image is just a filename, construct the full URL from product-images bucket
       if (product.image && !product.image.includes('http')) {
-        // If product.image is just a filename, construct the full URL from product-images bucket
         const { data } = supabase.storage
           .from('product-images')
           .getPublicUrl(product.image);
@@ -49,15 +55,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         if (data?.publicUrl) {
           console.log('Using product-images bucket URL:', data.publicUrl);
           setProductImage(data.publicUrl);
+          setImageLoading(false);
           return;
         }
-      }
-      
-      // If product.image is already a full URL, use it directly
-      if (product.image && product.image.includes('http')) {
-        console.log('Using direct URL:', product.image);
-        setProductImage(product.image);
-        return;
       }
       
       // Fallback: try to get from gallery for this product
