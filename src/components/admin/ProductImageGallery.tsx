@@ -9,7 +9,7 @@ interface ProductImageGalleryProps {
   images: string[];
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
-  productId?: number; // For editing existing products
+  productId?: number;
 }
 
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ 
@@ -68,7 +68,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   };
 
   const saveGalleryImage = async (imageUrl: string, displayOrder: number, isMain: boolean = false) => {
-    if (!productId) return; // Only save to gallery for existing products
+    if (!productId) return;
     
     try {
       const { error } = await supabase.from('product_galleries').insert({
@@ -134,7 +134,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         const newImages = [...images, ...successfulUploads];
         onImagesChange(newImages);
         
-        // Save to gallery if editing existing product
         if (productId) {
           for (let i = 0; i < successfulUploads.length; i++) {
             await saveGalleryImage(successfulUploads[i], images.length + i, images.length === 0 && i === 0);
@@ -143,7 +142,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         
         toast({
           title: "Images uploaded successfully",
-          description: `${successfulUploads.length} image(s) uploaded and will be displayed`,
+          description: `${successfulUploads.length} image(s) uploaded`,
         });
       }
     } catch (error) {
@@ -159,7 +158,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     const newImages = images.filter((_, index) => index !== indexToRemove);
     onImagesChange(newImages);
 
-    // Remove from gallery if editing existing product
     if (productId && imageToRemove) {
       try {
         const { error } = await supabase
@@ -180,11 +178,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-gray-300 font-medium">Product Images</label>
+        <label className="text-gray-300 font-medium">Product Images *</label>
         <span className="text-sm text-gray-400">{images.length}/{maxImages}</span>
       </div>
 
-      {/* Upload Button */}
       <div className="flex items-center space-x-3">
         <input
           type="file"
@@ -204,7 +201,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           } text-white`}
         >
           <Upload className="w-4 h-4" />
-          <span>{uploading ? 'Uploading...' : 'Add Images'}</span>
+          <span>{uploading ? 'Uploading...' : 'Upload Images'}</span>
         </label>
         {uploading && (
           <div className="flex items-center space-x-2 text-blue-400">
@@ -214,7 +211,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         )}
       </div>
 
-      {/* Image Gallery */}
       {images.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {images.map((imageUrl, index) => (
@@ -225,11 +221,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                   alt={`Product ${index + 1}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    console.error('Failed to load uploaded image:', imageUrl);
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                  }}
-                  onLoad={() => {
-                    console.log('Successfully loaded uploaded image:', imageUrl);
+                    console.error('Failed to load image:', imageUrl);
+                    e.currentTarget.style.display = 'none';
                   }}
                 />
               </div>
@@ -252,7 +245,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
           <Image className="w-12 h-12 text-gray-500 mx-auto mb-3" />
           <p className="text-gray-400 mb-2">No images uploaded yet</p>
-          <p className="text-sm text-gray-500">Upload up to {maxImages} product images</p>
+          <p className="text-sm text-gray-500">Please upload at least one product image</p>
         </div>
       )}
     </div>
