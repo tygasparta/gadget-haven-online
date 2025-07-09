@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -31,27 +30,9 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
     try {
       console.log('Loading gallery images for product:', product.id);
       
-      // First try to load from product-images bucket using the main product image
       const images: string[] = [];
       
-      if (product.image) {
-        if (product.image.includes('http')) {
-          // If it's already a full URL, use it directly
-          images.push(product.image);
-        } else {
-          // If it's just a filename, construct URL from product-images bucket
-          const { data } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(product.image);
-          
-          if (data?.publicUrl) {
-            images.push(data.publicUrl);
-            console.log('Added main product image from product-images bucket:', data.publicUrl);
-          }
-        }
-      }
-      
-      // Then try to load additional images from gallery
+      // Load images from gallery
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -60,13 +41,14 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
 
       if (!error && galleryData && galleryData.length > 0) {
         const galleryUrls = galleryData.map(img => img.image_url);
-        // Add gallery images that aren't already in the images array
-        galleryUrls.forEach(url => {
-          if (!images.includes(url)) {
-            images.push(url);
-          }
-        });
+        images.push(...galleryUrls);
         console.log('Added gallery images:', galleryUrls);
+      }
+      
+      // If product has a main image and it's not already in gallery, add it
+      if (product.image && product.image.includes('http') && !images.includes(product.image)) {
+        images.unshift(product.image);
+        console.log('Added main product image:', product.image);
       }
       
       // If no images found, use placeholder

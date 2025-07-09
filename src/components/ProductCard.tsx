@@ -36,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const loadProductImage = async () => {
     try {
       setImageLoading(true);
-      console.log('Loading image for product:', product.id, 'with image filename:', product.image);
+      console.log('Loading image for product:', product.id, 'with image:', product.image);
       
       // If product.image is already a full URL, use it directly
       if (product.image && product.image.includes('http')) {
@@ -46,21 +46,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         return;
       }
       
-      // If product.image is just a filename, construct the full URL from product-images bucket
-      if (product.image && !product.image.includes('http')) {
-        const { data } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(product.image);
-        
-        if (data?.publicUrl) {
-          console.log('Using product-images bucket URL:', data.publicUrl);
-          setProductImage(data.publicUrl);
-          setImageLoading(false);
-          return;
-        }
-      }
-      
-      // Fallback: try to get from gallery for this product
+      // Try to get from gallery for this product
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -72,7 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
-        // Final fallback: try first gallery image
+        // Fallback: try first gallery image
         const { data: firstImage, error: firstError } = await supabase
           .from('product_galleries')
           .select('image_url')
