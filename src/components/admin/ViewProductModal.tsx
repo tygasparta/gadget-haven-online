@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +33,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
       
       const images: string[] = [];
       
-      // Load images from gallery
+      // Load images from product_galleries table
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')

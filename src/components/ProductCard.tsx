@@ -36,17 +36,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const loadProductImage = async () => {
     try {
       setImageLoading(true);
-      console.log('Loading image for product:', product.id, 'with image:', product.image);
+      console.log('Loading image for product:', product.id);
       
-      // If product.image is already a full URL, use it directly
-      if (product.image && product.image.includes('http')) {
-        console.log('Using direct URL:', product.image);
-        setProductImage(product.image);
-        setImageLoading(false);
-        return;
-      }
-      
-      // Try to get from gallery for this product
+      // Try to get the main image from product_galleries table
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -58,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
-        // Fallback: try first gallery image
+        // Fallback: try to get the first image from gallery
         const { data: firstImage, error: firstError } = await supabase
           .from('product_galleries')
           .select('image_url')
@@ -71,9 +63,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           console.log('Found first gallery image:', firstImage.image_url);
           setProductImage(firstImage.image_url);
         } else {
-          // Use generic placeholder as last resort
-          console.log('No images found, using placeholder');
-          setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
+          // If product.image is a full URL, use it directly
+          if (product.image && product.image.includes('http')) {
+            console.log('Using product image URL:', product.image);
+            setProductImage(product.image);
+          } else {
+            // Use generic placeholder as last resort
+            console.log('No images found, using placeholder');
+            setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
+          }
         }
       }
     } catch (error) {
