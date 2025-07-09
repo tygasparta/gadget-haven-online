@@ -27,19 +27,40 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { mutate: addToCart } = useAddToCart();
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const [productImage, setProductImage] = useState(product.image);
+  const [productImage, setProductImage] = useState('');
   const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
-    loadMainGalleryImage();
-  }, [product.id]);
+    loadProductImage();
+  }, [product.id, product.image]);
 
-  const loadMainGalleryImage = async () => {
+  const loadProductImage = async () => {
     try {
       setImageLoading(true);
-      console.log('Loading gallery image for product:', product.id);
+      console.log('Loading image for product:', product.id, 'with image filename:', product.image);
       
-      // First try to get the main gallery image
+      // First, try to load from product-images bucket using the filename
+      if (product.image && !product.image.includes('http')) {
+        // If product.image is just a filename, construct the full URL from product-images bucket
+        const { data } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(product.image);
+        
+        if (data?.publicUrl) {
+          console.log('Using product-images bucket URL:', data.publicUrl);
+          setProductImage(data.publicUrl);
+          return;
+        }
+      }
+      
+      // If product.image is already a full URL, use it directly
+      if (product.image && product.image.includes('http')) {
+        console.log('Using direct URL:', product.image);
+        setProductImage(product.image);
+        return;
+      }
+      
+      // Fallback: try to get from gallery for this product
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -51,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
-        // Fallback to first gallery image
+        // Final fallback: try first gallery image
         const { data: firstImage, error: firstError } = await supabase
           .from('product_galleries')
           .select('image_url')
@@ -64,24 +85,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           console.log('Found first gallery image:', firstImage.image_url);
           setProductImage(firstImage.image_url);
         } else {
-          console.log('No gallery images found, using product image:', product.image);
-          // Only use the main product image if it's not a sample/placeholder
-          if (product.image && !product.image.includes('unsplash.com') && !product.image.includes('picsum.photos')) {
-            setProductImage(product.image);
-          } else {
-            // If no real images are available, use a generic placeholder
-            setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
-          }
+          // Use generic placeholder as last resort
+          console.log('No images found, using placeholder');
+          setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
         }
       }
     } catch (error) {
-      console.error('Error loading gallery image:', error);
-      // Only use main product image if it's not a sample
-      if (product.image && !product.image.includes('unsplash.com') && !product.image.includes('picsum.photos')) {
-        setProductImage(product.image);
-      } else {
-        setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
-      }
+      console.error('Error loading product image:', error);
+      setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
     } finally {
       setImageLoading(false);
     }

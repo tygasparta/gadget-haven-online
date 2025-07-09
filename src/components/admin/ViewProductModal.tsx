@@ -29,22 +29,56 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
     
     setLoading(true);
     try {
+      console.log('Loading gallery images for product:', product.id);
+      
+      // First try to load from product-images bucket using the main product image
+      const images: string[] = [];
+      
+      if (product.image) {
+        if (product.image.includes('http')) {
+          // If it's already a full URL, use it directly
+          images.push(product.image);
+        } else {
+          // If it's just a filename, construct URL from product-images bucket
+          const { data } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(product.image);
+          
+          if (data?.publicUrl) {
+            images.push(data.publicUrl);
+            console.log('Added main product image from product-images bucket:', data.publicUrl);
+          }
+        }
+      }
+      
+      // Then try to load additional images from gallery
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
         .eq('product_id', product.id)
         .order('display_order');
 
-      if (error) {
-        console.error('Error loading gallery images:', error);
-        setGalleryImages(product.image ? [product.image] : []);
-      } else {
-        const imageUrls = galleryData.map(img => img.image_url);
-        setGalleryImages(imageUrls.length > 0 ? imageUrls : (product.image ? [product.image] : []));
+      if (!error && galleryData && galleryData.length > 0) {
+        const galleryUrls = galleryData.map(img => img.image_url);
+        // Add gallery images that aren't already in the images array
+        galleryUrls.forEach(url => {
+          if (!images.includes(url)) {
+            images.push(url);
+          }
+        });
+        console.log('Added gallery images:', galleryUrls);
       }
+      
+      // If no images found, use placeholder
+      if (images.length === 0) {
+        images.push('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
+      }
+      
+      setGalleryImages(images);
+      console.log('Final gallery images:', images);
     } catch (error) {
       console.error('Failed to load gallery images:', error);
-      setGalleryImages(product.image ? [product.image] : []);
+      setGalleryImages(['https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop']);
     } finally {
       setLoading(false);
     }
@@ -86,6 +120,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
                     alt={`${product.name} - Image ${currentImageIndex + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      console.log('Image failed to load:', galleryImages[currentImageIndex]);
                       e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
                     }}
                   />
