@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: {
@@ -28,6 +30,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();
   const [productImage, setProductImage] = useState('');
   const [imageLoading, setImageLoading] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     loadProductImage();
@@ -101,6 +104,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     addToCart({ productId: product.id });
   };
 
+  const handleProductClick = () => {
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleAddToWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to product detail
+    
+    if (!user) {
+      toast.error('Please log in to add items to wishlist');
+      navigate('/auth');
+      return;
+    }
+    
+    // Toggle wishlist state (you can implement actual wishlist storage later)
+    setIsLiked(!isLiked);
+    toast.success(isLiked ? 'Removed from wishlist' : 'Added to wishlist');
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to product detail
+    // For now, just navigate to product detail page
+    navigate(`/product/${product.id}`);
+  };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group relative overflow-hidden transform hover:-translate-y-1">
       {/* Enhanced discount badge */}
@@ -130,16 +157,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Quick action buttons */}
       <div className="absolute top-3 right-3 z-10 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-        <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200">
-          <Heart className="w-4 h-4 text-gray-600 hover:text-blue-500" />
+        <button 
+          onClick={handleAddToWishlist}
+          className={`rounded-full p-2 shadow-lg hover:scale-110 transition-all duration-200 ${
+            isLiked 
+              ? 'bg-red-500 text-white' 
+              : 'bg-white/90 backdrop-blur-sm hover:bg-white text-gray-600 hover:text-red-500'
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
         </button>
-        <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200">
+        <button 
+          onClick={handleQuickView}
+          className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
+        >
           <Eye className="w-4 h-4 text-gray-600 hover:text-blue-500" />
         </button>
       </div>
 
-      {/* Product image with enhanced styling */}
-      <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl">
+      {/* Product image with enhanced styling - clickable */}
+      <div 
+        className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl cursor-pointer"
+        onClick={handleProductClick}
+      >
         {imageLoading ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -151,7 +191,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             onError={(e) => {
               console.log('Image failed to load, using fallback:', productImage);
-              // Use a generic placeholder for failed images
               e.currentTarget.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
             }}
             onLoad={() => {
@@ -164,8 +203,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Enhanced product info */}
       <div className="p-5">
-        <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors text-sm leading-relaxed">
-          {product.name}
+        <h3 
+          className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors text-sm leading-relaxed cursor-pointer"
+          onClick={handleProductClick}
+          title={product.name}
+        >
+          {product.name.length > 50 ? `${product.name.substring(0, 50)}...` : product.name}
         </h3>
         
         {/* Brand display */}
