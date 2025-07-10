@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '@/hooks/useWishlist';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/hooks/useProducts';
 import Header from '@/components/Header';
@@ -17,19 +18,24 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { mutate: addToCart } = useAddToCart();
+  const { mutate: addToWishlist } = useAddToWishlist();
+  const { mutate: removeFromWishlist } = useRemoveFromWishlist();
+  const { data: wishlistItems } = useWishlist();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [isLiked, setIsLiked] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
+  const productId = id ? parseInt(id, 10) : 0;
+  const isInWishlist = wishlistItems?.some(item => item.product_id === productId) || false;
+
   useEffect(() => {
-    if (id) {
+    if (id && !isNaN(productId)) {
       loadProduct();
     }
-  }, [id]);
+  }, [id, productId]);
 
   const loadProduct = async () => {
     try {
@@ -39,7 +45,7 @@ const ProductDetail = () => {
       const { data: productData, error } = await supabase
         .from('products')
         .select('*')
-        .eq('id', id)
+        .eq('id', productId)
         .single();
 
       if (error) throw error;
@@ -50,7 +56,7 @@ const ProductDetail = () => {
       const { data: galleryData } = await supabase
         .from('product_galleries')
         .select('image_url')
-        .eq('product_id', id)
+        .eq('product_id', productId)
         .order('display_order');
 
       const images = galleryData?.map(img => img.image_url) || [];
@@ -75,9 +81,11 @@ const ProductDetail = () => {
       return;
     }
     
-    // Toggle wishlist state (you can implement actual wishlist storage later)
-    setIsLiked(!isLiked);
-    toast.success(isLiked ? 'Removed from wishlist' : 'Added to wishlist');
+    if (isInWishlist) {
+      removeFromWishlist(productId);
+    } else {
+      addToWishlist(productId);
+    }
   };
 
   const handleAddToCart = () => {
@@ -88,7 +96,7 @@ const ProductDetail = () => {
     }
     
     for (let i = 0; i < quantity; i++) {
-      addToCart({ productId: Number(id) });
+      addToCart({ productId });
     }
   };
 
@@ -204,12 +212,12 @@ const ProductDetail = () => {
                 <button
                   onClick={handleAddToWishlist}
                   className={`p-2 rounded-full border-2 transition-colors ${
-                    isLiked 
+                    isInWishlist 
                       ? 'border-red-500 bg-red-50 text-red-500' 
                       : 'border-gray-300 hover:border-red-300 hover:text-red-500'
                   }`}
                 >
-                  <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+                  <Heart className={`w-6 h-6 ${isInWishlist ? 'fill-current' : ''}`} />
                 </button>
               </div>
               

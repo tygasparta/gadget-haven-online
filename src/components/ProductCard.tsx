@@ -4,6 +4,7 @@ import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '@/hooks/useWishlist';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -26,11 +27,15 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { mutate: addToCart } = useAddToCart();
+  const { mutate: addToWishlist } = useAddToWishlist();
+  const { mutate: removeFromWishlist } = useRemoveFromWishlist();
+  const { data: wishlistItems } = useWishlist();
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const [productImage, setProductImage] = useState('');
   const [imageLoading, setImageLoading] = useState(true);
-  const [isLiked, setIsLiked] = useState(false);
+
+  const isInWishlist = wishlistItems?.some(item => item.product_id === product.id) || false;
 
   useEffect(() => {
     loadProductImage();
@@ -117,9 +122,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
     
-    // Toggle wishlist state (you can implement actual wishlist storage later)
-    setIsLiked(!isLiked);
-    toast.success(isLiked ? 'Removed from wishlist' : 'Added to wishlist');
+    if (isInWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product.id);
+    }
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
@@ -160,12 +167,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <button 
           onClick={handleAddToWishlist}
           className={`rounded-full p-2 shadow-lg hover:scale-110 transition-all duration-200 ${
-            isLiked 
+            isInWishlist 
               ? 'bg-red-500 text-white' 
               : 'bg-white/90 backdrop-blur-sm hover:bg-white text-gray-600 hover:text-red-500'
           }`}
         >
-          <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+          <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
         </button>
         <button 
           onClick={handleQuickView}
