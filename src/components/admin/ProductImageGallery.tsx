@@ -15,7 +15,7 @@ interface ProductImageGalleryProps {
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ 
   images, 
   onImagesChange, 
-  maxImages = 5,
+  maxImages = 15,
   productId 
 }) => {
   const { toast } = useToast();
@@ -55,7 +55,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       }
 
       console.log('Image uploaded successfully:', urlData.publicUrl);
-      return urlData.publicUrl; // Return the full URL for storage in database
+      return urlData.publicUrl;
     } catch (error: any) {
       console.error('Image upload failed:', error);
       toast({
@@ -212,7 +212,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       </div>
 
       {images.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((imageUrl, index) => (
             <div key={index} className="relative group">
               <div className="aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 border-gray-600">
@@ -245,7 +245,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
           <Image className="w-12 h-12 text-gray-500 mx-auto mb-3" />
           <p className="text-gray-400 mb-2">No images uploaded yet</p>
-          <p className="text-sm text-gray-500">Please upload at least one product image</p>
+          <p className="text-sm text-gray-500">Please upload at least one product image (up to {maxImages} images)</p>
         </div>
       )}
     </div>

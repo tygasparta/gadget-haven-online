@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, AlertCircle, Plus, Minus } from 'lucide-react';
-import ImageSelector from './ImageSelector';
+import { X, Plus, Minus } from 'lucide-react';
+import ProductImageGallery from './ProductImageGallery';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -19,7 +19,7 @@ interface AddProductModalProps {
 
 const PRODUCT_CATEGORIES = [
   'Smartphones',
-  'Laptops', 
+  'Laptops',
   'Tablets',
   'Headphones',
   'Cameras',
@@ -31,39 +31,40 @@ const PRODUCT_CATEGORIES = [
   'Electronics'
 ];
 
-const POPULAR_BRANDS = [
+const PRODUCT_BRANDS = [
   'Apple',
   'Samsung',
   'Google',
-  'Microsoft',
+  'OnePlus',
+  'Xiaomi',
+  'Huawei',
   'Sony',
-  'HP',
   'Dell',
+  'HP',
   'Lenovo',
-  'ASUS',
+  'Asus',
   'Acer',
+  'Microsoft',
+  'Nintendo',
+  'PlayStation',
+  'Xbox',
   'Canon',
   'Nikon',
   'Bose',
   'JBL',
-  'Logitech',
-  'Razer',
-  'Corsair',
-  'NVIDIA',
-  'AMD',
-  'Intel'
+  'Beats',
+  'Garmin',
+  'Fitbit',
+  'Other'
 ];
 
 const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [productImages, setProductImages] = useState<string[]>([]);
   const [keyFeatures, setKeyFeatures] = useState<string[]>(['']);
   const [customBrand, setCustomBrand] = useState('');
-  const [showCustomBrand, setShowCustomBrand] = useState(false);
-  
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -93,8 +94,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     setProductImages([]);
     setKeyFeatures(['']);
     setCustomBrand('');
-    setShowCustomBrand(false);
-    setValidationErrors({});
   };
 
   const addKeyFeature = () => {
@@ -108,58 +107,18 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   };
 
   const updateKeyFeature = (index: number, value: string) => {
-    const updated = [...keyFeatures];
-    updated[index] = value;
-    setKeyFeatures(updated);
-  };
-
-  const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!newProduct.name.trim()) {
-      errors.name = 'Product name is required';
-    }
-
-    if (!newProduct.price || parseFloat(newProduct.price) <= 0) {
-      errors.price = 'Valid price is required';
-    }
-
-    if (!newProduct.stock || parseInt(newProduct.stock) < 0) {
-      errors.stock = 'Valid stock quantity is required';
-    }
-
-    if (!newProduct.category) {
-      errors.category = 'Category is required';
-    }
-
-    if (!newProduct.brand && !customBrand.trim()) {
-      errors.brand = 'Brand is required';
-    }
-
-    if (productImages.length === 0) {
-      errors.images = 'At least one product image is required';
-    }
-
-    if (newProduct.original_price && parseFloat(newProduct.original_price) <= parseFloat(newProduct.price)) {
-      errors.original_price = 'Original price must be higher than current price';
-    }
-
-    const validFeatures = keyFeatures.filter(f => f.trim());
-    if (validFeatures.length === 0) {
-      errors.features = 'At least one key feature is required';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    const updatedFeatures = [...keyFeatures];
+    updatedFeatures[index] = value;
+    setKeyFeatures(updatedFeatures);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    if (productImages.length === 0) {
       toast({
-        title: "Validation Error",
-        description: "Please fix the errors before submitting",
+        title: "Images required",
+        description: "Please upload at least one product image",
         variant: "destructive"
       });
       return;
@@ -168,15 +127,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     setIsLoading(true);
     
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error('You must be logged in to add products');
-      }
-
-      if (productImages.length === 0) {
-        throw new Error('Please select at least one product image');
-      }
-
+      // Calculate discount percentage if original price is provided
       let calculatedDiscount = 0;
       if (newProduct.original_price && newProduct.price) {
         const original = parseFloat(newProduct.original_price);
@@ -186,86 +137,64 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
-      const mainProductImage = productImages[0];
-      const finalBrand = showCustomBrand ? customBrand.trim() : newProduct.brand;
-      const validFeatures = keyFeatures.filter(f => f.trim());
-      
-      // Create enhanced description with key features
-      let enhancedDescription = newProduct.description.trim();
-      if (validFeatures.length > 0) {
-        enhancedDescription += '\n\nKey Features:\n' + validFeatures.map(f => `• ${f}`).join('\n');
-      }
+      // Filter out empty key features
+      const validKeyFeatures = keyFeatures.filter(feature => feature.trim() !== '');
 
-      const productData = {
-        name: newProduct.name.trim(),
-        description: enhancedDescription || null,
-        price: parseFloat(newProduct.price),
-        original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
-        image: mainProductImage,
-        category: newProduct.category,
-        brand: finalBrand || null,
-        stock: parseInt(newProduct.stock),
-        is_featured: newProduct.is_featured,
-        is_flash_sale: newProduct.is_flash_sale,
-        discount_percentage: calculatedDiscount,
-        rating: 4.5,
-        reviews: 0
-      };
+      // Use custom brand if "Other" is selected and custom brand is provided
+      const finalBrand = newProduct.brand === 'Other' && customBrand ? customBrand : newProduct.brand;
 
-      console.log('Inserting product data:', productData);
-
-      const { data: insertedProduct, error } = await supabase
+      const { data: product, error } = await supabase
         .from('products')
-        .insert(productData)
+        .insert({
+          name: newProduct.name,
+          description: newProduct.description,
+          price: parseFloat(newProduct.price),
+          original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
+          image: productImages[0], // First image as main product image
+          category: newProduct.category,
+          brand: finalBrand,
+          stock: parseInt(newProduct.stock),
+          is_featured: newProduct.is_featured,
+          is_flash_sale: newProduct.is_flash_sale,
+          discount_percentage: calculatedDiscount,
+        })
         .select()
         .single();
 
-      if (error) {
-        console.error('Product insert error:', error);
-        throw new Error(`Failed to add product: ${error.message}`);
-      }
+      if (error) throw error;
 
-      console.log('Product inserted successfully:', insertedProduct);
-
-      // Save all selected images to gallery
+      // Save gallery images
       if (productImages.length > 0) {
         const galleryData = productImages.map((imageUrl, index) => ({
-          product_id: insertedProduct.id,
+          product_id: product.id,
           image_url: imageUrl,
           display_order: index,
           is_main: index === 0
         }));
-
-        console.log('Inserting gallery data:', galleryData);
 
         const { error: galleryError } = await supabase
           .from('product_galleries')
           .insert(galleryData);
 
         if (galleryError) {
-          console.error('Gallery insert error:', galleryError);
-        } else {
-          console.log('Gallery images saved successfully');
+          console.error('Gallery save error:', galleryError);
         }
       }
 
       toast({
-        title: "Product added successfully!",
-        description: `${newProduct.name} has been added with ${validFeatures.length} key features`,
+        title: "Product added successfully",
+        description: `${newProduct.name} has been added to the catalog${validKeyFeatures.length > 0 ? ` with ${validKeyFeatures.length} key features` : ''}`
       });
 
       resetForm();
       onClose();
       
-      await queryClient.invalidateQueries({ queryKey: ['products'] });
-      await queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
-      await queryClient.invalidateQueries({ queryKey: ['flashSaleProducts'] });
-      
+      // Refresh products list
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error: any) {
-      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error adding product",
-        description: error.message || "An unexpected error occurred",
+        description: error.message,
         variant: "destructive"
       });
     } finally {
@@ -281,10 +210,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Add New Product</CardTitle>
           <Button
-            onClick={() => {
-              resetForm();
-              onClose();
-            }}
+            onClick={onClose}
             variant="ghost"
             size="sm"
             className="text-gray-400 hover:text-white"
@@ -300,80 +226,32 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 <Input
                   id="name"
                   value={newProduct.name}
-                  onChange={(e) => {
-                    setNewProduct({...newProduct, name: e.target.value});
-                    setValidationErrors(prev => ({ ...prev, name: '' }));
-                  }}
-                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.name ? 'border-red-500' : ''}`}
-                  placeholder="Enter product name"
+                  onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                  className="bg-gray-800 border-gray-600 text-white"
+                  required
                 />
-                {validationErrors.name && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.name}
-                  </p>
-                )}
               </div>
-              
               <div>
                 <Label htmlFor="brand" className="text-gray-300">Brand *</Label>
-                <div className="space-y-2">
-                  {!showCustomBrand ? (
-                    <div className="flex gap-2">
-                      <Select onValueChange={(value) => {
-                        if (value === 'custom') {
-                          setShowCustomBrand(true);
-                          setNewProduct({...newProduct, brand: ''});
-                        } else {
-                          setNewProduct({...newProduct, brand: value});
-                          setValidationErrors(prev => ({ ...prev, brand: '' }));
-                        }
-                      }} value={newProduct.brand}>
-                        <SelectTrigger className={`bg-gray-800 border-gray-600 text-white ${validationErrors.brand ? 'border-red-500' : ''}`}>
-                          <SelectValue placeholder="Select a brand" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-gray-600 max-h-48">
-                          {POPULAR_BRANDS.map((brand) => (
-                            <SelectItem key={brand} value={brand} className="text-white hover:bg-gray-700">
-                              {brand}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="custom" className="text-blue-400 hover:bg-gray-700">
-                            + Add Custom Brand
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Input
-                        value={customBrand}
-                        onChange={(e) => {
-                          setCustomBrand(e.target.value);
-                          setValidationErrors(prev => ({ ...prev, brand: '' }));
-                        }}
-                        className={`bg-gray-800 border-gray-600 text-white ${validationErrors.brand ? 'border-red-500' : ''}`}
-                        placeholder="Enter custom brand name"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setShowCustomBrand(false);
-                          setCustomBrand('');
-                        }}
-                        className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                {validationErrors.brand && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.brand}
-                  </p>
+                <Select value={newProduct.brand} onValueChange={(value) => setNewProduct({...newProduct, brand: value})}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectValue placeholder="Select a brand" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    {PRODUCT_BRANDS.map((brand) => (
+                      <SelectItem key={brand} value={brand} className="text-white hover:bg-gray-700">
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {newProduct.brand === 'Other' && (
+                  <Input
+                    placeholder="Enter custom brand name"
+                    value={customBrand}
+                    onChange={(e) => setCustomBrand(e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white mt-2"
+                  />
                 )}
               </div>
             </div>
@@ -385,55 +263,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 value={newProduct.description}
                 onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                 className="bg-gray-800 border-gray-600 text-white"
-                placeholder="Enter product description"
-                rows={3}
+                rows={4}
               />
-            </div>
-
-            {/* Key Features Section */}
-            <div>
-              <Label className="text-gray-300">Key Features *</Label>
-              <div className="space-y-2 mt-2">
-                {keyFeatures.map((feature, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={feature}
-                      onChange={(e) => {
-                        updateKeyFeature(index, e.target.value);
-                        setValidationErrors(prev => ({ ...prev, features: '' }));
-                      }}
-                      className="bg-gray-800 border-gray-600 text-white"
-                      placeholder={`Key feature ${index + 1}`}
-                    />
-                    {keyFeatures.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeKeyFeature(index)}
-                        className="bg-red-600 border-red-500 text-white hover:bg-red-700"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addKeyFeature}
-                  className="bg-blue-600 border-blue-500 text-white hover:bg-blue-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Feature
-                </Button>
-              </div>
-              {validationErrors.features && (
-                <p className="text-red-400 text-sm mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {validationErrors.features}
-                </p>
-              )}
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -443,21 +274,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   id="price"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={newProduct.price}
-                  onChange={(e) => {
-                    setNewProduct({...newProduct, price: e.target.value});
-                    setValidationErrors(prev => ({ ...prev, price: '' }));
-                  }}
-                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.price ? 'border-red-500' : ''}`}
-                  placeholder="0.00"
+                  onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                  className="bg-gray-800 border-gray-600 text-white"
+                  required
                 />
-                {validationErrors.price && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.price}
-                  </p>
-                )}
               </div>
               <div>
                 <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
@@ -465,53 +286,29 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   id="original_price"
                   type="number"
                   step="0.01"
-                  min="0"
                   value={newProduct.original_price}
-                  onChange={(e) => {
-                    setNewProduct({...newProduct, original_price: e.target.value});
-                    setValidationErrors(prev => ({ ...prev, original_price: '' }));
-                  }}
-                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.original_price ? 'border-red-500' : ''}`}
-                  placeholder="0.00"
+                  onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})}
+                  className="bg-gray-800 border-gray-600 text-white"
                 />
-                {validationErrors.original_price && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.original_price}
-                  </p>
-                )}
               </div>
               <div>
                 <Label htmlFor="stock" className="text-gray-300">Stock *</Label>
                 <Input
                   id="stock"
                   type="number"
-                  min="0"
                   value={newProduct.stock}
-                  onChange={(e) => {
-                    setNewProduct({...newProduct, stock: e.target.value});
-                    setValidationErrors(prev => ({ ...prev, stock: '' }));
-                  }}
-                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.stock ? 'border-red-500' : ''}`}
-                  placeholder="0"
+                  onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
+                  className="bg-gray-800 border-gray-600 text-white"
+                  required
                 />
-                {validationErrors.stock && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.stock}
-                  </p>
-                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-gray-300">Category *</Label>
-                <Select onValueChange={(value) => {
-                  setNewProduct({...newProduct, category: value});
-                  setValidationErrors(prev => ({ ...prev, category: '' }));
-                }} value={newProduct.category}>
-                  <SelectTrigger className={`bg-gray-800 border-gray-600 text-white ${validationErrors.category ? 'border-red-500' : ''}`}>
+                <Select value={newProduct.category} onValueChange={(value) => setNewProduct({...newProduct, category: value})}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-600">
@@ -522,94 +319,92 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                     ))}
                   </SelectContent>
                 </Select>
-                {validationErrors.category && (
-                  <p className="text-red-400 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    {validationErrors.category}
-                  </p>
-                )}
               </div>
               <div>
                 <Label htmlFor="discount_percentage" className="text-gray-300">Manual Discount %</Label>
                 <Input
                   id="discount_percentage"
                   type="number"
-                  min="0"
-                  max="100"
                   value={newProduct.discount_percentage}
                   onChange={(e) => setNewProduct({...newProduct, discount_percentage: e.target.value})}
                   className="bg-gray-800 border-gray-600 text-white"
-                  placeholder="0"
+                  placeholder="Auto-calculated if original price is set"
                 />
-                <p className="text-xs text-gray-400 mt-1">Auto-calculated if original price is set</p>
               </div>
             </div>
-            
+
+            {/* Key Features Section */}
             <div className="space-y-3">
-              <ImageSelector 
-                selectedImages={productImages}
-                onImagesChange={(images) => {
-                  console.log('Images changed in AddProductModal:', images);
-                  setProductImages(images);
-                  setValidationErrors(prev => ({ ...prev, images: '' }));
-                }}
-                maxImages={5}
-              />
-              {validationErrors.images && (
-                <p className="text-red-400 text-sm mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {validationErrors.images}
-                </p>
-              )}
+              <div className="flex items-center justify-between">
+                <Label className="text-gray-300">Key Features</Label>
+                <Button
+                  type="button"
+                  onClick={addKeyFeature}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Feature
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {keyFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Input
+                      value={feature}
+                      onChange={(e) => updateKeyFeature(index, e.target.value)}
+                      placeholder={`Key feature ${index + 1}`}
+                      className="bg-gray-800 border-gray-600 text-white flex-1"
+                    />
+                    {keyFeatures.length > 1 && (
+                      <Button
+                        type="button"
+                        onClick={() => removeKeyFeature(index)}
+                        size="sm"
+                        variant="destructive"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
+            {/* Product Image Gallery */}
+            <ProductImageGallery 
+              images={productImages}
+              onImagesChange={setProductImages}
+              maxImages={15}
+            />
+
             <div className="flex space-x-4">
-              <label className="flex items-center text-gray-300 cursor-pointer">
+              <label className="flex items-center text-gray-300">
                 <input
                   type="checkbox"
                   checked={newProduct.is_featured}
                   onChange={(e) => setNewProduct({...newProduct, is_featured: e.target.checked})}
-                  className="mr-2 rounded"
+                  className="mr-2"
                 />
                 Featured Product
               </label>
-              <label className="flex items-center text-gray-300 cursor-pointer">
+              <label className="flex items-center text-gray-300">
                 <input
                   type="checkbox"
                   checked={newProduct.is_flash_sale}
                   onChange={(e) => setNewProduct({...newProduct, is_flash_sale: e.target.checked})}
-                  className="mr-2 rounded"
+                  className="mr-2"
                 />
                 Flash Sale
               </label>
             </div>
 
-            <div className="flex justify-end space-x-2 pt-4 border-t border-gray-700">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  resetForm();
-                  onClose();
-                }}
-                className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                disabled={isLoading}
-              >
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose} className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Adding Product...
-                  </>
-                ) : (
-                  'Add Product'
-                )}
+              <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+                {isLoading ? 'Adding Product...' : 'Add Product'}
               </Button>
             </div>
           </form>

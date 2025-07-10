@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
-import ImageSelector from './ImageSelector';
+import ProductImageGallery from './ProductImageGallery';
 
 interface EditProductModalProps {
   product: Product;
@@ -308,15 +309,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               </div>
             </div>
 
-            {/* Product Image Selector */}
+            {/* Product Image Gallery */}
             <div className="space-y-3">
-              <ImageSelector 
+              <ProductImageGallery 
                 selectedImages={productImages}
                 onImagesChange={(images) => {
                   console.log('Images changed in EditProductModal:', images);
                   setProductImages(images);
                 }}
-                maxImages={5}
+                maxImages={15}
+                productId={product.id}
               />
             </div>
 

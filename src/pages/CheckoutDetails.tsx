@@ -15,7 +15,8 @@ import {
   ArrowLeft,
   Shield,
   Truck,
-  Smartphone
+  Smartphone,
+  Package
 } from 'lucide-react';
 import { useCartItems } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -100,8 +101,8 @@ const CheckoutDetails = () => {
       const orderData = {
         user_id: user.id,
         total_amount: finalTotal,
-        status: 'pending',
-        payment_method: paymentMethod === 'web' ? 'paynow_web' : `paynow_${mobileMethod}`,
+        status: paymentMethod === 'cod' ? 'confirmed' : 'pending',
+        payment_method: paymentMethod === 'web' ? 'paynow_web' : paymentMethod === 'mobile' ? `paynow_${mobileMethod}` : 'cash_on_delivery',
         shipping_address: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -142,7 +143,18 @@ const CheckoutDetails = () => {
 
       if (itemsError) throw itemsError;
 
-      // Prepare payment data
+      // Handle different payment methods
+      if (paymentMethod === 'cod') {
+        // For cash on delivery, redirect to success page immediately
+        toast({
+          title: "Order Confirmed",
+          description: "Your order has been confirmed for cash on delivery",
+        });
+        navigate(`/payment-success?order_id=${order.id}`);
+        return;
+      }
+
+      // Prepare payment data for Paynow
       const paymentData = {
         reference: `ORDER-${order.id}`,
         amount: finalTotal,
@@ -152,7 +164,28 @@ const CheckoutDetails = () => {
 
       if (paymentMethod === 'web') {
         await initiateWebPayment(paymentData);
-      } else {
+      } else if (paymentMethod === 'mobile') {
+        // Validate phone number format before making the request
+        const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
+        
+        if (mobileMethod === 'ecocash' && !cleanPhone.startsWith('077')) {
+          toast({
+            title: "Invalid Phone Number",
+            description: "EcoCash requires an Econet number starting with 077",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        if (mobileMethod === 'onemoney' && !cleanPhone.startsWith('071')) {
+          toast({
+            title: "Invalid Phone Number", 
+            description: "OneMoney requires a NetOne number starting with 071",
+            variant: "destructive"
+          });
+          return;
+        }
+
         await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney');
       }
 
@@ -327,6 +360,13 @@ const CheckoutDetails = () => {
                         Mobile Payment
                       </label>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="cod" id="cod" />
+                      <label htmlFor="cod" className="font-medium flex items-center">
+                        <Package className="w-4 h-4 mr-2" />
+                        Cash on Delivery
+                      </label>
+                    </div>
                   </RadioGroup>
 
                   {paymentMethod === 'mobile' && (
@@ -354,6 +394,14 @@ const CheckoutDetails = () => {
                           className="mt-1"
                         />
                       </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'cod' && (
+                    <div className="pl-6 border-l-2 border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        Pay with cash when your order is delivered to your doorstep.
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -406,11 +454,27 @@ const CheckoutDetails = () => {
                     <span className="text-blue-600">${finalTotal.toFixed(2)}</span>
                   </div>
 
-                  {/* Security Info */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
-                    <Shield className="w-5 h-5 text-green-600" />
-                    <span className="text-sm text-green-700">Secure payment via Paynow</span>
-                  </div>
+                  {/* Payment Info */}
+                  {paymentMethod === 'web' && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
+                      <Shield className="w-5 h-5 text-green-600" />
+                      <span className="text-sm text-green-700">Secure payment via Paynow</span>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'mobile' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm text-blue-700">Mobile payment via {mobileMethod === 'ecocash' ? 'EcoCash' : 'OneMoney'}</span>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'cod' && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center space-x-2">
+                      <Package className="w-5 h-5 text-orange-600" />
+                      <span className="text-sm text-orange-700">Pay cash on delivery</span>
+                    </div>
+                  )}
 
                   {/* Shipping Info */}
                   {totalPrice >= 50 ? (
@@ -438,7 +502,7 @@ const CheckoutDetails = () => {
                         Processing...
                       </>
                     ) : (
-                      `Complete Order - $${finalTotal.toFixed(2)}`
+                      paymentMethod === 'cod' ? `Confirm Order - $${finalTotal.toFixed(2)}` : `Complete Order - $${finalTotal.toFixed(2)}`
                     )}
                   </Button>
                 </CardContent>
