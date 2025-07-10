@@ -6,13 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, AlertCircle, Sparkles, Plus } from 'lucide-react';
+import { X, AlertCircle, Plus, Minus } from 'lucide-react';
 import ImageSelector from './ImageSelector';
-import AIProductGenerator from './AIProductGenerator';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -33,13 +31,39 @@ const PRODUCT_CATEGORIES = [
   'Electronics'
 ];
 
+const POPULAR_BRANDS = [
+  'Apple',
+  'Samsung',
+  'Google',
+  'Microsoft',
+  'Sony',
+  'HP',
+  'Dell',
+  'Lenovo',
+  'ASUS',
+  'Acer',
+  'Canon',
+  'Nikon',
+  'Bose',
+  'JBL',
+  'Logitech',
+  'Razer',
+  'Corsair',
+  'NVIDIA',
+  'AMD',
+  'Intel'
+];
+
 const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [productImages, setProductImages] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState('manual');
+  const [keyFeatures, setKeyFeatures] = useState<string[]>(['']);
+  const [customBrand, setCustomBrand] = useState('');
+  const [showCustomBrand, setShowCustomBrand] = useState(false);
+  
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -67,25 +91,26 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       discount_percentage: ''
     });
     setProductImages([]);
+    setKeyFeatures(['']);
+    setCustomBrand('');
+    setShowCustomBrand(false);
     setValidationErrors({});
-    setActiveTab('manual');
   };
 
-  const handleAIGeneration = (generatedData: any) => {
-    console.log('Received AI generated data:', generatedData);
-    setNewProduct(prev => ({
-      ...prev,
-      name: generatedData.name || '',
-      description: generatedData.description || '',
-      category: generatedData.category || '',
-      brand: generatedData.brand || ''
-    }));
-    setActiveTab('manual');
-    
-    toast({
-      title: "Details generated!",
-      description: "You can now add pricing, stock, and images to complete the product.",
-    });
+  const addKeyFeature = () => {
+    setKeyFeatures([...keyFeatures, '']);
+  };
+
+  const removeKeyFeature = (index: number) => {
+    if (keyFeatures.length > 1) {
+      setKeyFeatures(keyFeatures.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateKeyFeature = (index: number, value: string) => {
+    const updated = [...keyFeatures];
+    updated[index] = value;
+    setKeyFeatures(updated);
   };
 
   const validateForm = () => {
@@ -107,12 +132,21 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       errors.category = 'Category is required';
     }
 
+    if (!newProduct.brand && !customBrand.trim()) {
+      errors.brand = 'Brand is required';
+    }
+
     if (productImages.length === 0) {
       errors.images = 'At least one product image is required';
     }
 
     if (newProduct.original_price && parseFloat(newProduct.original_price) <= parseFloat(newProduct.price)) {
       errors.original_price = 'Original price must be higher than current price';
+    }
+
+    const validFeatures = keyFeatures.filter(f => f.trim());
+    if (validFeatures.length === 0) {
+      errors.features = 'At least one key feature is required';
     }
 
     setValidationErrors(errors);
@@ -152,18 +186,24 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
-      // Use first selected image as main product image
       const mainProductImage = productImages[0];
-      console.log('Creating product with main image:', mainProductImage);
+      const finalBrand = showCustomBrand ? customBrand.trim() : newProduct.brand;
+      const validFeatures = keyFeatures.filter(f => f.trim());
+      
+      // Create enhanced description with key features
+      let enhancedDescription = newProduct.description.trim();
+      if (validFeatures.length > 0) {
+        enhancedDescription += '\n\nKey Features:\n' + validFeatures.map(f => `• ${f}`).join('\n');
+      }
 
       const productData = {
         name: newProduct.name.trim(),
-        description: newProduct.description.trim() || null,
+        description: enhancedDescription || null,
         price: parseFloat(newProduct.price),
         original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
         image: mainProductImage,
         category: newProduct.category,
-        brand: newProduct.brand.trim() || null,
+        brand: finalBrand || null,
         stock: parseInt(newProduct.stock),
         is_featured: newProduct.is_featured,
         is_flash_sale: newProduct.is_flash_sale,
@@ -204,7 +244,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
         if (galleryError) {
           console.error('Gallery insert error:', galleryError);
-          // Don't throw error here as product is already created
         } else {
           console.log('Gallery images saved successfully');
         }
@@ -212,7 +251,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully!",
-        description: `${newProduct.name} has been added with your selected images`,
+        description: `${newProduct.name} has been added with ${validFeatures.length} key features`,
       });
 
       resetForm();
@@ -238,7 +277,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Add New Product</CardTitle>
           <Button
@@ -254,247 +293,326 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           </Button>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-800">
-              <TabsTrigger value="ai" className="data-[state=active]:bg-blue-600">
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI Generator
-              </TabsTrigger>
-              <TabsTrigger value="manual" className="data-[state=active]:bg-green-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Manual Entry
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="ai" className="space-y-4">
-              <AIProductGenerator onGenerate={handleAIGeneration} />
-            </TabsContent>
-
-            <TabsContent value="manual" className="space-y-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name" className="text-gray-300">Product Name *</Label>
-                    <Input
-                      id="name"
-                      value={newProduct.name}
-                      onChange={(e) => {
-                        setNewProduct({...newProduct, name: e.target.value});
-                        setValidationErrors(prev => ({ ...prev, name: '' }));
-                      }}
-                      className={`bg-gray-800 border-gray-600 text-white ${validationErrors.name ? 'border-red-500' : ''}`}
-                      placeholder="Enter product name"
-                    />
-                    {validationErrors.name && (
-                      <p className="text-red-400 text-sm mt-1 flex items-center">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        {validationErrors.name}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="brand" className="text-gray-300">Brand</Label>
-                    <Input
-                      id="brand"
-                      value={newProduct.brand}
-                      onChange={(e) => setNewProduct({...newProduct, brand: e.target.value})}
-                      className="bg-gray-800 border-gray-600 text-white"
-                      placeholder="Enter brand name"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="description" className="text-gray-300">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newProduct.description}
-                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                    className="bg-gray-800 border-gray-600 text-white"
-                    placeholder="Enter product description"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="price" className="text-gray-300">Price *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={newProduct.price}
-                      onChange={(e) => {
-                        setNewProduct({...newProduct, price: e.target.value});
-                        setValidationErrors(prev => ({ ...prev, price: '' }));
-                      }}
-                      className={`bg-gray-800 border-gray-600 text-white ${validationErrors.price ? 'border-red-500' : ''}`}
-                      placeholder="0.00"
-                    />
-                    {validationErrors.price && (
-                      <p className="text-red-400 text-sm mt-1 flex items-center">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        {validationErrors.price}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
-                    <Input
-                      id="original_price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={newProduct.original_price}
-                      onChange={(e) => {
-                        setNewProduct({...newProduct, original_price: e.target.value});
-                        setValidationErrors(prev => ({ ...prev, original_price: '' }));
-                      }}
-                      className={`bg-gray-800 border-gray-600 text-white ${validationErrors.original_price ? 'border-red-500' : ''}`}
-                      placeholder="0.00"
-                    />
-                    {validationErrors.original_price && (
-                      <p className="text-red-400 text-sm mt-1 flex items-center">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        {validationErrors.original_price}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="stock" className="text-gray-300">Stock *</Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      min="0"
-                      value={newProduct.stock}
-                      onChange={(e) => {
-                        setNewProduct({...newProduct, stock: e.target.value});
-                        setValidationErrors(prev => ({ ...prev, stock: '' }));
-                      }}
-                      className={`bg-gray-800 border-gray-600 text-white ${validationErrors.stock ? 'border-red-500' : ''}`}
-                      placeholder="0"
-                    />
-                    {validationErrors.stock && (
-                      <p className="text-red-400 text-sm mt-1 flex items-center">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        {validationErrors.stock}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="category" className="text-gray-300">Category *</Label>
-                    <Select onValueChange={(value) => {
-                      setNewProduct({...newProduct, category: value});
-                      setValidationErrors(prev => ({ ...prev, category: '' }));
-                    }} value={newProduct.category}>
-                      <SelectTrigger className={`bg-gray-800 border-gray-600 text-white ${validationErrors.category ? 'border-red-500' : ''}`}>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        {PRODUCT_CATEGORIES.map((category) => (
-                          <SelectItem key={category} value={category} className="text-white hover:bg-gray-700">
-                            {category}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name" className="text-gray-300">Product Name *</Label>
+                <Input
+                  id="name"
+                  value={newProduct.name}
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, name: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, name: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.name ? 'border-red-500' : ''}`}
+                  placeholder="Enter product name"
+                />
+                {validationErrors.name && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.name}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="brand" className="text-gray-300">Brand *</Label>
+                <div className="space-y-2">
+                  {!showCustomBrand ? (
+                    <div className="flex gap-2">
+                      <Select onValueChange={(value) => {
+                        if (value === 'custom') {
+                          setShowCustomBrand(true);
+                          setNewProduct({...newProduct, brand: ''});
+                        } else {
+                          setNewProduct({...newProduct, brand: value});
+                          setValidationErrors(prev => ({ ...prev, brand: '' }));
+                        }
+                      }} value={newProduct.brand}>
+                        <SelectTrigger className={`bg-gray-800 border-gray-600 text-white ${validationErrors.brand ? 'border-red-500' : ''}`}>
+                          <SelectValue placeholder="Select a brand" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600 max-h-48">
+                          {POPULAR_BRANDS.map((brand) => (
+                            <SelectItem key={brand} value={brand} className="text-white hover:bg-gray-700">
+                              {brand}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="custom" className="text-blue-400 hover:bg-gray-700">
+                            + Add Custom Brand
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {validationErrors.category && (
-                      <p className="text-red-400 text-sm mt-1 flex items-center">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        {validationErrors.category}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="discount_percentage" className="text-gray-300">Manual Discount %</Label>
-                    <Input
-                      id="discount_percentage"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={newProduct.discount_percentage}
-                      onChange={(e) => setNewProduct({...newProduct, discount_percentage: e.target.value})}
-                      className="bg-gray-800 border-gray-600 text-white"
-                      placeholder="0"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Auto-calculated if original price is set</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <ImageSelector 
-                    selectedImages={productImages}
-                    onImagesChange={(images) => {
-                      console.log('Images changed in AddProductModal:', images);
-                      setProductImages(images);
-                      setValidationErrors(prev => ({ ...prev, images: '' }));
-                    }}
-                    maxImages={5}
-                  />
-                  {validationErrors.images && (
-                    <p className="text-red-400 text-sm mt-1 flex items-center">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      {validationErrors.images}
-                    </p>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        value={customBrand}
+                        onChange={(e) => {
+                          setCustomBrand(e.target.value);
+                          setValidationErrors(prev => ({ ...prev, brand: '' }));
+                        }}
+                        className={`bg-gray-800 border-gray-600 text-white ${validationErrors.brand ? 'border-red-500' : ''}`}
+                        placeholder="Enter custom brand name"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowCustomBrand(false);
+                          setCustomBrand('');
+                        }}
+                        className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   )}
                 </div>
+                {validationErrors.brand && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.brand}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="description" className="text-gray-300">Description</Label>
+              <Textarea
+                id="description"
+                value={newProduct.description}
+                onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                className="bg-gray-800 border-gray-600 text-white"
+                placeholder="Enter product description"
+                rows={3}
+              />
+            </div>
 
-                <div className="flex space-x-4">
-                  <label className="flex items-center text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={newProduct.is_featured}
-                      onChange={(e) => setNewProduct({...newProduct, is_featured: e.target.checked})}
-                      className="mr-2 rounded"
+            {/* Key Features Section */}
+            <div>
+              <Label className="text-gray-300">Key Features *</Label>
+              <div className="space-y-2 mt-2">
+                {keyFeatures.map((feature, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={feature}
+                      onChange={(e) => {
+                        updateKeyFeature(index, e.target.value);
+                        setValidationErrors(prev => ({ ...prev, features: '' }));
+                      }}
+                      className="bg-gray-800 border-gray-600 text-white"
+                      placeholder={`Key feature ${index + 1}`}
                     />
-                    Featured Product
-                  </label>
-                  <label className="flex items-center text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={newProduct.is_flash_sale}
-                      onChange={(e) => setNewProduct({...newProduct, is_flash_sale: e.target.checked})}
-                      className="mr-2 rounded"
-                    />
-                    Flash Sale
-                  </label>
-                </div>
-
-                <div className="flex justify-end space-x-2 pt-4 border-t border-gray-700">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => {
-                      resetForm();
-                      onClose();
-                    }}
-                    className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading} 
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Adding Product...
-                      </>
-                    ) : (
-                      'Add Product'
+                    {keyFeatures.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeKeyFeature(index)}
+                        className="bg-red-600 border-red-500 text-white hover:bg-red-700"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
                     )}
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addKeyFeature}
+                  className="bg-blue-600 border-blue-500 text-white hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Feature
+                </Button>
+              </div>
+              {validationErrors.features && (
+                <p className="text-red-400 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  {validationErrors.features}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="price" className="text-gray-300">Price *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newProduct.price}
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, price: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, price: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.price ? 'border-red-500' : ''}`}
+                  placeholder="0.00"
+                />
+                {validationErrors.price && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.price}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
+                <Input
+                  id="original_price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newProduct.original_price}
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, original_price: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, original_price: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.original_price ? 'border-red-500' : ''}`}
+                  placeholder="0.00"
+                />
+                {validationErrors.original_price && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.original_price}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="stock" className="text-gray-300">Stock *</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  min="0"
+                  value={newProduct.stock}
+                  onChange={(e) => {
+                    setNewProduct({...newProduct, stock: e.target.value});
+                    setValidationErrors(prev => ({ ...prev, stock: '' }));
+                  }}
+                  className={`bg-gray-800 border-gray-600 text-white ${validationErrors.stock ? 'border-red-500' : ''}`}
+                  placeholder="0"
+                />
+                {validationErrors.stock && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.stock}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="category" className="text-gray-300">Category *</Label>
+                <Select onValueChange={(value) => {
+                  setNewProduct({...newProduct, category: value});
+                  setValidationErrors(prev => ({ ...prev, category: '' }));
+                }} value={newProduct.category}>
+                  <SelectTrigger className={`bg-gray-800 border-gray-600 text-white ${validationErrors.category ? 'border-red-500' : ''}`}>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    {PRODUCT_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category} className="text-white hover:bg-gray-700">
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {validationErrors.category && (
+                  <p className="text-red-400 text-sm mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationErrors.category}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="discount_percentage" className="text-gray-300">Manual Discount %</Label>
+                <Input
+                  id="discount_percentage"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newProduct.discount_percentage}
+                  onChange={(e) => setNewProduct({...newProduct, discount_percentage: e.target.value})}
+                  className="bg-gray-800 border-gray-600 text-white"
+                  placeholder="0"
+                />
+                <p className="text-xs text-gray-400 mt-1">Auto-calculated if original price is set</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <ImageSelector 
+                selectedImages={productImages}
+                onImagesChange={(images) => {
+                  console.log('Images changed in AddProductModal:', images);
+                  setProductImages(images);
+                  setValidationErrors(prev => ({ ...prev, images: '' }));
+                }}
+                maxImages={5}
+              />
+              {validationErrors.images && (
+                <p className="text-red-400 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  {validationErrors.images}
+                </p>
+              )}
+            </div>
+
+            <div className="flex space-x-4">
+              <label className="flex items-center text-gray-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newProduct.is_featured}
+                  onChange={(e) => setNewProduct({...newProduct, is_featured: e.target.checked})}
+                  className="mr-2 rounded"
+                />
+                Featured Product
+              </label>
+              <label className="flex items-center text-gray-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newProduct.is_flash_sale}
+                  onChange={(e) => setNewProduct({...newProduct, is_flash_sale: e.target.checked})}
+                  className="mr-2 rounded"
+                />
+                Flash Sale
+              </label>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t border-gray-700">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+                className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isLoading} 
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Adding Product...
+                  </>
+                ) : (
+                  'Add Product'
+                )}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>
