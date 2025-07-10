@@ -312,7 +312,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             {/* Product Image Gallery */}
             <div className="space-y-3">
               <ProductImageGallery 
-                selectedImages={productImages}
+                images={productImages}
                 onImagesChange={(images) => {
                   console.log('Images changed in EditProductModal:', images);
                   setProductImages(images);
