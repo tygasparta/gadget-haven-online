@@ -236,6 +236,7 @@ export type Database = {
           price: number
           rating: number | null
           reviews: number | null
+          specifications: Json | null
           stock: number | null
           tags: string[] | null
           updated_at: string | null
@@ -257,6 +258,7 @@ export type Database = {
           price: number
           rating?: number | null
           reviews?: number | null
+          specifications?: Json | null
           stock?: number | null
           tags?: string[] | null
           updated_at?: string | null
@@ -278,6 +280,7 @@ export type Database = {
           price?: number
           rating?: number | null
           reviews?: number | null
+          specifications?: Json | null
           stock?: number | null
           tags?: string[] | null
           updated_at?: string | null
