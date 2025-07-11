@@ -150,7 +150,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           is_featured: newProduct.is_featured,
           is_flash_sale: newProduct.is_flash_sale,
           discount_percentage: calculatedDiscount,
-          colors: selectedColors.length > 0 ? selectedColors : null,
+          colors: selectedColors.length > 0 ? selectedColors as any : null,
           tags: productTags.length > 0 ? productTags : null,
           whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
         })

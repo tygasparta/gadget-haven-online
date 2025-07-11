@@ -177,7 +177,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           is_featured: editProduct.is_featured,
           is_flash_sale: editProduct.is_flash_sale,
           discount_percentage: calculatedDiscount,
-          colors: selectedColors.length > 0 ? selectedColors : null,
+          colors: selectedColors.length > 0 ? selectedColors as any : null,
           tags: productTags.length > 0 ? productTags : null,
           whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
         })
