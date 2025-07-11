@@ -18,6 +18,9 @@ export interface Product {
   is_featured: boolean;
   is_flash_sale: boolean;
   discount_percentage: number;
+  colors: Array<{name: string, hex_code: string}> | null;
+  tags: string[] | null;
+  whats_in_box: string[] | null;
   created_at: string;
   updated_at: string;
 }

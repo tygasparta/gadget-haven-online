@@ -12,11 +12,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import ProductImageGallery from './ProductImageGallery';
+import ColorSelector from './ColorSelector';
+import TagsInput from './TagsInput';
+import WhatsInBoxInput from './WhatsInBoxInput';
 
 interface EditProductModalProps {
   product: Product;
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface Color {
+  name: string;
+  hex_code: string;
 }
 
 const PRODUCT_CATEGORIES = [
@@ -38,6 +46,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<Color[]>([]);
+  const [productTags, setProductTags] = useState<string[]>([]);
+  const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
   const [editProduct, setEditProduct] = useState({
     name: '',
     description: '',
@@ -65,6 +76,27 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         is_flash_sale: product.is_flash_sale || false,
         discount_percentage: product.discount_percentage?.toString() || ''
       });
+      
+      // Load colors
+      if (product.colors && Array.isArray(product.colors)) {
+        setSelectedColors(product.colors as Color[]);
+      } else {
+        setSelectedColors([]);
+      }
+      
+      // Load tags
+      if (product.tags && Array.isArray(product.tags)) {
+        setProductTags(product.tags);
+      } else {
+        setProductTags([]);
+      }
+      
+      // Load what's in the box
+      if (product.whats_in_box && Array.isArray(product.whats_in_box)) {
+        setWhatsInBox(product.whats_in_box);
+      } else {
+        setWhatsInBox(['']);
+      }
       
       // Load existing gallery images
       loadGalleryImages();
@@ -128,6 +160,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       // Use the first selected image as main product image, or keep existing if no new images
       const mainProductImage = productImages.length > 0 ? productImages[0] : product.image;
 
+      // Filter out empty items
+      const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
+
       const { error } = await supabase
         .from('products')
         .update({
@@ -142,6 +177,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           is_featured: editProduct.is_featured,
           is_flash_sale: editProduct.is_flash_sale,
           discount_percentage: calculatedDiscount,
+          colors: selectedColors.length > 0 ? selectedColors : null,
+          tags: productTags.length > 0 ? productTags : null,
+          whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
         })
         .eq('id', product.id);
 
@@ -176,7 +214,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: "The product has been updated with your selected images"
+        description: `The product has been updated with ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
       });
 
       onClose();
@@ -198,7 +236,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Edit Product</CardTitle>
           <Button
@@ -212,6 +250,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-gray-300">Product Name</Label>
@@ -244,6 +283,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               />
             </div>
 
+            {/* Pricing */}
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="price" className="text-gray-300">Price</Label>
@@ -281,6 +321,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               </div>
             </div>
 
+            {/* Category and Discount */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-gray-300">Category</Label>
@@ -309,6 +350,24 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               </div>
             </div>
 
+            {/* Colors */}
+            <ColorSelector 
+              selectedColors={selectedColors}
+              onColorsChange={setSelectedColors}
+            />
+
+            {/* Tags */}
+            <TagsInput 
+              tags={productTags}
+              onTagsChange={setProductTags}
+            />
+
+            {/* What's in the Box */}
+            <WhatsInBoxInput 
+              items={whatsInBox}
+              onItemsChange={setWhatsInBox}
+            />
+
             {/* Product Image Gallery */}
             <div className="space-y-3">
               <ProductImageGallery 
@@ -322,6 +381,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               />
             </div>
 
+            {/* Features */}
             <div className="flex space-x-4">
               <label className="flex items-center text-gray-300">
                 <input

@@ -160,6 +160,27 @@ export type Database = {
         }
         Relationships: []
       }
+      product_colors: {
+        Row: {
+          created_at: string
+          hex_code: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          hex_code: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          hex_code?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       product_galleries: {
         Row: {
           created_at: string
@@ -202,6 +223,7 @@ export type Database = {
         Row: {
           brand: string | null
           category: string | null
+          colors: Json | null
           created_at: string | null
           description: string | null
           discount_percentage: number | null
@@ -215,11 +237,14 @@ export type Database = {
           rating: number | null
           reviews: number | null
           stock: number | null
+          tags: string[] | null
           updated_at: string | null
+          whats_in_box: string[] | null
         }
         Insert: {
           brand?: string | null
           category?: string | null
+          colors?: Json | null
           created_at?: string | null
           description?: string | null
           discount_percentage?: number | null
@@ -233,11 +258,14 @@ export type Database = {
           rating?: number | null
           reviews?: number | null
           stock?: number | null
+          tags?: string[] | null
           updated_at?: string | null
+          whats_in_box?: string[] | null
         }
         Update: {
           brand?: string | null
           category?: string | null
+          colors?: Json | null
           created_at?: string | null
           description?: string | null
           discount_percentage?: number | null
@@ -251,7 +279,9 @@ export type Database = {
           rating?: number | null
           reviews?: number | null
           stock?: number | null
+          tags?: string[] | null
           updated_at?: string | null
+          whats_in_box?: string[] | null
         }
         Relationships: []
       }

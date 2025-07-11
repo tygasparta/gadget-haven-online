@@ -9,12 +9,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Plus, Minus } from 'lucide-react';
+import { X } from 'lucide-react';
 import ProductImageGallery from './ProductImageGallery';
+import ColorSelector from './ColorSelector';
+import TagsInput from './TagsInput';
+import WhatsInBoxInput from './WhatsInBoxInput';
 
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface Color {
+  name: string;
+  hex_code: string;
 }
 
 const PRODUCT_CATEGORIES = [
@@ -63,7 +71,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
-  const [keyFeatures, setKeyFeatures] = useState<string[]>(['']);
+  const [selectedColors, setSelectedColors] = useState<Color[]>([]);
+  const [productTags, setProductTags] = useState<string[]>([]);
+  const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
   const [customBrand, setCustomBrand] = useState('');
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -92,24 +102,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       discount_percentage: ''
     });
     setProductImages([]);
-    setKeyFeatures(['']);
+    setSelectedColors([]);
+    setProductTags([]);
+    setWhatsInBox(['']);
     setCustomBrand('');
-  };
-
-  const addKeyFeature = () => {
-    setKeyFeatures([...keyFeatures, '']);
-  };
-
-  const removeKeyFeature = (index: number) => {
-    if (keyFeatures.length > 1) {
-      setKeyFeatures(keyFeatures.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateKeyFeature = (index: number, value: string) => {
-    const updatedFeatures = [...keyFeatures];
-    updatedFeatures[index] = value;
-    setKeyFeatures(updatedFeatures);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,10 +133,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
-      // Filter out empty key features
-      const validKeyFeatures = keyFeatures.filter(feature => feature.trim() !== '');
-
-      // Use custom brand if "Other" is selected and custom brand is provided
+      // Filter out empty items
+      const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
       const finalBrand = newProduct.brand === 'Other' && customBrand ? customBrand : newProduct.brand;
 
       const { data: product, error } = await supabase
@@ -157,6 +151,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           is_featured: newProduct.is_featured,
           is_flash_sale: newProduct.is_flash_sale,
           discount_percentage: calculatedDiscount,
+          colors: selectedColors,
+          tags: productTags.length > 0 ? productTags : null,
+          whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
         })
         .select()
         .single();
@@ -183,7 +180,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully",
-        description: `${newProduct.name} has been added to the catalog${validKeyFeatures.length > 0 ? ` with ${validKeyFeatures.length} key features` : ''}`
+        description: `${newProduct.name} has been added to the catalog with ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
       });
 
       resetForm();
@@ -206,7 +203,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-white">Add New Product</CardTitle>
           <Button
@@ -220,6 +217,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-gray-300">Product Name *</Label>
@@ -267,6 +265,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               />
             </div>
 
+            {/* Pricing */}
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="price" className="text-gray-300">Price *</Label>
@@ -304,6 +303,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               </div>
             </div>
 
+            {/* Category and Discount */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-gray-300">Category *</Label>
@@ -333,51 +333,32 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               </div>
             </div>
 
-            {/* Key Features Section */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-gray-300">Key Features</Label>
-                <Button
-                  type="button"
-                  onClick={addKeyFeature}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Feature
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {keyFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Input
-                      value={feature}
-                      onChange={(e) => updateKeyFeature(index, e.target.value)}
-                      placeholder={`Key feature ${index + 1}`}
-                      className="bg-gray-800 border-gray-600 text-white flex-1"
-                    />
-                    {keyFeatures.length > 1 && (
-                      <Button
-                        type="button"
-                        onClick={() => removeKeyFeature(index)}
-                        size="sm"
-                        variant="destructive"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Colors */}
+            <ColorSelector 
+              selectedColors={selectedColors}
+              onColorsChange={setSelectedColors}
+            />
 
-            {/* Product Image Gallery */}
+            {/* Tags */}
+            <TagsInput 
+              tags={productTags}
+              onTagsChange={setProductTags}
+            />
+
+            {/* What's in the Box */}
+            <WhatsInBoxInput 
+              items={whatsInBox}
+              onItemsChange={setWhatsInBox}
+            />
+
+            {/* Product Images */}
             <ProductImageGallery 
               images={productImages}
               onImagesChange={setProductImages}
               maxImages={15}
             />
 
+            {/* Features */}
             <div className="flex space-x-4">
               <label className="flex items-center text-gray-300">
                 <input
