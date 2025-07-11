@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import ProductDetail from './pages/ProductDetail';
 import Phones from './pages/Phones';
 import Products from './pages/Products';
+import AdminDashboard from './pages/AdminDashboard';
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/phones" element={<Phones />} />
                 <Route path="/products" element={<Products />} />
