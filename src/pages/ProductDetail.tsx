@@ -50,10 +50,11 @@ const ProductDetail = () => {
 
       if (error) throw error;
 
-      // Cast the raw data to Product type with proper color type handling
+      // Cast the raw data to Product type with proper type handling
       const processedProduct: Product = {
         ...productData,
-        colors: productData.colors as Array<{name: string, hex_code: string}> | null
+        colors: productData.colors as Array<{name: string, hex_code: string}> | null,
+        specifications: (productData.specifications as Array<{key: string, value: string}>) || []
       };
 
       setProduct(processedProduct);
