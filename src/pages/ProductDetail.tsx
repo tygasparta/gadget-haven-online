@@ -30,6 +30,31 @@ const ProductDetail = () => {
   const productId = id ? parseInt(id, 10) : 0;
   const isInWishlist = wishlistItems?.some(item => item.product_id === productId) || false;
 
+  // Brand logos mapping
+  const brandLogos: { [key: string]: string } = {
+    'Apple': 'https://logos-world.net/wp-content/uploads/2020/04/Apple-Logo.png',
+    'Samsung': 'https://logos-world.net/wp-content/uploads/2020/04/Samsung-Logo.png',
+    'Google': 'https://logos-world.net/wp-content/uploads/2020/04/Google-Logo.png',
+    'OnePlus': 'https://logos-world.net/wp-content/uploads/2020/04/OnePlus-Logo.png',
+    'Xiaomi': 'https://logos-world.net/wp-content/uploads/2020/04/Xiaomi-Logo.png',
+    'Huawei': 'https://logos-world.net/wp-content/uploads/2020/04/Huawei-Logo.png',
+    'Sony': 'https://logos-world.net/wp-content/uploads/2020/04/Sony-Logo.png',
+    'Dell': 'https://logos-world.net/wp-content/uploads/2020/04/Dell-Logo.png',
+    'HP': 'https://logos-world.net/wp-content/uploads/2020/04/HP-Logo.png',
+    'Lenovo': 'https://logos-world.net/wp-content/uploads/2020/04/Lenovo-Logo.png',
+    'Asus': 'https://logos-world.net/wp-content/uploads/2020/04/Asus-Logo.png',
+    'Nintendo': 'https://logos-world.net/wp-content/uploads/2020/04/Nintendo-Logo.png',
+    'PlayStation': 'https://logos-world.net/wp-content/uploads/2020/04/PlayStation-Logo.png',
+    'Xbox': 'https://logos-world.net/wp-content/uploads/2020/04/Xbox-Logo.png',
+    'Canon': 'https://logos-world.net/wp-content/uploads/2020/04/Canon-Logo.png',
+    'Nikon': 'https://logos-world.net/wp-content/uploads/2020/04/Nikon-Logo.png',
+    'Bose': 'https://logos-world.net/wp-content/uploads/2020/04/Bose-Logo.png',
+    'JBL': 'https://logos-world.net/wp-content/uploads/2020/04/JBL-Logo.png',
+    'Beats': 'https://logos-world.net/wp-content/uploads/2020/04/Beats-Logo.png',
+    'Garmin': 'https://logos-world.net/wp-content/uploads/2020/04/Garmin-Logo.png',
+    'Fitbit': 'https://logos-world.net/wp-content/uploads/2020/04/Fitbit-Logo.png'
+  };
+
   useEffect(() => {
     if (id && !isNaN(productId)) {
       loadProduct();
@@ -112,6 +137,11 @@ const ProductDetail = () => {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+  };
+
+  const getBrandLogo = (brandName: string | null) => {
+    if (!brandName) return null;
+    return brandLogos[brandName] || null;
   };
 
   if (loading) {
@@ -228,7 +258,19 @@ const ProductDetail = () => {
               </div>
               
               {product.brand && (
-                <p className="text-lg text-gray-600 mb-4">by {product.brand}</p>
+                <div className="flex items-center gap-2 mb-4">
+                  {getBrandLogo(product.brand) && (
+                    <img 
+                      src={getBrandLogo(product.brand)!} 
+                      alt={product.brand}
+                      className="h-6 w-auto object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <p className="text-lg text-gray-600">by {product.brand}</p>
+                </div>
               )}
 
               <div className="flex items-center space-x-2 mb-4">
@@ -278,6 +320,21 @@ const ProductDetail = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Description</h3>
                 <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              </div>
+            )}
+
+            {/* Product Specifications */}
+            {product.specifications && product.specifications.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Specifications</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  {product.specifications.map((spec, index) => (
+                    <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                      <span className="font-medium text-gray-700">{spec.key}</span>
+                      <span className="text-gray-600">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -340,7 +397,19 @@ const ProductDetail = () => {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Brand</span>
-                  <span className="font-medium">{product.brand || 'N/A'}</span>
+                  <div className="flex items-center gap-2">
+                    {getBrandLogo(product.brand) && (
+                      <img 
+                        src={getBrandLogo(product.brand)!} 
+                        alt={product.brand}
+                        className="h-4 w-auto object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <span className="font-medium">{product.brand || 'N/A'}</span>
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Category</span>
@@ -357,17 +426,22 @@ const ProductDetail = () => {
               </div>
             </div>
             
-            {/* Product Specifications */}
+            {/* Additional Product Specifications in Details */}
             {product.specifications && product.specifications.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3">Specifications</h3>
+                <h3 className="font-semibold mb-3">Technical Specifications</h3>
                 <div className="space-y-2">
-                  {product.specifications.map((spec, index) => (
+                  {product.specifications.slice(0, 8).map((spec, index) => (
                     <div key={index} className="flex justify-between">
                       <span className="text-gray-600">{spec.key}</span>
                       <span className="font-medium">{spec.value}</span>
                     </div>
                   ))}
+                  {product.specifications.length > 8 && (
+                    <p className="text-sm text-gray-500 italic">
+                      And {product.specifications.length - 8} more specifications...
+                    </p>
+                  )}
                 </div>
               </div>
             )}
