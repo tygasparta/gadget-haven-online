@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,7 +150,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           is_featured: newProduct.is_featured,
           is_flash_sale: newProduct.is_flash_sale,
           discount_percentage: calculatedDiscount,
-          colors: selectedColors,
+          colors: selectedColors.length > 0 ? selectedColors : null,
           tags: productTags.length > 0 ? productTags : null,
           whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
         })

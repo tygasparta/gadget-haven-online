@@ -50,7 +50,13 @@ const ProductDetail = () => {
 
       if (error) throw error;
 
-      setProduct(productData);
+      // Cast the raw data to Product type with proper color type handling
+      const processedProduct: Product = {
+        ...productData,
+        colors: productData.colors as Array<{name: string, hex_code: string}> | null
+      };
+
+      setProduct(processedProduct);
 
       // Load gallery images
       const { data: galleryData } = await supabase
