@@ -21,6 +21,7 @@ export interface Product {
   colors: Array<{name: string, hex_code: string}> | null;
   tags: string[] | null;
   whats_in_box: string[] | null;
+  specifications: Array<{key: string, value: string}> | null;
   created_at: string;
   updated_at: string;
 }

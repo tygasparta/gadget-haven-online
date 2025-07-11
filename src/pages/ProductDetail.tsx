@@ -336,7 +336,7 @@ const ProductDetail = () => {
           <h2 className="text-2xl font-bold mb-4">Product Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold mb-3">Specifications</h3>
+              <h3 className="font-semibold mb-3">Basic Information</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Brand</span>
@@ -356,7 +356,66 @@ const ProductDetail = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Product Specifications */}
+            {product.specifications && product.specifications.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3">Specifications</h3>
+                <div className="space-y-2">
+                  {product.specifications.map((spec, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span className="text-gray-600">{spec.key}</span>
+                      <span className="font-medium">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+          
+          {/* Colors */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-3">Available Colors</h3>
+              <div className="flex flex-wrap gap-2">
+                {product.colors.map((color, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div 
+                      className="w-6 h-6 rounded-full border-2 border-gray-300"
+                      style={{ backgroundColor: color.hex_code }}
+                    ></div>
+                    <span className="text-sm text-gray-600">{color.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* What's in the Box */}
+          {product.whats_in_box && product.whats_in_box.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-3">What's in the Box</h3>
+              <ul className="list-disc list-inside space-y-1">
+                {product.whats_in_box.map((item, index) => (
+                  <li key={index} className="text-gray-600">{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {/* Tags */}
+          {product.tags && product.tags.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-3">Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {product.tags.map((tag, index) => (
+                  <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +14,7 @@ import ProductImageGallery from './ProductImageGallery';
 import ColorSelector from './ColorSelector';
 import TagsInput from './TagsInput';
 import WhatsInBoxInput from './WhatsInBoxInput';
+import ProductSpecsInput from './ProductSpecsInput';
 
 interface EditProductModalProps {
   product: Product;
@@ -49,6 +49,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
   const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
+  const [productSpecs, setProductSpecs] = useState<Array<{key: string, value: string}>>([]);
   const [editProduct, setEditProduct] = useState({
     name: '',
     description: '',
@@ -96,6 +97,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         setWhatsInBox(product.whats_in_box);
       } else {
         setWhatsInBox(['']);
+      }
+      
+      // Load specifications
+      if (product.specifications && Array.isArray(product.specifications)) {
+        setProductSpecs(product.specifications as Array<{key: string, value: string}>);
+      } else {
+        setProductSpecs([]);
       }
       
       // Load existing gallery images
@@ -160,8 +168,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       // Use the first selected image as main product image, or keep existing if no new images
       const mainProductImage = productImages.length > 0 ? productImages[0] : product.image;
 
-      // Filter out empty items
+      // Filter out empty items and specs
       const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
+      const validSpecs = productSpecs.filter(spec => spec.key.trim() !== '' && spec.value.trim() !== '');
 
       const { error } = await supabase
         .from('products')
@@ -180,6 +189,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           colors: selectedColors.length > 0 ? selectedColors as any : null,
           tags: productTags.length > 0 ? productTags : null,
           whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
+          specifications: validSpecs.length > 0 ? validSpecs as any : null,
         })
         .eq('id', product.id);
 
@@ -214,7 +224,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: `The product has been updated with ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
+        description: `The product has been updated with ${selectedColors.length} colors, ${productTags.length} tags, ${validWhatsInBox.length} box items, and ${validSpecs.length} specifications`
       });
 
       onClose();
@@ -360,6 +370,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             <TagsInput 
               tags={productTags}
               onTagsChange={setProductTags}
+            />
+
+            {/* Product Specifications */}
+            <ProductSpecsInput 
+              specs={productSpecs}
+              onSpecsChange={setProductSpecs}
             />
 
             {/* What's in the Box */}

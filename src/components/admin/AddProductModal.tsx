@@ -13,6 +13,7 @@ import ProductImageGallery from './ProductImageGallery';
 import ColorSelector from './ColorSelector';
 import TagsInput from './TagsInput';
 import WhatsInBoxInput from './WhatsInBoxInput';
+import ProductSpecsInput from './ProductSpecsInput';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -86,6 +87,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     is_flash_sale: false,
     discount_percentage: ''
   });
+  const [productSpecs, setProductSpecs] = useState<Array<{key: string, value: string}>>([]);
 
   const resetForm = () => {
     setNewProduct({
@@ -105,6 +107,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     setProductTags([]);
     setWhatsInBox(['']);
     setCustomBrand('');
+    setProductSpecs([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,8 +135,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
 
-      // Filter out empty items
+      // Filter out empty items and specs
       const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
+      const validSpecs = productSpecs.filter(spec => spec.key.trim() !== '' && spec.value.trim() !== '');
       const finalBrand = newProduct.brand === 'Other' && customBrand ? customBrand : newProduct.brand;
 
       const { data: product, error } = await supabase
@@ -153,6 +157,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           colors: selectedColors.length > 0 ? selectedColors as any : null,
           tags: productTags.length > 0 ? productTags : null,
           whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
+          specifications: validSpecs.length > 0 ? validSpecs as any : null,
         })
         .select()
         .single();
@@ -179,7 +184,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully",
-        description: `${newProduct.name} has been added to the catalog with ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
+        description: `${newProduct.name} has been added to the catalog with ${selectedColors.length} colors, ${productTags.length} tags, ${validWhatsInBox.length} box items, and ${validSpecs.length} specifications`
       });
 
       resetForm();
@@ -342,6 +347,12 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
             <TagsInput 
               tags={productTags}
               onTagsChange={setProductTags}
+            />
+
+            {/* Product Specifications */}
+            <ProductSpecsInput 
+              specs={productSpecs}
+              onSpecsChange={setProductSpecs}
             />
 
             {/* What's in the Box */}
