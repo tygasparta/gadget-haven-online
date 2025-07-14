@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -89,6 +88,36 @@ const FeaturedBrands = () => {
       name: 'Logitech', 
       logo: 'https://logos-world.net/wp-content/uploads/2020/04/Logitech-Logo.png',
       color: 'from-blue-600 to-purple-600'
+    },
+    { 
+      name: 'DEFY', 
+      logo: '/lovable-uploads/ab88f90b-e334-4aab-a573-cbf5ac3bd7a0.png',
+      color: 'from-red-500 to-red-600'
+    },
+    { 
+      name: 'Hi', 
+      logo: '/lovable-uploads/b4327d38-07c3-4648-977f-e881ea91d4fb.png',
+      color: 'from-teal-500 to-green-600'
+    },
+    { 
+      name: 'Huawei', 
+      logo: '/lovable-uploads/68b8d5b7-a7be-46cf-ad6f-92731e8b8313.png',
+      color: 'from-red-600 to-pink-600'
+    },
+    { 
+      name: 'DOMAX', 
+      logo: '/lovable-uploads/eb0219a5-d68a-4b69-8055-172b2f5982d5.png',
+      color: 'from-blue-600 to-indigo-700'
+    },
+    { 
+      name: 'Xiaomi', 
+      logo: '/lovable-uploads/13f14634-a87f-479a-9c94-2f51dbc3dff8.png',
+      color: 'from-orange-500 to-orange-600'
+    },
+    { 
+      name: 'RE/MAX', 
+      logo: '/lovable-uploads/ba315e55-1352-462f-a934-e9ab4ebb1f24.png',
+      color: 'from-red-500 to-blue-500'
     }
   ];
 

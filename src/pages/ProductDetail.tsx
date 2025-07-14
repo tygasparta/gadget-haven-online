@@ -30,14 +30,14 @@ const ProductDetail = () => {
   const productId = id ? parseInt(id, 10) : 0;
   const isInWishlist = wishlistItems?.some(item => item.product_id === productId) || false;
 
-  // Brand logos mapping
+  // Enhanced brand logos mapping with the new logos
   const brandLogos: { [key: string]: string } = {
     'Apple': 'https://logos-world.net/wp-content/uploads/2020/04/Apple-Logo.png',
     'Samsung': 'https://logos-world.net/wp-content/uploads/2020/04/Samsung-Logo.png',
     'Google': 'https://logos-world.net/wp-content/uploads/2020/04/Google-Logo.png',
     'OnePlus': 'https://logos-world.net/wp-content/uploads/2020/04/OnePlus-Logo.png',
-    'Xiaomi': 'https://logos-world.net/wp-content/uploads/2020/04/Xiaomi-Logo.png',
-    'Huawei': 'https://logos-world.net/wp-content/uploads/2020/04/Huawei-Logo.png',
+    'Xiaomi': '/lovable-uploads/13f14634-a87f-479a-9c94-2f51dbc3dff8.png',
+    'Huawei': '/lovable-uploads/68b8d5b7-a7be-46cf-ad6f-92731e8b8313.png',
     'Sony': 'https://logos-world.net/wp-content/uploads/2020/04/Sony-Logo.png',
     'Dell': 'https://logos-world.net/wp-content/uploads/2020/04/Dell-Logo.png',
     'HP': 'https://logos-world.net/wp-content/uploads/2020/04/HP-Logo.png',
@@ -52,7 +52,11 @@ const ProductDetail = () => {
     'JBL': 'https://logos-world.net/wp-content/uploads/2020/04/JBL-Logo.png',
     'Beats': 'https://logos-world.net/wp-content/uploads/2020/04/Beats-Logo.png',
     'Garmin': 'https://logos-world.net/wp-content/uploads/2020/04/Garmin-Logo.png',
-    'Fitbit': 'https://logos-world.net/wp-content/uploads/2020/04/Fitbit-Logo.png'
+    'Fitbit': 'https://logos-world.net/wp-content/uploads/2020/04/Fitbit-Logo.png',
+    'DEFY': '/lovable-uploads/ab88f90b-e334-4aab-a573-cbf5ac3bd7a0.png',
+    'Hi': '/lovable-uploads/b4327d38-07c3-4648-977f-e881ea91d4fb.png',
+    'DOMAX': '/lovable-uploads/eb0219a5-d68a-4b69-8055-172b2f5982d5.png',
+    'RE/MAX': '/lovable-uploads/ba315e55-1352-462f-a934-e9ab4ebb1f24.png'
   };
 
   useEffect(() => {
@@ -323,17 +327,29 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Product Specifications */}
+            {/* Product Specifications - Enhanced Display */}
             {product.specifications && product.specifications.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3">Specifications</h3>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                  {product.specifications.map((spec, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                      <span className="font-medium text-gray-700">{spec.key}</span>
-                      <span className="text-gray-600">{spec.value}</span>
-                    </div>
-                  ))}
+                <h3 className="text-lg font-semibold mb-3">Key Specifications</h3>
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
+                  <div className="grid grid-cols-1 gap-3">
+                    {product.specifications.slice(0, 6).map((spec, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 px-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                        <span className="font-medium text-gray-700 flex items-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                          {spec.key}
+                        </span>
+                        <span className="text-gray-600 font-semibold">{spec.value}</span>
+                      </div>
+                    ))}
+                    {product.specifications.length > 6 && (
+                      <div className="text-center py-2">
+                        <span className="text-sm text-gray-500 italic">
+                          +{product.specifications.length - 6} more specifications below
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -388,21 +404,21 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Details */}
-        <div className="bg-white rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">Product Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Enhanced Product Details Section */}
+        <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
+          <h2 className="text-2xl font-bold mb-6 text-center">Complete Product Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="font-semibold mb-3">Basic Information</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
+              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Basic Information</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600">Brand</span>
                   <div className="flex items-center gap-2">
                     {getBrandLogo(product.brand) && (
                       <img 
                         src={getBrandLogo(product.brand)!} 
                         alt={product.brand}
-                        className="h-4 w-auto object-contain"
+                        className="h-5 w-auto object-contain"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
@@ -411,37 +427,32 @@ const ProductDetail = () => {
                     <span className="font-medium">{product.brand || 'N/A'}</span>
                   </div>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600">Category</span>
                   <span className="font-medium">{product.category || 'N/A'}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600">Stock</span>
-                  <span className="font-medium">{product.stock} units</span>
+                  <span className="font-medium text-green-600">{product.stock} units</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600">Rating</span>
-                  <span className="font-medium">{product.rating}/5</span>
+                  <span className="font-medium">{product.rating}/5 ⭐</span>
                 </div>
               </div>
             </div>
             
-            {/* Additional Product Specifications in Details */}
+            {/* Complete Technical Specifications */}
             {product.specifications && product.specifications.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3">Technical Specifications</h3>
-                <div className="space-y-2">
-                  {product.specifications.slice(0, 8).map((spec, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span className="text-gray-600">{spec.key}</span>
-                      <span className="font-medium">{spec.value}</span>
+                <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Complete Specifications</h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {product.specifications.map((spec, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-l-4 border-blue-500">
+                      <span className="text-gray-700 font-medium">{spec.key}</span>
+                      <span className="font-semibold text-gray-800">{spec.value}</span>
                     </div>
                   ))}
-                  {product.specifications.length > 8 && (
-                    <p className="text-sm text-gray-500 italic">
-                      And {product.specifications.length - 8} more specifications...
-                    </p>
-                  )}
                 </div>
               </div>
             )}
@@ -449,16 +460,16 @@ const ProductDetail = () => {
           
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (
-            <div className="mt-6">
-              <h3 className="font-semibold mb-3">Available Colors</h3>
-              <div className="flex flex-wrap gap-2">
+            <div className="mt-8">
+              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Available Colors</h3>
+              <div className="flex flex-wrap gap-4">
                 {product.colors.map((color, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <div 
-                      className="w-6 h-6 rounded-full border-2 border-gray-300"
+                      className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
                       style={{ backgroundColor: color.hex_code }}
                     ></div>
-                    <span className="text-sm text-gray-600">{color.name}</span>
+                    <span className="text-sm font-medium text-gray-700">{color.name}</span>
                   </div>
                 ))}
               </div>
@@ -467,24 +478,27 @@ const ProductDetail = () => {
           
           {/* What's in the Box */}
           {product.whats_in_box && product.whats_in_box.length > 0 && (
-            <div className="mt-6">
-              <h3 className="font-semibold mb-3">What's in the Box</h3>
-              <ul className="list-disc list-inside space-y-1">
+            <div className="mt-8">
+              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">What's in the Box</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {product.whats_in_box.map((item, index) => (
-                  <li key={index} className="text-gray-600">{item}</li>
+                  <div key={index} className="flex items-center p-2 bg-green-50 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span className="text-gray-700">{item}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
           
           {/* Tags */}
           {product.tags && product.tags.length > 0 && (
-            <div className="mt-6">
-              <h3 className="font-semibold mb-3">Tags</h3>
+            <div className="mt-8">
+              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Product Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {product.tags.map((tag, index) => (
-                  <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
-                    {tag}
+                  <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                    #{tag}
                   </span>
                 ))}
               </div>
