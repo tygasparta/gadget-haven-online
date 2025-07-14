@@ -41,8 +41,16 @@ export const useProducts = () => {
         throw error;
       }
       
-      console.log('Products fetched:', data?.length || 0);
-      return data as Product[];
+      // Process specifications to ensure they're properly typed
+      const processedProducts = data?.map(product => ({
+        ...product,
+        specifications: product.specifications as Array<{key: string, value: string}> | null,
+        colors: product.colors as Array<{name: string, hex_code: string}> | null,
+      })) || [];
+      
+      console.log('Products fetched:', processedProducts.length);
+      console.log('Sample product with specs:', processedProducts[0]?.specifications);
+      return processedProducts as Product[];
     },
   });
 };
@@ -63,7 +71,7 @@ export const useProduct = (id: number) => {
         throw error;
       }
       
-      // Ensure specifications are properly typed
+      // Ensure specifications are properly typed and processed
       const processedProduct: Product = {
         ...data,
         specifications: data.specifications as Array<{key: string, value: string}> | null,
@@ -71,6 +79,7 @@ export const useProduct = (id: number) => {
       };
       
       console.log('Product fetched with specifications:', processedProduct.specifications?.length || 0);
+      console.log('Product specifications:', processedProduct.specifications);
       return processedProduct;
     },
     enabled: !!id,
