@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '@/hooks/useWishlist';
+import { useProduct } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/hooks/useProducts';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { toast } from 'sonner';
@@ -21,13 +21,12 @@ const ProductDetail = () => {
   const { mutate: removeFromWishlist } = useRemoveFromWishlist();
   const { data: wishlistItems } = useWishlist();
   
-  const [product, setProduct] = useState<Product | null>(null);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
   const productId = id ? parseInt(id, 10) : 0;
+  const { data: product, isLoading, error } = useProduct(productId);
   const isInWishlist = wishlistItems?.some(item => item.product_id === productId) || false;
 
   // Enhanced brand logos mapping with the new logos
@@ -60,33 +59,15 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    if (id && !isNaN(productId)) {
-      loadProduct();
+    if (product) {
+      loadGalleryImages();
     }
-  }, [id, productId]);
+  }, [product]);
 
-  const loadProduct = async () => {
+  const loadGalleryImages = async () => {
+    if (!product) return;
+    
     try {
-      setLoading(true);
-      
-      // Fetch product details
-      const { data: productData, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single();
-
-      if (error) throw error;
-
-      // Cast the raw data to Product type with proper type handling
-      const processedProduct: Product = {
-        ...productData,
-        colors: productData.colors as Array<{name: string, hex_code: string}> | null,
-        specifications: (productData.specifications as Array<{key: string, value: string}>) || []
-      };
-
-      setProduct(processedProduct);
-
       // Load gallery images
       const { data: galleryData } = await supabase
         .from('product_galleries')
@@ -95,17 +76,15 @@ const ProductDetail = () => {
         .order('display_order');
 
       const images = galleryData?.map(img => img.image_url) || [];
-      if (productData.image && !images.includes(productData.image)) {
-        images.unshift(productData.image);
+      if (product.image && !images.includes(product.image)) {
+        images.unshift(product.image);
       }
       
-      setGalleryImages(images.length > 0 ? images : [productData.image]);
+      setGalleryImages(images.length > 0 ? images : [product.image]);
       
     } catch (error) {
-      console.error('Error loading product:', error);
-      toast.error('Failed to load product details');
-    } finally {
-      setLoading(false);
+      console.error('Error loading gallery images:', error);
+      setGalleryImages([product.image]);
     }
   };
 
@@ -148,7 +127,7 @@ const ProductDetail = () => {
     return brandLogos[brandName] || null;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -159,7 +138,7 @@ const ProductDetail = () => {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -327,29 +306,30 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Product Specifications - Enhanced Display */}
+            {/* Key Specifications - Prominently Displayed */}
             {product.specifications && product.specifications.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Key Specifications</h3>
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
-                  <div className="grid grid-cols-1 gap-3">
-                    {product.specifications.slice(0, 6).map((spec, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 px-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                        <span className="font-medium text-gray-700 flex items-center">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                          {spec.key}
-                        </span>
-                        <span className="text-gray-600 font-semibold">{spec.value}</span>
-                      </div>
-                    ))}
-                    {product.specifications.length > 6 && (
-                      <div className="text-center py-2">
-                        <span className="text-sm text-gray-500 italic">
-                          +{product.specifications.length - 6} more specifications below
-                        </span>
-                      </div>
-                    )}
-                  </div>
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                  <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></div>
+                  Key Specifications
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {product.specifications.slice(0, 6).map((spec, index) => (
+                    <div key={index} className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                      <span className="font-medium text-gray-700 flex items-center">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                        {spec.key}
+                      </span>
+                      <span className="text-gray-600 font-semibold">{spec.value}</span>
+                    </div>
+                  ))}
+                  {product.specifications.length > 6 && (
+                    <div className="text-center py-2">
+                      <span className="text-sm text-gray-500 italic">
+                        +{product.specifications.length - 6} more specifications below
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -404,7 +384,7 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Enhanced Product Details Section */}
+        {/* Complete Product Details Section */}
         <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
           <h2 className="text-2xl font-bold mb-6 text-center">Complete Product Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

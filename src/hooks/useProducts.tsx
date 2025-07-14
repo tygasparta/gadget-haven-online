@@ -47,6 +47,36 @@ export const useProducts = () => {
   });
 };
 
+export const useProduct = (id: number) => {
+  return useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      console.log('Fetching product details for ID:', id);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching product:', error);
+        throw error;
+      }
+      
+      // Ensure specifications are properly typed
+      const processedProduct: Product = {
+        ...data,
+        specifications: data.specifications as Array<{key: string, value: string}> | null,
+        colors: data.colors as Array<{name: string, hex_code: string}> | null,
+      };
+      
+      console.log('Product fetched with specifications:', processedProduct.specifications?.length || 0);
+      return processedProduct;
+    },
+    enabled: !!id,
+  });
+};
+
 export const useFlashSaleProducts = () => {
   return useQuery({
     queryKey: ['flashSaleProducts'],

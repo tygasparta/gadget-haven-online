@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Star, Package, DollarSign, Eye, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Package, DollarSign, Eye, Calendar, ChevronLeft, ChevronRight, Cpu } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">Product Details</DialogTitle>
         </DialogHeader>
@@ -265,6 +265,74 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
             </div>
           </div>
         </div>
+
+        {/* Product Specifications Section */}
+        {product.specifications && product.specifications.length > 0 && (
+          <div className="mt-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+              <Cpu className="w-6 h-6 mr-3 text-blue-600" />
+              Technical Specifications
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {product.specifications.map((spec, index) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                  <span className="text-gray-700 font-medium">{spec.key}</span>
+                  <span className="font-semibold text-gray-800">{spec.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Colors and What's in the Box sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Colors */}
+          {product.colors && product.colors.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3 text-lg">Available Colors</h3>
+              <div className="flex flex-wrap gap-2">
+                {product.colors.map((color, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                    <div 
+                      className="w-6 h-6 rounded-full border-2 border-gray-300"
+                      style={{ backgroundColor: color.hex_code }}
+                    ></div>
+                    <span className="text-sm font-medium">{color.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* What's in the Box */}
+          {product.whats_in_box && product.whats_in_box.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3 text-lg">What's in the Box</h3>
+              <div className="space-y-1">
+                {product.whats_in_box.map((item, index) => (
+                  <div key={index} className="flex items-center p-2 bg-green-50 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span className="text-sm text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="mt-6">
+            <h3 className="font-semibold mb-3 text-lg">Product Tags</h3>
+            <div className="flex flex-wrap gap-2">
+              {product.tags.map((tag, index) => (
+                <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
