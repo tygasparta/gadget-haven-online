@@ -69,7 +69,6 @@ const FeaturedBrands = () => {
   };
 
   const handleBrandClick = (brandName: string) => {
-    // Navigate to a filtered products page by brand
     navigate(`/products?brand=${encodeURIComponent(brandName)}`);
   };
 
@@ -125,7 +124,7 @@ const FeaturedBrands = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         {getCurrentBrands().map((brand, index) => (
           <div 
-            key={`${currentIndex}-${index}`} 
+            key={`${brand.name}-${currentIndex}-${index}`} 
             onClick={() => handleBrandClick(brand.name)}
             className="group bg-white rounded-2xl sm:rounded-3xl border-2 border-gray-100 hover:border-transparent p-4 sm:p-6 hover:shadow-2xl transition-all duration-500 cursor-pointer relative overflow-hidden transform hover:-translate-y-2 hover:scale-105"
           >
@@ -134,14 +133,21 @@ const FeaturedBrands = () => {
             
             {/* Brand logo container */}
             <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-2xl mb-3 sm:mb-4 flex items-center justify-center overflow-hidden relative p-4">
+              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-2xl mb-3 sm:mb-4 flex items-center justify-center overflow-hidden relative p-2 sm:p-4">
                 <img 
                   src={brand.logo} 
-                  alt={brand.name}
-                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                  alt={`${brand.name} logo`}
+                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110 max-w-full max-h-full"
+                  loading="lazy"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
+                    console.error(`Failed to load image for ${brand.name}:`, brand.logo);
+                    // Fallback: show brand name as text
                     target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'flex items-center justify-center w-full h-full text-gray-700 font-bold text-sm sm:text-base';
+                    fallback.textContent = brand.name;
+                    target.parentNode?.appendChild(fallback);
                   }}
                 />
                 
