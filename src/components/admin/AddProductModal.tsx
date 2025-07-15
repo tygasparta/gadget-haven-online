@@ -14,6 +14,7 @@ import ColorSelector from './ColorSelector';
 import TagsInput from './TagsInput';
 import WhatsInBoxInput from './WhatsInBoxInput';
 import ProductSpecsInput from './ProductSpecsInput';
+import AIProductGenerator from './AIProductGenerator';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   const [productTags, setProductTags] = useState<string[]>([]);
   const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
   const [customBrand, setCustomBrand] = useState('');
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -88,6 +90,57 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     discount_percentage: ''
   });
   const [productSpecs, setProductSpecs] = useState<Array<{key: string, value: string}>>([]);
+
+  const handleAIGenerate = (generatedData: {
+    name: string;
+    description: string;
+    category: string;
+    brand: string;
+    price: number;
+    features: string[];
+    whats_in_box: string[];
+    tags: string[];
+  }) => {
+    console.log('Received AI generated data:', generatedData);
+    
+    // Update product basic info
+    setNewProduct(prev => ({
+      ...prev,
+      name: generatedData.name,
+      description: generatedData.description,
+      category: generatedData.category,
+      brand: generatedData.brand,
+      price: generatedData.price.toString(),
+      stock: '50' // Default stock
+    }));
+
+    // Convert features to specifications
+    if (generatedData.features && generatedData.features.length > 0) {
+      const specs = generatedData.features.map((feature, index) => ({
+        key: `Feature ${index + 1}`,
+        value: feature
+      }));
+      setProductSpecs(specs);
+    }
+
+    // Set what's in the box
+    if (generatedData.whats_in_box && generatedData.whats_in_box.length > 0) {
+      setWhatsInBox(generatedData.whats_in_box);
+    }
+
+    // Set tags
+    if (generatedData.tags && generatedData.tags.length > 0) {
+      setProductTags(generatedData.tags);
+    }
+
+    // Hide AI generator after successful generation
+    setShowAIGenerator(false);
+
+    toast({
+      title: "AI Generation Complete!",
+      description: `Generated details for ${generatedData.name} with ${generatedData.features?.length || 0} features`,
+    });
+  };
 
   const resetForm = () => {
     setNewProduct({
@@ -207,9 +260,25 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-white">Add New Product</CardTitle>
+      <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-gray-700">
+          <div>
+            <CardTitle className="text-white flex items-center">
+              Add New Product
+              <Button
+                onClick={() => setShowAIGenerator(!showAIGenerator)}
+                variant="outline"
+                size="sm"
+                className="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 border-none text-white hover:from-blue-700 hover:to-purple-700"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {showAIGenerator ? 'Hide AI' : 'Use AI'}
+              </Button>
+            </CardTitle>
+            <p className="text-gray-400 text-sm mt-1">
+              {showAIGenerator ? 'Generate product details with AI' : 'Add product manually or use AI to generate details'}
+            </p>
+          </div>
           <Button
             onClick={onClose}
             variant="ghost"
@@ -219,7 +288,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
+          {showAIGenerator && (
+            <div className="mb-8">
+              <AIProductGenerator onGenerate={handleAIGenerate} />
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">

@@ -41,7 +41,7 @@ const EnhancedPreloader = () => {
         {/* Floating orbs with enhanced gradients */}
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-cyan-400/40 via-blue-500/30 to-purple-600/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0s', animationDuration: '4s' }}></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/40 via-pink-500/30 to-red-500/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-60 h-60 bg-gradient-to-br from-indigo-400/30 to-purple-500/30 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+        <div className="absolute top-1/3 right-1/3 w-60 h-60 bg-gradient-to-br from-indigo-400/30 to-purple-500/30 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
         
         {/* Moving grid pattern */}
         <div className="absolute inset-0 opacity-20">
@@ -73,33 +73,25 @@ const EnhancedPreloader = () => {
         ))}
       </div>
 
-      {/* Main Logo with Enhanced Animation */}
+      {/* Main Logo - Removed animations */}
       <div className="mb-16 relative z-10">
         <div className="relative">
-          {/* Multiple rotating rings */}
-          <div className="absolute -inset-12 border-2 border-cyan-400/50 rounded-full animate-spin" style={{ animationDuration: '15s' }}></div>
-          <div className="absolute -inset-8 border-2 border-purple-400/40 rounded-full animate-spin" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
-          <div className="absolute -inset-4 border border-pink-400/30 rounded-full animate-spin" style={{ animationDuration: '8s' }}></div>
+          {/* Static rings */}
+          <div className="absolute -inset-12 border-2 border-cyan-400/50 rounded-full"></div>
+          <div className="absolute -inset-8 border-2 border-purple-400/40 rounded-full"></div>
+          <div className="absolute -inset-4 border border-pink-400/30 rounded-full"></div>
           
-          {/* Pulsing background layers */}
-          <div className="absolute inset-0 w-40 h-40 bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl animate-pulse" style={{ animationDuration: '2s' }}></div>
-          <div className="absolute inset-2 w-36 h-36 bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl animate-pulse" style={{ animationDuration: '3s', animationDelay: '0.5s' }}></div>
+          {/* Static background layers */}
+          <div className="absolute inset-0 w-40 h-40 bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl"></div>
+          <div className="absolute inset-2 w-36 h-36 bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl"></div>
           
-          {/* Main logo container */}
-          <div className="relative w-40 h-40 bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl transform animate-bounce border-4 border-white/30 backdrop-blur-sm">
-            <span className="text-white font-bold text-7xl drop-shadow-2xl animate-pulse" style={{ textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>G</span>
+          {/* Main logo container - Removed animations */}
+          <div className="relative w-40 h-40 bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/30 backdrop-blur-sm">
+            <span className="text-white font-bold text-7xl drop-shadow-2xl" style={{ textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>G</span>
             
             {/* Inner glow effects */}
             <div className="absolute inset-3 bg-gradient-to-br from-white/30 to-transparent rounded-2xl"></div>
             <div className="absolute inset-1 bg-gradient-to-tr from-transparent via-white/10 to-transparent rounded-3xl"></div>
-          </div>
-          
-          {/* Orbiting elements */}
-          <div className="absolute inset-0 w-40 h-40 animate-spin" style={{ animationDuration: '8s' }}>
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-cyan-400 rounded-full animate-ping shadow-lg" style={{ boxShadow: '0 0 15px #22d3ee' }}></div>
-            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-purple-400 rounded-full animate-ping shadow-lg" style={{ animationDelay: '1s', boxShadow: '0 0 15px #a855f7' }}></div>
-            <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-pink-400 rounded-full animate-ping shadow-lg" style={{ animationDelay: '2s', boxShadow: '0 0 15px #f472b6' }}></div>
-            <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-blue-400 rounded-full animate-ping shadow-lg" style={{ animationDelay: '3s', boxShadow: '0 0 15px #3b82f6' }}></div>
           </div>
         </div>
       </div>
@@ -108,7 +100,7 @@ const EnhancedPreloader = () => {
       <div className="text-center mb-16 relative z-10">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 relative">
           <span 
-            className="bg-gradient-to-r from-cyan-200 via-blue-300 to-purple-400 bg-clip-text text-transparent animate-pulse"
+            className="bg-gradient-to-r from-cyan-200 via-blue-300 to-purple-400 bg-clip-text text-transparent"
             style={{ 
               textShadow: '0 0 30px rgba(34, 211, 238, 0.5)',
               filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.3))'

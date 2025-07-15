@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Bot, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,23 +15,23 @@ interface AIProductGeneratorProps {
     description: string;
     category: string;
     brand: string;
+    price: number;
+    features: string[];
+    whats_in_box: string[];
+    tags: string[];
   }) => void;
 }
 
 const AIProductGenerator: React.FC<AIProductGeneratorProps> = ({ onGenerate }) => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [basicInfo, setBasicInfo] = useState({
-    productType: '',
-    keyFeatures: '',
-    targetAudience: ''
-  });
+  const [productName, setProductName] = useState('');
 
   const generateProductDetails = async () => {
-    if (!basicInfo.productType.trim()) {
+    if (!productName.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please provide at least the product type",
+        description: "Please provide the product name",
         variant: "destructive"
       });
       return;
@@ -40,19 +40,54 @@ const AIProductGenerator: React.FC<AIProductGeneratorProps> = ({ onGenerate }) =
     setIsGenerating(true);
     
     try {
-      const prompt = `Generate detailed product information for an e-commerce store based on the following:
+      const prompt = `You are a product listing assistant for an electronics store called "Gadget Genie".
 
-Product Type: ${basicInfo.productType}
-Key Features: ${basicInfo.keyFeatures || 'Standard features for this product type'}
-Target Audience: ${basicInfo.targetAudience || 'General consumers'}
+Generate a complete and SEO-optimized product listing for the following item:
 
-Please provide:
-1. A compelling product name (max 80 characters)
-2. A detailed product description (150-300 words) that highlights benefits and features
-3. The most appropriate category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics
-4. A suitable brand name if not specified
+Product: ${productName}
 
-Format the response as JSON with keys: name, description, category, brand`;
+The listing must be structured as **JSON** and include the following fields:
+
+- **name**: The official product name
+- **description**: A short, compelling product description (2–3 sentences)
+- **features**: A list of 5–10 bullet-point key features
+- **whats_in_the_box**: A list of items included with the product
+- **price_usd**: Estimated price in USD
+- **tags**: A comma-separated list of search-friendly tags
+- **category**: Most appropriate category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics
+- **brand**: The brand name of the product
+- **stock_status**: Default to "In Stock"
+- **delivery_info**: Short shipping or delivery note
+
+Only return the JSON structure. Do not explain anything. Do not include image URLs.
+
+Example format:
+{
+  "name": "Samsung Galaxy A55 5G – 256GB (Awesome Graphite)",
+  "description": "The Samsung Galaxy A55 5G delivers flagship-level performance and a stunning Super AMOLED display at an affordable price. Perfect for users who want premium features without the premium price tag.",
+  "features": [
+    "6.6" Super AMOLED Display",
+    "Exynos 1480 Processor",
+    "50MP Triple Camera System",
+    "5000mAh Battery with 25W Fast Charging",
+    "8GB RAM / 256GB Storage",
+    "5G Connectivity",
+    "Side Fingerprint Sensor",
+    "IP67 Dust & Water Resistance"
+  ],
+  "whats_in_the_box": [
+    "Samsung Galaxy A55 5G",
+    "USB-C Cable",
+    "Quick Start Guide",
+    "SIM Ejector Tool"
+  ],
+  "price_usd": 449,
+  "tags": "Samsung, Galaxy A55, Smartphone, 5G, Android, 256GB",
+  "category": "Smartphones",
+  "brand": "Samsung",
+  "stock_status": "In Stock",
+  "delivery_info": "Free delivery within 1–3 working days"
+}`;
 
       console.log('Calling AI function with prompt:', prompt);
 
@@ -72,19 +107,27 @@ Format the response as JSON with keys: name, description, category, brand`;
           const parsedData = JSON.parse(data.generatedData);
           console.log('Parsed AI data:', parsedData);
           
-          onGenerate(parsedData);
+          // Transform the AI response to match our component's expected format
+          const transformedData = {
+            name: parsedData.name || productName,
+            description: parsedData.description || '',
+            category: parsedData.category || 'Electronics',
+            brand: parsedData.brand || 'Generic',
+            price: parsedData.price_usd || 0,
+            features: parsedData.features || [],
+            whats_in_box: parsedData.whats_in_the_box || [],
+            tags: parsedData.tags ? parsedData.tags.split(', ').map((tag: string) => tag.trim()) : []
+          };
+          
+          onGenerate(transformedData);
           
           toast({
             title: "Product details generated!",
-            description: "AI has generated detailed product information for you.",
+            description: "AI has generated detailed product information based on your input.",
           });
           
           // Reset form
-          setBasicInfo({
-            productType: '',
-            keyFeatures: '',
-            targetAudience: ''
-          });
+          setProductName('');
         } catch (parseError) {
           console.error('Failed to parse AI response:', parseError);
           throw new Error('Invalid response format from AI');
@@ -96,7 +139,7 @@ Format the response as JSON with keys: name, description, category, brand`;
       console.error('AI generation error:', error);
       toast({
         title: "Generation failed",
-        description: error.message || "Failed to generate product details",
+        description: error.message || "Failed to generate product details. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -105,65 +148,77 @@ Format the response as JSON with keys: name, description, category, brand`;
   };
 
   return (
-    <Card className="bg-gray-800 border-gray-700">
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 shadow-xl">
+      <CardHeader className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-gray-700">
         <CardTitle className="text-white flex items-center">
-          <Sparkles className="w-5 h-5 mr-2 text-blue-400" />
+          <Bot className="w-6 h-6 mr-3 text-blue-400" />
           AI Product Generator
+          <Zap className="w-4 h-4 ml-2 text-yellow-400" />
         </CardTitle>
+        <p className="text-gray-300 text-sm mt-2">
+          Let AI create a complete product listing with features, pricing, and specifications
+        </p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="productType" className="text-gray-300">Product Type *</Label>
-          <Input
-            id="productType"
-            value={basicInfo.productType}
-            onChange={(e) => setBasicInfo({...basicInfo, productType: e.target.value})}
-            placeholder="e.g., Wireless Bluetooth Headphones, Gaming Laptop, etc."
-            className="bg-gray-700 border-gray-600 text-white"
-          />
-        </div>
+      <CardContent className="p-6 space-y-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="productName" className="text-gray-300 font-medium">
+              Product Name *
+            </Label>
+            <Input
+              id="productName"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              placeholder="e.g., iPhone 15 Pro, MacBook Air M3, Sony WH-1000XM5..."
+              className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20 mt-2"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Enter the product name and AI will generate complete specifications, features, and pricing
+            </p>
+          </div>
 
-        <div>
-          <Label htmlFor="keyFeatures" className="text-gray-300">Key Features</Label>
-          <Textarea
-            id="keyFeatures"
-            value={basicInfo.keyFeatures}
-            onChange={(e) => setBasicInfo({...basicInfo, keyFeatures: e.target.value})}
-            placeholder="e.g., Noise cancelling, 30-hour battery, premium build quality..."
-            className="bg-gray-700 border-gray-600 text-white"
-            rows={2}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="targetAudience" className="text-gray-300">Target Audience</Label>
-          <Input
-            id="targetAudience"
-            value={basicInfo.targetAudience}
-            onChange={(e) => setBasicInfo({...basicInfo, targetAudience: e.target.value})}
-            placeholder="e.g., Gamers, Professionals, Music lovers, etc."
-            className="bg-gray-700 border-gray-600 text-white"
-          />
+          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
+            <h4 className="text-white font-medium mb-2 flex items-center">
+              <Sparkles className="w-4 h-4 mr-2 text-purple-400" />
+              What AI will generate:
+            </h4>
+            <ul className="text-sm text-gray-300 space-y-1">
+              <li>• Complete product description</li>
+              <li>• Key features and specifications</li>
+              <li>• Estimated pricing</li>
+              <li>• What's included in the box</li>
+              <li>• SEO-friendly tags</li>
+              <li>• Appropriate category and brand</li>
+            </ul>
+          </div>
         </div>
 
         <Button 
           onClick={generateProductDetails}
-          disabled={isGenerating || !basicInfo.productType.trim()}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          disabled={isGenerating || !productName.trim()}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generating Details...
+              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+              Generating Product Details...
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Generate Product Details
+              <Sparkles className="w-5 h-5 mr-3" />
+              Generate with AI
             </>
           )}
         </Button>
+
+        {isGenerating && (
+          <div className="bg-blue-600/10 border border-blue-600/30 rounded-lg p-4">
+            <div className="flex items-center text-blue-400">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <span className="text-sm">AI is analyzing your product and generating comprehensive details...</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
