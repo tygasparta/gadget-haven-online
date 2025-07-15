@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,6 +66,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
   useEffect(() => {
     if (product) {
+      console.log('Loading product data:', product);
       setEditProduct({
         name: product.name || '',
         description: product.description || '',
@@ -99,9 +101,29 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         setWhatsInBox(['']);
       }
       
-      // Load specifications
-      if (product.specifications && Array.isArray(product.specifications)) {
-        setProductSpecs(product.specifications as Array<{key: string, value: string}>);
+      // Load specifications - Fixed parsing
+      console.log('Raw specifications from product:', product.specifications);
+      if (product.specifications) {
+        try {
+          let specs = product.specifications;
+          // If it's a string, parse it
+          if (typeof specs === 'string') {
+            specs = JSON.parse(specs);
+          }
+          // Ensure it's an array of objects with key and value
+          if (Array.isArray(specs)) {
+            const validSpecs = specs.filter(spec => 
+              spec && typeof spec === 'object' && 'key' in spec && 'value' in spec
+            );
+            setProductSpecs(validSpecs);
+            console.log('Loaded specifications:', validSpecs);
+          } else {
+            setProductSpecs([]);
+          }
+        } catch (error) {
+          console.error('Error parsing specifications:', error);
+          setProductSpecs([]);
+        }
       } else {
         setProductSpecs([]);
       }
@@ -153,7 +175,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
     setIsLoading(true);
     
     try {
-      console.log('Updating product with images:', productImages);
+      console.log('Updating product with specifications:', productSpecs);
       
       // Calculate discount percentage if original price is provided
       let calculatedDiscount = 0;
@@ -170,30 +192,41 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       // Filter out empty items and specs
       const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
-      const validSpecs = productSpecs.filter(spec => spec.key.trim() !== '' && spec.value.trim() !== '');
+      const validSpecs = productSpecs.filter(spec => 
+        spec && spec.key && spec.value && spec.key.trim() !== '' && spec.value.trim() !== ''
+      );
+
+      console.log('Valid specifications to save:', validSpecs);
+
+      const updateData = {
+        name: editProduct.name,
+        description: editProduct.description,
+        price: parseFloat(editProduct.price),
+        original_price: editProduct.original_price ? parseFloat(editProduct.original_price) : null,
+        image: mainProductImage,
+        category: editProduct.category,
+        brand: editProduct.brand,
+        stock: parseInt(editProduct.stock),
+        is_featured: editProduct.is_featured,
+        is_flash_sale: editProduct.is_flash_sale,
+        discount_percentage: calculatedDiscount,
+        colors: selectedColors.length > 0 ? selectedColors : null,
+        tags: productTags.length > 0 ? productTags : null,
+        whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
+        specifications: validSpecs.length > 0 ? validSpecs : null,
+      };
+
+      console.log('Update data being sent:', updateData);
 
       const { error } = await supabase
         .from('products')
-        .update({
-          name: editProduct.name,
-          description: editProduct.description,
-          price: parseFloat(editProduct.price),
-          original_price: editProduct.original_price ? parseFloat(editProduct.original_price) : null,
-          image: mainProductImage,
-          category: editProduct.category,
-          brand: editProduct.brand,
-          stock: parseInt(editProduct.stock),
-          is_featured: editProduct.is_featured,
-          is_flash_sale: editProduct.is_flash_sale,
-          discount_percentage: calculatedDiscount,
-          colors: selectedColors.length > 0 ? selectedColors as any : null,
-          tags: productTags.length > 0 ? productTags : null,
-          whats_in_box: validWhatsInBox.length > 0 ? validWhatsInBox : null,
-          specifications: validSpecs.length > 0 ? validSpecs as any : null,
-        })
+        .update(updateData)
         .eq('id', product.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
 
       // Update gallery images - first clear existing ones, then add new ones
       await supabase
@@ -224,14 +257,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: `The product has been updated with ${selectedColors.length} colors, ${productTags.length} tags, ${validWhatsInBox.length} box items, and ${validSpecs.length} specifications`
+        description: `Updated with ${validSpecs.length} specifications, ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
       });
 
       onClose();
       
       // Refresh products list
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product', product.id] });
     } catch (error: any) {
+      console.error('Error updating product:', error);
       toast({
         title: "Error updating product",
         description: error.message,
@@ -246,8 +281,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
+        <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-gray-900 z-10 border-b border-gray-700">
           <CardTitle className="text-white">Edit Product</CardTitle>
           <Button
             onClick={onClose}
@@ -258,10 +293,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Basic Info - Responsive Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-gray-300">Product Name</Label>
                 <Input
@@ -289,12 +324,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                 id="description"
                 value={editProduct.description}
                 onChange={(e) => setEditProduct({...editProduct, description: e.target.value})}
-                className="bg-gray-800 border-gray-600 text-white"
+                className="bg-gray-800 border-gray-600 text-white min-h-[100px]"
               />
             </div>
 
-            {/* Pricing */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Pricing - Responsive Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="price" className="text-gray-300">Price</Label>
                 <Input
@@ -331,8 +366,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               </div>
             </div>
 
-            {/* Category and Discount */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Category and Discount - Responsive Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-gray-300">Category</Label>
                 <Select value={editProduct.category} onValueChange={(value) => setEditProduct({...editProduct, category: value})}>
@@ -372,7 +407,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               onTagsChange={setProductTags}
             />
 
-            {/* Product Specifications */}
+            {/* Product Specifications - Enhanced */}
             <ProductSpecsInput 
               specs={productSpecs}
               onSpecsChange={setProductSpecs}
@@ -397,8 +432,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               />
             </div>
 
-            {/* Features */}
-            <div className="flex space-x-4">
+            {/* Features - Responsive Layout */}
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
               <label className="flex items-center text-gray-300">
                 <input
                   type="checkbox"
@@ -419,7 +454,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               </label>
             </div>
 
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-gray-700">
               <Button type="button" variant="outline" onClick={onClose} className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
                 Cancel
               </Button>

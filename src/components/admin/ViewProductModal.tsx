@@ -83,12 +83,12 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">Product Details</DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Product Images Gallery */}
           <div className="space-y-4">
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative group">
@@ -144,7 +144,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
             
             {/* Thumbnail strip */}
             {galleryImages.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto">
+              <div className="flex space-x-2 overflow-x-auto pb-2">
                 {galleryImages.map((imageUrl, index) => (
                   <button
                     key={index}
@@ -171,7 +171,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h2>
-              <div className="flex items-center space-x-2 mb-4">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
                 <Badge variant={product.is_featured ? 'default' : 'secondary'}>
                   {product.is_featured ? 'Featured' : 'Standard'}
                 </Badge>
@@ -266,26 +266,26 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
           </div>
         </div>
 
-        {/* Product Specifications Section */}
+        {/* Product Specifications Section - Enhanced with better responsive design */}
         {product.specifications && product.specifications.length > 0 && (
-          <div className="mt-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+          <div className="mt-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-6 border border-blue-100">
             <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
               <Cpu className="w-6 h-6 mr-3 text-blue-600" />
               Technical Specifications
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {product.specifications.map((spec, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <span className="text-gray-700 font-medium">{spec.key}</span>
-                  <span className="font-semibold text-gray-800">{spec.value}</span>
+                <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                  <span className="text-gray-700 font-medium text-sm sm:text-base">{spec.key}</span>
+                  <span className="font-semibold text-gray-800 text-sm sm:text-base mt-1 sm:mt-0">{spec.value}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Colors and What's in the Box sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        {/* Colors and What's in the Box sections - Enhanced responsive design */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (
             <div>
@@ -311,7 +311,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
               <div className="space-y-1">
                 {product.whats_in_box.map((item, index) => (
                   <div key={index} className="flex items-center p-2 bg-green-50 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></div>
                     <span className="text-sm text-gray-700">{item}</span>
                   </div>
                 ))}
