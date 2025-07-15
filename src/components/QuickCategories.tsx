@@ -1,91 +1,44 @@
 
 import React from 'react';
-import { Smartphone, Headphones, Laptop, Camera, Watch, Gamepad2, Tablet, Speaker } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Smartphone, Headphones, Laptop, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts } from '@/hooks/useProducts';
 
 const QuickCategories = () => {
   const navigate = useNavigate();
-  const { data: allProducts = [] } = useProducts();
-
-  // Calculate real counts based on product categories
-  const getCategoryCount = (categoryName: string) => {
-    return allProducts.filter(product => 
-      product.category?.toLowerCase().includes(categoryName.toLowerCase()) ||
-      product.name.toLowerCase().includes(categoryName.toLowerCase())
-    ).length;
-  };
 
   const categories = [
-    { 
-      name: "Smartphones", 
-      icon: Smartphone, 
-      count: getCategoryCount("phone") || 24, 
-      color: "bg-blue-500", 
-      popular: true,
-      path: "/phones"
+    {
+      name: 'Smartphones',
+      icon: Smartphone,
+      count: 8,
+      color: 'bg-blue-500',
+      path: '/products?category=smartphones'
     },
-    { 
-      name: "Audio", 
-      icon: Headphones, 
-      count: getCategoryCount("audio") || 18, 
-      color: "bg-purple-500", 
-      popular: false,
-      path: "/audio"
+    {
+      name: 'Audio',
+      icon: Headphones,
+      count: 2,
+      color: 'bg-purple-500',
+      path: '/products?category=audio'
     },
-    { 
-      name: "Laptops", 
-      icon: Laptop, 
-      count: getCategoryCount("laptop") || 15, 
-      color: "bg-green-500", 
-      popular: true,
-      path: "/categories"
+    {
+      name: 'Laptops',
+      icon: Laptop,
+      count: 4,
+      color: 'bg-green-500',
+      path: '/products?category=laptops'
     },
-    { 
-      name: "Cameras", 
-      icon: Camera, 
-      count: getCategoryCount("camera") || 9, 
-      color: "bg-orange-500", 
-      popular: false,
-      path: "/categories"
-    },
-    { 
-      name: "Watches", 
-      icon: Watch, 
-      count: getCategoryCount("watch") || 13, 
-      color: "bg-pink-500", 
-      popular: false,
-      path: "/categories"
-    },
-    { 
-      name: "Gaming", 
-      icon: Gamepad2, 
-      count: getCategoryCount("gaming") || 8, 
-      color: "bg-red-500", 
-      popular: true,
-      path: "/categories"
-    },
-    { 
-      name: "Tablets", 
-      icon: Tablet, 
-      count: getCategoryCount("tablet") || 7, 
-      color: "bg-indigo-500", 
-      popular: false,
-      path: "/categories"
-    },
-    { 
-      name: "Speakers", 
-      icon: Speaker, 
-      count: getCategoryCount("speaker") || 6, 
-      color: "bg-teal-500", 
-      popular: false,
-      path: "/categories"
+    {
+      name: 'Cameras',
+      icon: Camera,
+      count: 3,
+      color: 'bg-orange-500',
+      path: '/products?category=cameras'
     }
   ];
 
-  const handleCategoryClick = (category: any) => {
-    navigate(category.path);
+  const handleCategoryClick = (path: string) => {
+    navigate(path);
   };
 
   const handleAllCategoriesClick = () => {
@@ -93,43 +46,46 @@ const QuickCategories = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <div className="bg-white rounded-lg shadow-sm p-4">
       <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-bold text-lg text-gray-800">Quick Browse</h3>
-          <p className="text-sm text-gray-600">Shop by category</p>
-        </div>
-        <Badge 
-          className="bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer"
-          onClick={handleAllCategoriesClick}
-        >
-          All Categories
-        </Badge>
+        <h3 className="font-bold text-gray-900">Quick Browse</h3>
+        <p className="text-sm text-gray-600">Shop by category</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         {categories.map((category, index) => (
-          <div 
+          <div
             key={index}
-            className="relative group cursor-pointer p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200"
-            onClick={() => handleCategoryClick(category)}
+            className="relative group cursor-pointer"
+            onClick={() => handleCategoryClick(category.path)}
           >
-            {category.popular && (
-              <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1">
-                Hot
-              </Badge>
-            )}
-            
-            <div className="text-center">
-              <div className={`${category.color} p-3 rounded-xl mx-auto w-fit mb-2 group-hover:scale-110 transition-transform duration-200`}>
-                <category.icon className="w-5 h-5 text-white" />
+            <div className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
+                <category.icon className="w-6 h-6 text-white" />
               </div>
-              <h4 className="font-semibold text-sm text-gray-800 mb-1">{category.name}</h4>
-              <p className="text-xs text-gray-500">{category.count} items</p>
+              <span className="text-sm font-medium text-gray-900 text-center">{category.name}</span>
+              <span className="text-xs text-gray-500">{category.count} items</span>
             </div>
+            {index === 0 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                Hot
+              </div>
+            )}
+            {index === 2 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                Hot
+              </div>
+            )}
           </div>
         ))}
       </div>
+
+      <button 
+        className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+        onClick={handleAllCategoriesClick}
+      >
+        All Categories
+      </button>
     </div>
   );
 };

@@ -1,23 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Zap, Gift, ShoppingBag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Clock, ShoppingCart, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useFlashSaleProducts } from '@/hooks/useProducts';
-import { useAddToCart } from '@/hooks/useCart';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 
 const LiveDeals = () => {
   const navigate = useNavigate();
-  const { data: flashSaleProducts = [] } = useFlashSaleProducts();
-  const addToCartMutation = useAddToCart();
-  const { user } = useAuthContext();
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
-    minutes: 45,
-    seconds: 30
+    minutes: 42,
+    seconds: 29
   });
 
   useEffect(() => {
@@ -37,62 +28,37 @@ const LiveDeals = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Create deals based on flash sale products or default deals
-  const createDealsFromProducts = () => {
-    if (flashSaleProducts.length === 0) {
-      return [
-        {
-          title: "Flash Sale",
-          discount: "70% OFF",
-          claimed: 156,
-          total: 200,
-          icon: Zap,
-          color: "from-red-500 to-pink-500"
-        },
-        {
-          title: "Daily Deal",
-          discount: "50% OFF",
-          claimed: 89,
-          total: 150,
-          icon: Gift,
-          color: "from-blue-500 to-purple-500"
-        }
-      ];
-    }
-
-    return flashSaleProducts.slice(0, 2).map((product, index) => ({
-      title: index === 0 ? "Flash Sale" : "Daily Deal",
-      discount: `${product.discount_percentage || 50}% OFF`,
-      claimed: Math.floor(Math.random() * 150) + 50,
+  const deals = [
+    {
+      id: 1,
+      name: 'Apple iPhone 15 Pro',
+      discount: '2% OFF',
+      claimed: 96,
       total: 200,
-      icon: index === 0 ? Zap : Gift,
-      color: index === 0 ? "from-red-500 to-pink-500" : "from-blue-500 to-purple-500",
-      productId: product.id,
-      product: product
-    }));
+      price: 1200,
+      originalPrice: 1299,
+      image: '/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png'
+    },
+    {
+      id: 2,
+      name: 'Samsung Galaxy A55 5G',
+      discount: '50% OFF',
+      claimed: 65,
+      total: 200,
+      price: 449,
+      originalPrice: 899,
+      image: '/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png'
+    }
+  ];
+
+  const handleAddToCart = (dealId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add to cart logic here
+    console.log('Added deal to cart:', dealId);
   };
 
-  const deals = createDealsFromProducts();
-
-  const handleGrabDeal = async (deal: any) => {
-    if (!user) {
-      toast.error("Please log in to add items to cart");
-      navigate('/auth');
-      return;
-    }
-
-    if (deal.product) {
-      try {
-        await addToCartMutation.mutateAsync({ productId: deal.product.id });
-        // Toast is handled by the mutation
-      } catch (error) {
-        console.error("Error adding to cart:", error);
-      }
-    } else {
-      // Navigate to deals page for generic deals
-      navigate('/deals');
-      toast.info("Redirecting to deals page...");
-    }
+  const handleDealClick = (dealId: number) => {
+    navigate(`/product/${dealId}`);
   };
 
   const handleViewAllDeals = () => {
@@ -100,85 +66,92 @@ const LiveDeals = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="bg-gradient-to-r from-red-500 to-pink-500 p-2 rounded-lg animate-pulse">
-          <Clock className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h3 className="font-bold text-lg text-gray-800">Live Deals</h3>
-          <p className="text-sm text-gray-600">Limited time offers</p>
-        </div>
-      </div>
-
-      {/* Countdown Timer */}
-      <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-4 mb-4">
-        <div className="text-center">
-          <p className="text-sm font-medium text-gray-600 mb-2">Deals end in:</p>
-          <div className="flex justify-center gap-2">
-            <div className="bg-red-500 text-white px-3 py-2 rounded-lg">
-              <span className="font-bold text-lg">{timeLeft.hours.toString().padStart(2, '0')}</span>
-              <p className="text-xs">HRS</p>
-            </div>
-            <div className="bg-red-500 text-white px-3 py-2 rounded-lg">
-              <span className="font-bold text-lg">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-              <p className="text-xs">MIN</p>
-            </div>
-            <div className="bg-red-500 text-white px-3 py-2 rounded-lg">
-              <span className="font-bold text-lg">{timeLeft.seconds.toString().padStart(2, '0')}</span>
-              <p className="text-xs">SEC</p>
-            </div>
+    <div className="bg-white rounded-lg shadow-sm p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center mr-3">
+            <Clock className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900">Live Deals</h3>
+            <p className="text-sm text-gray-600">Limited time offers</p>
           </div>
         </div>
       </div>
 
-      {/* Deal Cards */}
-      <div className="space-y-3">
-        {deals.map((deal, index) => {
-          const progress = (deal.claimed / deal.total) * 100;
-          return (
-            <div key={index} className="border border-gray-200 rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`bg-gradient-to-r ${deal.color} p-2 rounded-lg`}>
-                  <deal.icon className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-800">{deal.title}</h4>
-                  <span className="text-lg font-bold text-red-600">{deal.discount}</span>
-                  {deal.product && (
-                    <p className="text-xs text-gray-600 truncate">{deal.product.name}</p>
-                  )}
-                </div>
-              </div>
-              
-              <div className="mb-3">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>Claimed</span>
-                  <span>{deal.claimed}/{deal.total}</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-
-              <Button 
-                size="sm" 
-                className="w-full bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black"
-                onClick={() => handleGrabDeal(deal)}
-                disabled={addToCartMutation.isPending}
-              >
-                <ShoppingBag className="w-4 h-4 mr-2" />
-                {addToCartMutation.isPending ? "Adding..." : (deal.product ? "Add to Cart" : "Grab Deal")}
-              </Button>
-            </div>
-          );
-        })}
+      {/* Countdown Timer */}
+      <div className="mb-4">
+        <p className="text-sm text-gray-600 mb-2">Deals end in:</p>
+        <div className="flex space-x-2">
+          <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+            {String(timeLeft.hours).padStart(2, '0')}
+            <div className="text-xs opacity-75">HRS</div>
+          </div>
+          <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+            {String(timeLeft.minutes).padStart(2, '0')}
+            <div className="text-xs opacity-75">MIN</div>
+          </div>
+          <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+            {String(timeLeft.seconds).padStart(2, '0')}
+            <div className="text-xs opacity-75">SEC</div>
+          </div>
+        </div>
       </div>
 
-      <Button 
-        className="w-full mt-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+      {/* Deals */}
+      <div className="space-y-4">
+        {deals.map(deal => (
+          <div 
+            key={deal.id}
+            className="border rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => handleDealClick(deal.id)}
+          >
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-sm font-bold text-red-600">Flash Sale</span>
+                  <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-medium">
+                    {deal.discount}
+                  </span>
+                </div>
+                <h4 className="font-medium text-sm text-gray-900 mb-2">{deal.name}</h4>
+                
+                {/* Progress Bar */}
+                <div className="mb-2">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Claimed</span>
+                    <span>{deal.claimed}/{deal.total}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(deal.claimed / deal.total) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <button 
+                  className="w-full bg-gray-800 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-900 transition-colors"
+                  onClick={(e) => handleAddToCart(deal.id, e)}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="text-sm font-medium">Add to Cart</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button 
+        className="w-full mt-4 bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors"
         onClick={handleViewAllDeals}
       >
         View All Live Deals
-      </Button>
+      </button>
     </div>
   );
 };
