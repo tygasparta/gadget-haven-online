@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
+
 const Footer = () => {
-  return <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-12 border-t border-gray-700">
+  return (
+    <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-12 border-t border-gray-700">
       <div className="container mx-auto px-6">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
@@ -31,11 +34,13 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2">
-              {['About Us', 'Contact', 'Help Centre', 'Careers', 'Press'].map(link => <li key={link}>
+              {['About Us', 'Contact', 'Help Centre', 'Careers', 'Press'].map(link => (
+                <li key={link}>
                   <a href={`/${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                     {link}
                   </a>
-                </li>)}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -43,11 +48,13 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Customer Service</h4>
             <ul className="space-y-2">
-              {['Shipping Info', 'Returns', 'Warranty', 'Track Order', 'Payment Methods'].map(link => <li key={link}>
+              {['Shipping Info', 'Returns', 'Warranty', 'Track Order', 'Payment Methods'].map(link => (
+                <li key={link}>
                   <a href={`/${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                     {link}
                   </a>
-                </li>)}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -55,11 +62,13 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Legal & Connect</h4>
             <ul className="space-y-2">
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility', 'Sell With Us'].map(link => <li key={link}>
+              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility', 'Sell With Us'].map(link => (
+                <li key={link}>
                   <a href={`/${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                     {link}
                   </a>
-                </li>)}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -68,21 +77,11 @@ const Footer = () => {
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-sm text-gray-400">© 2025 Gadget Genie. All rights reserved. </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-400">Powered by</span>
-            <div className="flex items-center space-x-2">
-              <div className="relative group">
-                <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-blue-500 rounded-md flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 animate-pulse">
-                  <span className="text-white font-bold text-xs">S</span>
-                </div>
-                <div className="absolute inset-0 w-6 h-6 bg-gradient-to-br from-green-500/50 to-blue-500/50 rounded-md blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-              
-            </div>
-          </div>
+          <div className="text-sm text-gray-400">© 2025 Gadget Genie. All rights reserved.</div>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;

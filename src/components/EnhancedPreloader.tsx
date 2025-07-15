@@ -73,7 +73,7 @@ const EnhancedPreloader = () => {
         ))}
       </div>
 
-      {/* Main Logo - Removed animations */}
+      {/* Main Logo - Static */}
       <div className="mb-16 relative z-10">
         <div className="relative">
           {/* Static rings */}
@@ -85,7 +85,7 @@ const EnhancedPreloader = () => {
           <div className="absolute inset-0 w-40 h-40 bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl"></div>
           <div className="absolute inset-2 w-36 h-36 bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl"></div>
           
-          {/* Main logo container - Removed animations */}
+          {/* Main logo container - Static */}
           <div className="relative w-40 h-40 bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/30 backdrop-blur-sm">
             <span className="text-white font-bold text-7xl drop-shadow-2xl" style={{ textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>G</span>
             
@@ -159,25 +159,6 @@ const EnhancedPreloader = () => {
           <p className="text-xl sm:text-2xl text-cyan-100 font-semibold animate-pulse mb-4 tracking-wide">
             Preparing your perfect tech experience
           </p>
-        </div>
-      </div>
-
-      {/* Enhanced Footer */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center relative z-10">
-        <div className="flex items-center justify-center space-x-4 text-cyan-100/90 bg-black/30 backdrop-blur-lg px-6 py-3 rounded-full border-2 border-white/20 shadow-2xl">
-          <div className="flex space-x-1">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="w-1.5 h-1.5 bg-cyan-300 rounded-full animate-ping" style={{ animationDelay: `${i * 0.15}s` }} />
-            ))}
-          </div>
-          <p className="text-sm sm:text-base font-semibold tracking-wide">
-            Powered by cutting-edge technology
-          </p>
-          <div className="flex space-x-1">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="w-1.5 h-1.5 bg-purple-300 rounded-full animate-ping" style={{ animationDelay: `${(i + 3) * 0.15}s` }} />
-            ))}
-          </div>
         </div>
       </div>
 
