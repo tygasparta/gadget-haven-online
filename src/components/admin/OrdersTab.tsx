@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, Mail, MoreHorizontal, Edit, Trash2, Download, RefreshCw } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
-import { supabase } from '@/integrations/supabase/client';
+import { useUpdateOrderStatus, useDeleteOrder } from '@/hooks/useOrderManagement';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -41,39 +41,18 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 const OrdersTab = () => {
-  const { data: orders = [] } = useOrders();
+  const { data: orders = [], isLoading } = useOrders();
+  const updateOrderStatus = useUpdateOrderStatus();
+  const deleteOrder = useDeleteOrder();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
-    setUpdatingStatus(true);
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Order updated successfully",
-        description: `Order status changed to ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    } catch (error: any) {
-      toast({
-        title: "Error updating order",
-        description: error.message || "Failed to update order status",
-        variant: "destructive"
-      });
-    } finally {
-      setUpdatingStatus(false);
-    }
+    console.log('Updating order status:', { orderId, status });
+    updateOrderStatus.mutate({ orderId, status });
   };
 
   const handleDeleteOrder = async (orderId: string) => {
@@ -81,36 +60,8 @@ const OrdersTab = () => {
       return;
     }
 
-    try {
-      // First delete order items
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .delete()
-        .eq('order_id', orderId);
-
-      if (itemsError) throw itemsError;
-
-      // Then delete the order
-      const { error } = await supabase
-        .from('orders')
-        .delete()
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Order deleted successfully",
-        description: "The order has been permanently removed",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting order",
-        description: error.message || "Failed to delete order",
-        variant: "destructive"
-      });
-    }
+    console.log('Deleting order:', orderId);
+    deleteOrder.mutate(orderId);
   };
 
   const handleMarkAsShipped = async (orderId: string) => {
@@ -190,6 +141,14 @@ const OrdersTab = () => {
   };
 
   const stats = getOrderStats();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -302,8 +261,9 @@ const OrdersTab = () => {
               <Button 
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={isLoading}
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>
@@ -439,7 +399,7 @@ const OrdersTab = () => {
                                     <Select
                                       value={order.status || 'pending'}
                                       onValueChange={(value) => handleUpdateOrderStatus(order.id, value)}
-                                      disabled={updatingStatus}
+                                      disabled={updateOrderStatus.isPending}
                                     >
                                       <SelectTrigger className="bg-gray-700 text-white text-sm border-gray-600 w-32">
                                         <SelectValue />
@@ -588,6 +548,7 @@ const OrdersTab = () => {
                               size="sm" 
                               variant="outline" 
                               className="bg-gray-700 hover:bg-gray-600 border-gray-600 text-white font-medium"
+                              disabled={updateOrderStatus.isPending || deleteOrder.isPending}
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
@@ -622,7 +583,7 @@ const OrdersTab = () => {
                             <DropdownMenuItem 
                               className="text-blue-400 hover:bg-gray-700 cursor-pointer"
                               onClick={() => handleMarkAsShipped(order.id)}
-                              disabled={order.status === 'shipped' || order.status === 'completed'}
+                              disabled={order.status === 'shipped' || order.status === 'completed' || updateOrderStatus.isPending}
                             >
                               <Truck className="w-4 h-4 mr-2" />
                               Mark as Shipped
@@ -631,7 +592,7 @@ const OrdersTab = () => {
                             <DropdownMenuItem 
                               className="text-green-400 hover:bg-gray-700 cursor-pointer"
                               onClick={() => handleMarkAsCompleted(order.id)}
-                              disabled={order.status === 'completed'}
+                              disabled={order.status === 'completed' || updateOrderStatus.isPending}
                             >
                               <CheckCircle className="w-4 h-4 mr-2" />
                               Mark as Completed
@@ -642,6 +603,7 @@ const OrdersTab = () => {
                             <DropdownMenuItem 
                               className="text-red-400 hover:bg-red-900/50 cursor-pointer"
                               onClick={() => handleDeleteOrder(order.id)}
+                              disabled={deleteOrder.isPending}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete Order

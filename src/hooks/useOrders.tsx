@@ -40,6 +40,8 @@ export const useOrders = () => {
     queryFn: async () => {
       if (!user) return [];
       
+      console.log('Fetching orders for user:', user.id, 'isAdmin:', isAdmin);
+      
       let query = supabase
         .from('orders')
         .select(`
@@ -62,10 +64,17 @@ export const useOrders = () => {
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching orders:', error);
+        throw error;
+      }
+      
+      console.log('Fetched orders:', data);
       return data as Order[];
     },
     enabled: !!user,
+    staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: true,
   });
 };
 
