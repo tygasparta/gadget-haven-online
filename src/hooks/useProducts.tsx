@@ -138,59 +138,47 @@ export const useDeleteProduct = () => {
     mutationFn: async (productId: number) => {
       console.log('Deleting product:', productId);
       
-      try {
-        // First, check if the product exists in any orders
-        const { data: orderItems, error: orderCheckError } = await supabase
-          .from('order_items')
-          .select('id')
-          .eq('product_id', productId)
-          .limit(1);
+      // First, delete related order_items to avoid foreign key constraint violations
+      const { error: orderItemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('product_id', productId);
 
-        if (orderCheckError) {
-          console.error('Error checking order items:', orderCheckError);
-          throw new Error('Failed to check product dependencies');
-        }
+      if (orderItemsError) {
+        console.error('Error deleting order items:', orderItemsError);
+        throw new Error('Failed to delete related order items');
+      }
 
-        if (orderItems && orderItems.length > 0) {
-          throw new Error('Cannot delete product that has been ordered. Product is referenced in existing orders.');
-        }
+      // Delete related cart_items
+      const { error: cartItemsError } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('product_id', productId);
 
-        // Delete related cart_items first
-        const { error: cartItemsError } = await supabase
-          .from('cart_items')
-          .delete()
-          .eq('product_id', productId);
+      if (cartItemsError) {
+        console.error('Error deleting cart items:', cartItemsError);
+        throw new Error('Failed to delete related cart items');
+      }
 
-        if (cartItemsError) {
-          console.error('Error deleting cart items:', cartItemsError);
-          throw new Error('Failed to delete related cart items');
-        }
+      // Delete related wishlist items
+      const { error: wishlistError } = await supabase
+        .from('wishlists')
+        .delete()
+        .eq('product_id', productId);
 
-        // Delete related wishlist items
-        const { error: wishlistError } = await supabase
-          .from('wishlists')
-          .delete()
-          .eq('product_id', productId);
+      if (wishlistError) {
+        console.error('Error deleting wishlist items:', wishlistError);
+        throw new Error('Failed to delete related wishlist items');
+      }
 
-        if (wishlistError) {
-          console.error('Error deleting wishlist items:', wishlistError);
-          throw new Error('Failed to delete related wishlist items');
-        }
+      // Finally, delete the product itself
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
 
-        // Finally, delete the product itself
-        const { error } = await supabase
-          .from('products')
-          .delete()
-          .eq('id', productId);
-
-        if (error) {
-          console.error('Error deleting product:', error);
-          throw error;
-        }
-
-        console.log('Product deleted successfully');
-      } catch (error: any) {
-        console.error('Product deletion error:', error);
+      if (error) {
+        console.error('Error deleting product:', error);
         throw error;
       }
     },
@@ -201,14 +189,14 @@ export const useDeleteProduct = () => {
       queryClient.invalidateQueries({ queryKey: ['cartItems'] });
       toast({
         title: "Product deleted",
-        description: "The product has been successfully removed from the catalog"
+        description: "The product and all related data have been removed from the catalog"
       });
     },
     onError: (error: any) => {
       console.error('Delete product mutation error:', error);
       toast({
         title: "Error deleting product",
-        description: error.message || "Failed to delete product",
+        description: error.message || "Failed to delete product. It may be referenced in existing orders.",
         variant: "destructive"
       });
     }

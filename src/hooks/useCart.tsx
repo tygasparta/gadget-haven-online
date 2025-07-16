@@ -17,7 +17,6 @@ export interface CartItem {
     price: number;
     image: string;
     original_price: number | null;
-    colors: Array<{name: string, hex_code: string}> | null;
   };
 }
 
@@ -38,8 +37,7 @@ export const useCartItems = () => {
             name,
             price,
             image,
-            original_price,
-            colors
+            original_price
           )
         `)
         .eq('user_id', user.id);
