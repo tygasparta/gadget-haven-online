@@ -17,6 +17,7 @@ export interface CartItem {
     price: number;
     image: string;
     original_price: number | null;
+    colors: Array<{name: string, hex_code: string}> | null;
   };
 }
 
