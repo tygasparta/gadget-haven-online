@@ -26,6 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
+import ColorSelector from '@/components/ColorSelector';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Checkout = () => {
@@ -36,7 +37,7 @@ const Checkout = () => {
   const updateCartItem = useUpdateCartItem();
   const removeFromCart = useRemoveFromCart();
   
-  const [step, setStep] = useState(1);
+  const [selectedColors, setSelectedColors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: '',
@@ -58,11 +59,19 @@ const Checkout = () => {
   if (!user) return null;
 
   const updateQuantity = (id: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
     updateCartItem.mutate({ id, quantity: newQuantity });
   };
 
   const handleRemoveFromCart = (id: string) => {
     removeFromCart.mutate(id);
+  };
+
+  const handleColorSelect = (itemId: string, color: string) => {
+    setSelectedColors(prev => ({
+      ...prev,
+      [itemId]: color
+    }));
   };
 
   const getTotalPrice = () => {
@@ -181,64 +190,76 @@ const Checkout = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -100 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-center space-x-4 p-4 bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all"
+                      className="flex flex-col space-y-4 p-4 bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all"
                     >
-                      <div className="relative">
-                        <img
-                          src={item.products.image}
-                          alt={item.products.name}
-                          className={`object-cover rounded-lg ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}`}
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                          }}
-                        />
-                        {item.products.original_price && item.products.original_price > item.products.price && (
-                          <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            Sale
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{item.products.name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-lg font-bold text-blue-600">${item.products.price}</span>
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <img
+                            src={item.products.image}
+                            alt={item.products.name}
+                            className={`object-cover rounded-lg ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}`}
+                            onError={(e) => {
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
+                            }}
+                          />
                           {item.products.original_price && item.products.original_price > item.products.price && (
-                            <span className="text-gray-400 line-through text-sm">${item.products.original_price}</span>
+                            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                              Sale
+                            </div>
                           )}
                         </div>
                         
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-gray-200"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="w-8 text-center font-medium">{item.quantity}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-gray-200"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{item.products.name}</h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-lg font-bold text-blue-600">${item.products.price}</span>
+                            {item.products.original_price && item.products.original_price > item.products.price && (
+                              <span className="text-gray-400 line-through text-sm">${item.products.original_price}</span>
+                            )}
                           </div>
                           
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleRemoveFromCart(item.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-gray-200"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              >
+                                <Minus className="w-4 h-4" />
+                              </Button>
+                              <span className="w-8 text-center font-medium">{item.quantity}</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-gray-200"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleRemoveFromCart(item.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Color Selection */}
+                      {item.products.colors && item.products.colors.length > 0 && (
+                        <ColorSelector
+                          colors={item.products.colors}
+                          selectedColor={selectedColors[item.id] || null}
+                          onColorSelect={(color) => handleColorSelect(item.id, color)}
+                          className="mt-3 pt-3 border-t border-gray-100"
+                        />
+                      )}
                     </motion.div>
                   ))}
                 </AnimatePresence>

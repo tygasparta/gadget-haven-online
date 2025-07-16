@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Sparkles, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +35,7 @@ const FeaturedBrands = () => {
       color: 'from-red-600 to-pink-600'
     },
     {
-      name: 'DOMAX',
+      name: 'DOOMAX',
       logo: '/lovable-uploads/0ddc703b-d046-4e1d-8c7d-8a5624da50a7.png',
       color: 'from-blue-600 to-indigo-700'
     },
