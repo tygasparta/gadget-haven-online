@@ -38,7 +38,8 @@ export const useCartItems = () => {
             name,
             price,
             image,
-            original_price
+            original_price,
+            colors
           )
         `)
         .eq('user_id', user.id);

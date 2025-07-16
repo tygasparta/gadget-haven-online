@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,6 +82,15 @@ const OrdersTab = () => {
     }
 
     try {
+      // First delete order items
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the order
       const { error } = await supabase
         .from('orders')
         .delete()
@@ -105,6 +113,14 @@ const OrdersTab = () => {
     }
   };
 
+  const handleMarkAsShipped = async (orderId: string) => {
+    await handleUpdateOrderStatus(orderId, 'shipped');
+  };
+
+  const handleMarkAsCompleted = async (orderId: string) => {
+    await handleUpdateOrderStatus(orderId, 'completed');
+  };
+
   const exportOrderData = (order: any) => {
     const orderData = {
       id: order.id,
@@ -112,7 +128,10 @@ const OrdersTab = () => {
       customer: order.user_id,
       total: order.total_amount,
       status: order.status,
-      items: order.order_items?.length || 0
+      items: order.order_items?.length || 0,
+      shipping_address: order.shipping_address,
+      billing_address: order.billing_address,
+      payment_method: order.payment_method
     };
     
     const dataStr = JSON.stringify(orderData, null, 2);
@@ -602,8 +621,8 @@ const OrdersTab = () => {
                             
                             <DropdownMenuItem 
                               className="text-blue-400 hover:bg-gray-700 cursor-pointer"
-                              onClick={() => handleUpdateOrderStatus(order.id, 'shipped')}
-                              disabled={order.status === 'shipped'}
+                              onClick={() => handleMarkAsShipped(order.id)}
+                              disabled={order.status === 'shipped' || order.status === 'completed'}
                             >
                               <Truck className="w-4 h-4 mr-2" />
                               Mark as Shipped
@@ -611,7 +630,7 @@ const OrdersTab = () => {
                             
                             <DropdownMenuItem 
                               className="text-green-400 hover:bg-gray-700 cursor-pointer"
-                              onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                              onClick={() => handleMarkAsCompleted(order.id)}
                               disabled={order.status === 'completed'}
                             >
                               <CheckCircle className="w-4 h-4 mr-2" />
