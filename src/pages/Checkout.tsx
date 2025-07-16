@@ -38,17 +38,6 @@ const Checkout = () => {
   const removeFromCart = useRemoveFromCart();
   
   const [selectedColors, setSelectedColors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState({
-    email: user?.email || '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    zipCode: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
-  });
 
   React.useEffect(() => {
     if (!user) {
@@ -252,9 +241,9 @@ const Checkout = () => {
                       </div>
 
                       {/* Color Selection - Only show if colors exist */}
-                      {(item.products as any).colors && Array.isArray((item.products as any).colors) && (item.products as any).colors.length > 0 && (
+                      {item.products.colors && Array.isArray(item.products.colors) && item.products.colors.length > 0 && (
                         <ColorSelector
-                          colors={(item.products as any).colors}
+                          colors={item.products.colors}
                           selectedColor={selectedColors[item.id] || null}
                           onColorSelect={(color) => handleColorSelect(item.id, color)}
                           className="mt-3 pt-3 border-t border-gray-100"
