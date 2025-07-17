@@ -17,17 +17,15 @@ export const useUpdateOrderStatus = () => {
           status, 
           updated_at: new Date().toISOString() 
         })
-        .eq('id', orderId)
-        .select()
-        .single();
+        .eq('id', orderId);
 
       if (error) {
         console.error('Error updating order status:', error);
         throw error;
       }
 
-      console.log('Order status updated successfully:', data);
-      return data;
+      console.log('Order status updated successfully');
+      return { orderId, status };
     },
     onSuccess: (data, { status }) => {
       console.log('Order update mutation succeeded');
@@ -38,9 +36,6 @@ export const useUpdateOrderStatus = () => {
       
       // Invalidate and refetch orders
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      
-      // Force a refetch to ensure UI updates immediately
-      queryClient.refetchQueries({ queryKey: ['orders'] });
     },
     onError: (error: any) => {
       console.error('Update order mutation error:', error);
@@ -74,20 +69,18 @@ export const useDeleteOrder = () => {
         }
 
         // Then delete the order
-        const { data, error } = await supabase
+        const { error: orderError } = await supabase
           .from('orders')
           .delete()
-          .eq('id', orderId)
-          .select()
-          .single();
+          .eq('id', orderId);
 
-        if (error) {
-          console.error('Error deleting order:', error);
-          throw error;
+        if (orderError) {
+          console.error('Error deleting order:', orderError);
+          throw orderError;
         }
 
-        console.log('Order deleted successfully:', data);
-        return data;
+        console.log('Order deleted successfully');
+        return { orderId };
       } catch (error: any) {
         console.error('Delete order error:', error);
         throw error;
@@ -102,9 +95,6 @@ export const useDeleteOrder = () => {
       
       // Invalidate and refetch orders
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      
-      // Force a refetch to ensure UI updates immediately
-      queryClient.refetchQueries({ queryKey: ['orders'] });
     },
     onError: (error: any) => {
       console.error('Delete order mutation error:', error);
