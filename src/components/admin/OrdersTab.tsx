@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, Mail, MoreHorizontal, Edit, Trash2, Download, RefreshCw } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, MoreHorizontal, Trash2, Download, RefreshCw } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
 import { useUpdateOrderStatus, useDeleteOrder } from '@/hooks/useOrderManagement';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 const OrdersTab = () => {
-  const { data: orders = [], isLoading } = useOrders();
+  const { data: orders = [], isLoading, refetch } = useOrders();
   const updateOrderStatus = useUpdateOrderStatus();
   const deleteOrder = useDeleteOrder();
   const { toast } = useToast();
@@ -145,7 +145,10 @@ const OrdersTab = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Loading orders...</p>
+        </div>
       </div>
     );
   }
@@ -259,7 +262,7 @@ const OrdersTab = () => {
                 </SelectContent>
               </Select>
               <Button 
-                onClick={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
+                onClick={() => refetch()}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 disabled={isLoading}
               >

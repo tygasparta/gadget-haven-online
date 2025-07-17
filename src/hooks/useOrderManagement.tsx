@@ -9,17 +9,28 @@ export const useUpdateOrderStatus = () => {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const { error } = await supabase
+      console.log('Updating order status:', { orderId, status });
+      
+      const { data, error } = await supabase
         .from('orders')
         .update({ 
           status, 
           updated_at: new Date().toISOString() 
         })
-        .eq('id', orderId);
+        .eq('id', orderId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating order status:', error);
+        throw error;
+      }
+
+      console.log('Order status updated successfully:', data);
+      return data;
     },
-    onSuccess: (_, { status }) => {
+    onSuccess: (data, { status }) => {
+      console.log('Order update mutation succeeded');
       toast({
         title: "Order updated successfully",
         description: `Order status changed to ${status.charAt(0).toUpperCase() + status.slice(1)}`,
@@ -27,9 +38,12 @@ export const useUpdateOrderStatus = () => {
       
       // Invalidate and refetch orders
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      
+      // Force a refetch to ensure UI updates immediately
+      queryClient.refetchQueries({ queryKey: ['orders'] });
     },
     onError: (error: any) => {
-      console.error('Update order error:', error);
+      console.error('Update order mutation error:', error);
       toast({
         title: "Error updating order",
         description: error.message || "Failed to update order status",
@@ -45,29 +59,42 @@ export const useDeleteOrder = () => {
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      // First delete order items
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .delete()
-        .eq('order_id', orderId);
+      console.log('Deleting order:', orderId);
+      
+      try {
+        // First delete order items
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .delete()
+          .eq('order_id', orderId);
 
-      if (itemsError) {
-        console.error('Error deleting order items:', itemsError);
-        throw itemsError;
-      }
+        if (itemsError) {
+          console.error('Error deleting order items:', itemsError);
+          throw itemsError;
+        }
 
-      // Then delete the order
-      const { error } = await supabase
-        .from('orders')
-        .delete()
-        .eq('id', orderId);
+        // Then delete the order
+        const { data, error } = await supabase
+          .from('orders')
+          .delete()
+          .eq('id', orderId)
+          .select()
+          .single();
 
-      if (error) {
-        console.error('Error deleting order:', error);
+        if (error) {
+          console.error('Error deleting order:', error);
+          throw error;
+        }
+
+        console.log('Order deleted successfully:', data);
+        return data;
+      } catch (error: any) {
+        console.error('Delete order error:', error);
         throw error;
       }
     },
     onSuccess: () => {
+      console.log('Order delete mutation succeeded');
       toast({
         title: "Order deleted successfully",
         description: "The order has been permanently removed",
@@ -75,9 +102,12 @@ export const useDeleteOrder = () => {
       
       // Invalidate and refetch orders
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      
+      // Force a refetch to ensure UI updates immediately
+      queryClient.refetchQueries({ queryKey: ['orders'] });
     },
     onError: (error: any) => {
-      console.error('Delete order error:', error);
+      console.error('Delete order mutation error:', error);
       toast({
         title: "Error deleting order",
         description: error.message || "Failed to delete order",

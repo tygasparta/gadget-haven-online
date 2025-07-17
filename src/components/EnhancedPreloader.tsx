@@ -1,9 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const EnhancedPreloader = () => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+  const isMobile = useIsMobile();
   
   const steps = [
     'Initializing Gadget Genie...',
@@ -35,36 +37,45 @@ const EnhancedPreloader = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-indigo-950 via-purple-950 to-pink-950 flex flex-col items-center justify-center z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-950 via-purple-950 to-pink-950 flex flex-col items-center justify-center z-50 overflow-hidden p-4">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating orbs with enhanced gradients */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-cyan-400/40 via-blue-500/30 to-purple-600/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0s', animationDuration: '4s' }}></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/40 via-pink-500/30 to-red-500/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-60 h-60 bg-gradient-to-br from-indigo-400/30 to-purple-500/30 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+        {/* Floating orbs with enhanced gradients - Mobile optimized */}
+        <div 
+          className={`absolute -top-20 -right-20 ${isMobile ? 'w-40 h-40' : 'w-80 h-80'} bg-gradient-to-br from-cyan-400/40 via-blue-500/30 to-purple-600/40 rounded-full blur-3xl animate-pulse`} 
+          style={{ animationDelay: '0s', animationDuration: '4s' }}
+        ></div>
+        <div 
+          className={`absolute -bottom-20 -left-20 ${isMobile ? 'w-40 h-40' : 'w-80 h-80'} bg-gradient-to-br from-purple-400/40 via-pink-500/30 to-red-500/40 rounded-full blur-3xl animate-pulse`} 
+          style={{ animationDelay: '2s', animationDuration: '5s' }}
+        ></div>
+        <div 
+          className={`absolute top-1/3 right-1/3 ${isMobile ? 'w-30 h-30' : 'w-60 h-60'} bg-gradient-to-br from-indigo-400/30 to-purple-500/30 rounded-full blur-2xl animate-pulse`} 
+          style={{ animationDelay: '1s', animationDuration: '6s' }}
+        ></div>
         
-        {/* Moving grid pattern */}
+        {/* Moving grid pattern - Mobile optimized */}
         <div className="absolute inset-0 opacity-20">
           <div 
             className="w-full h-full animate-pulse" 
             style={{
               backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.4) 1px, transparent 0)`,
-              backgroundSize: '60px 60px',
+              backgroundSize: isMobile ? '40px 40px' : '60px 60px',
               animation: 'pulse 8s ease-in-out infinite'
             }}
           ></div>
         </div>
 
-        {/* Floating particles */}
-        {[...Array(25)].map((_, i) => (
+        {/* Floating particles - Reduced for mobile */}
+        {[...Array(isMobile ? 15 : 25)].map((_, i) => (
           <div
             key={i}
             className="absolute rounded-full opacity-70"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 8 + 4}px`,
-              height: `${Math.random() * 8 + 4}px`,
+              width: `${Math.random() * (isMobile ? 6 : 8) + (isMobile ? 3 : 4)}px`,
+              height: `${Math.random() * (isMobile ? 6 : 8) + (isMobile ? 3 : 4)}px`,
               background: `linear-gradient(45deg, ${['#60a5fa', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#f87171'][Math.floor(Math.random() * 6)]}, transparent)`,
               animationDelay: `${i * 0.2}s`,
               animation: `float-particle ${3 + Math.random() * 4}s ease-in-out infinite alternate`
@@ -73,32 +84,37 @@ const EnhancedPreloader = () => {
         ))}
       </div>
 
-      {/* Main Logo - Static */}
-      <div className="mb-16 relative z-10">
+      {/* Main Logo - Mobile Responsive */}
+      <div className={`${isMobile ? 'mb-8' : 'mb-16'} relative z-10`}>
         <div className="relative">
-          {/* Static rings */}
-          <div className="absolute -inset-12 border-2 border-cyan-400/50 rounded-full"></div>
-          <div className="absolute -inset-8 border-2 border-purple-400/40 rounded-full"></div>
-          <div className="absolute -inset-4 border border-pink-400/30 rounded-full"></div>
+          {/* Static rings - Mobile optimized */}
+          <div className={`absolute ${isMobile ? '-inset-6' : '-inset-12'} border-2 border-cyan-400/50 rounded-full`}></div>
+          <div className={`absolute ${isMobile ? '-inset-4' : '-inset-8'} border-2 border-purple-400/40 rounded-full`}></div>
+          <div className={`absolute ${isMobile ? '-inset-2' : '-inset-4'} border border-pink-400/30 rounded-full`}></div>
           
-          {/* Static background layers */}
-          <div className="absolute inset-0 w-40 h-40 bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl"></div>
-          <div className="absolute inset-2 w-36 h-36 bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl"></div>
+          {/* Static background layers - Mobile optimized */}
+          <div className={`absolute inset-0 ${isMobile ? 'w-24 h-24' : 'w-40 h-40'} bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl`}></div>
+          <div className={`absolute ${isMobile ? 'inset-1' : 'inset-2'} ${isMobile ? 'w-22 h-22' : 'w-36 h-36'} bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl`}></div>
           
-          {/* Main logo container - Static */}
-          <div className="relative w-40 h-40 bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/30 backdrop-blur-sm">
-            <span className="text-white font-bold text-7xl drop-shadow-2xl" style={{ textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>G</span>
+          {/* Main logo container - Mobile responsive */}
+          <div className={`relative ${isMobile ? 'w-24 h-24' : 'w-40 h-40'} bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/30 backdrop-blur-sm`}>
+            <span 
+              className={`text-white font-bold ${isMobile ? 'text-4xl' : 'text-7xl'} drop-shadow-2xl`} 
+              style={{ textShadow: '0 0 20px rgba(255,255,255,0.8)' }}
+            >
+              G
+            </span>
             
             {/* Inner glow effects */}
-            <div className="absolute inset-3 bg-gradient-to-br from-white/30 to-transparent rounded-2xl"></div>
+            <div className={`absolute ${isMobile ? 'inset-2' : 'inset-3'} bg-gradient-to-br from-white/30 to-transparent rounded-2xl`}></div>
             <div className="absolute inset-1 bg-gradient-to-tr from-transparent via-white/10 to-transparent rounded-3xl"></div>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Brand Section */}
-      <div className="text-center mb-16 relative z-10">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 relative">
+      {/* Enhanced Brand Section - Mobile Responsive */}
+      <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'} relative z-10`}>
+        <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl sm:text-5xl md:text-6xl'} font-bold mb-4 sm:mb-6 relative`}>
           <span 
             className="bg-gradient-to-r from-cyan-200 via-blue-300 to-purple-400 bg-clip-text text-transparent"
             style={{ 
@@ -108,19 +124,19 @@ const EnhancedPreloader = () => {
           >
             Gadget Genie
           </span>
-          <div className="absolute -inset-4 bg-gradient-to-r from-cyan-300/30 via-blue-400/30 to-purple-500/30 blur-3xl animate-pulse"></div>
+          <div className={`absolute ${isMobile ? '-inset-2' : '-inset-4'} bg-gradient-to-r from-cyan-300/30 via-blue-400/30 to-purple-500/30 blur-3xl animate-pulse`}></div>
         </h1>
         
-        <p className="text-cyan-100 text-lg sm:text-xl md:text-2xl font-medium animate-fade-in mb-8 tracking-wide">
+        <p className={`text-cyan-100 ${isMobile ? 'text-sm' : 'text-lg sm:text-xl md:text-2xl'} font-medium animate-fade-in mb-6 sm:mb-8 tracking-wide`}>
           Your Ultimate Tech Destination
         </p>
       </div>
 
-      {/* Enhanced Progress Section */}
-      <div className="w-full max-w-md px-4 relative z-10">
+      {/* Enhanced Progress Section - Mobile Responsive */}
+      <div className={`w-full ${isMobile ? 'max-w-xs' : 'max-w-md'} px-4 relative z-10`}>
         {/* Progress Bar */}
-        <div className="relative mb-6">
-          <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden backdrop-blur-md border-2 border-white/30 shadow-inner">
+        <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
+          <div className={`w-full bg-white/20 rounded-full ${isMobile ? 'h-3' : 'h-4'} overflow-hidden backdrop-blur-md border-2 border-white/30 shadow-inner`}>
             <div 
               className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full relative overflow-hidden transition-all duration-300 ease-out"
               style={{ 
@@ -132,19 +148,19 @@ const EnhancedPreloader = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse" style={{ animationDelay: '0.5s' }}></div>
             </div>
           </div>
-          <div className="flex justify-between text-sm text-cyan-200 mt-2 font-medium">
-            <span>{steps[currentStep]}</span>
-            <span className="animate-pulse">{progress}%</span>
+          <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-cyan-200 mt-2 font-medium`}>
+            <span className="truncate pr-2">{steps[currentStep]}</span>
+            <span className="animate-pulse flex-shrink-0">{progress}%</span>
           </div>
         </div>
         
         {/* Loading Animation */}
-        <div className="flex justify-center mb-6">
+        <div className={`flex justify-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
           <div className="flex space-x-2">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="w-3 h-3 bg-gradient-to-r from-cyan-300 to-purple-400 rounded-full animate-bounce shadow-lg"
+                className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'} bg-gradient-to-r from-cyan-300 to-purple-400 rounded-full animate-bounce shadow-lg`}
                 style={{ 
                   animationDelay: `${i * 0.2}s`,
                   boxShadow: '0 0 10px rgba(34, 211, 238, 0.6)'
@@ -156,8 +172,8 @@ const EnhancedPreloader = () => {
 
         {/* Status Message */}
         <div className="text-center">
-          <p className="text-xl sm:text-2xl text-cyan-100 font-semibold animate-pulse mb-4 tracking-wide">
-            Preparing your perfect tech experience
+          <p className={`${isMobile ? 'text-sm' : 'text-xl sm:text-2xl'} text-cyan-100 font-semibold animate-pulse mb-4 tracking-wide`}>
+            {isMobile ? 'Preparing your tech experience' : 'Preparing your perfect tech experience'}
           </p>
         </div>
       </div>

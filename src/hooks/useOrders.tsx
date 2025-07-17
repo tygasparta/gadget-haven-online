@@ -38,7 +38,10 @@ export const useOrders = () => {
   return useQuery({
     queryKey: ['orders', user?.id, isAdmin],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) {
+        console.log('No user found, returning empty orders array');
+        return [];
+      }
       
       console.log('Fetching orders for user:', user.id, 'isAdmin:', isAdmin);
       
@@ -69,12 +72,14 @@ export const useOrders = () => {
         throw error;
       }
       
-      console.log('Fetched orders:', data);
+      console.log('Fetched orders:', data?.length || 0);
+      console.log('Orders data:', data);
       return data as Order[];
     },
     enabled: !!user,
-    staleTime: 30000, // 30 seconds
+    staleTime: 0, // Always refetch to ensure fresh data
     refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };
 
@@ -108,5 +113,7 @@ export const useOrderById = (orderId: string) => {
       return data as Order;
     },
     enabled: !!user && !!orderId,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 };
