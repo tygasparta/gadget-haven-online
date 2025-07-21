@@ -74,21 +74,6 @@ const FeaturedBrands = () => {
       name: 'Canon',
       logo: '/lovable-uploads/b4327d38-07c3-4648-977f-e881ea91d4fb.png',
       color: 'from-red-600 to-black'
-    },
-    {
-      name: 'Nintendo',
-      logo: '/lovable-uploads/7a8cf411-d2ed-4aba-9754-9c2c6fcc6c92.png',
-      color: 'from-red-600 to-blue-600'
-    },
-    {
-      name: 'JBL',
-      logo: '/lovable-uploads/ec24a873-3717-4a20-b741-b2588778cbd8.png',
-      color: 'from-orange-500 to-red-600'
-    },
-    {
-      name: 'Razer',
-      logo: '/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png',
-      color: 'from-green-500 to-green-700'
     }
   ];
 
@@ -173,7 +158,7 @@ const FeaturedBrands = () => {
             
             {/* Brand logo container */}
             <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl lg:rounded-2xl mb-2 sm:mb-3 lg:mb-4 flex items-center justify-center overflow-hidden relative p-2 sm:p-3 lg:p-4">
+              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center overflow-hidden relative p-2 sm:p-3 lg:p-4">
                 <img 
                   src={brand.logo} 
                   alt={`${brand.name} logo`}
@@ -193,11 +178,6 @@ const FeaturedBrands = () => {
                 {/* Overlay gradient on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${brand.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500 rounded-lg sm:rounded-xl lg:rounded-2xl`}></div>
               </div>
-              
-              {/* Brand name */}
-              <h3 className="text-center text-xs sm:text-sm lg:text-base font-semibold text-gray-700 group-hover:text-gray-900 transition-colors duration-300">
-                {brand.name}
-              </h3>
               
               {/* Hover effect indicator */}
               <div className="absolute top-1 sm:top-2 right-1 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
