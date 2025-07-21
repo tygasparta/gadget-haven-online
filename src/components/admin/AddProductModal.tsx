@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,6 +74,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [featuredImageIndex, setFeaturedImageIndex] = useState(0);
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
   const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
@@ -163,6 +165,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       discount_percentage: ''
     });
     setProductImages([]);
+    setFeaturedImageIndex(0);
     setSelectedColors([]);
     setProductTags([]);
     setWhatsInBox(['']);
@@ -200,6 +203,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       const validSpecs = productSpecs.filter(spec => spec.key.trim() !== '' && spec.value.trim() !== '');
       const finalBrand = newProduct.brand === 'Other' && customBrand ? customBrand : newProduct.brand;
 
+      // Use the featured image as the main product image
+      const mainProductImage = productImages[featuredImageIndex] || productImages[0];
+
       const { data: product, error } = await supabase
         .from('products')
         .insert({
@@ -207,7 +213,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           description: newProduct.description,
           price: parseFloat(newProduct.price),
           original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : null,
-          image: productImages[0], // First image as main product image
+          image: mainProductImage,
           category: newProduct.category,
           brand: finalBrand,
           stock: parseInt(newProduct.stock),
@@ -230,7 +236,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           product_id: product.id,
           image_url: imageUrl,
           display_order: index,
-          is_main: index === 0
+          is_main: index === featuredImageIndex
         }));
 
         const { error: galleryError } = await supabase
@@ -244,7 +250,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully",
-        description: `${newProduct.name} has been added to the catalog with ${productImages.length} images, ${selectedColors.length} colors, ${productTags.length} tags, ${validWhatsInBox.length} box items, and ${validSpecs.length} specifications`
+        description: `${newProduct.name} has been added with featured image ${featuredImageIndex + 1} of ${productImages.length} total images`
       });
 
       resetForm();
@@ -310,22 +316,24 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Product Images Section - More Prominent */}
+            {/* Product Images Section - Enhanced with Featured Image Selection */}
             <div className="bg-gray-800 rounded-lg p-6 border-2 border-dashed border-gray-600">
               <div className="flex items-center mb-4">
                 <ImageIcon className="w-5 h-5 text-blue-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Product Images</h3>
+                <h3 className="text-lg font-semibold text-white">Product Images & Featured Image</h3>
                 <span className="ml-2 text-red-400">*</span>
               </div>
               {productImages.length === 0 && (
                 <div className="flex items-center mb-4 p-3 bg-amber-900/20 border border-amber-600 rounded-lg">
                   <AlertCircle className="w-5 h-5 text-amber-400 mr-2" />
-                  <span className="text-amber-200 text-sm">At least one product image is required to publish the product</span>
+                  <span className="text-amber-200 text-sm">At least one product image is required. You can select which image to use as the featured image.</span>
                 </div>
               )}
               <ProductImageGallery 
                 images={productImages}
                 onImagesChange={setProductImages}
+                featuredImageIndex={featuredImageIndex}
+                onFeaturedImageChange={setFeaturedImageIndex}
                 maxImages={15}
               />
             </div>

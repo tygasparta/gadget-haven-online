@@ -46,6 +46,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [featuredImageIndex, setFeaturedImageIndex] = useState(0);
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
   const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
@@ -100,7 +101,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         setWhatsInBox(['']);
       }
       
-      // Load specifications - Fixed parsing
+      // Load specifications
       console.log('Raw specifications from product:', product.specifications);
       if (product.specifications) {
         try {
@@ -137,7 +138,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       console.log('Loading gallery images for product:', product.id);
       const { data: galleryImages, error } = await supabase
         .from('product_galleries')
-        .select('image_url')
+        .select('image_url, is_main')
         .eq('product_id', product.id)
         .order('display_order');
 
@@ -146,9 +147,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         // Fallback to main product image if it exists and is not a sample image
         if (product.image && !product.image.includes('unsplash.com')) {
           setProductImages([product.image]);
+          setFeaturedImageIndex(0);
         }
       } else {
         const imageUrls = galleryImages.map(img => img.image_url);
+        const mainImageIndex = galleryImages.findIndex(img => img.is_main);
         console.log('Loaded gallery images:', imageUrls);
         
         // Filter out sample/placeholder images
@@ -156,8 +159,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         
         if (actualImages.length > 0) {
           setProductImages(actualImages);
+          setFeaturedImageIndex(mainImageIndex >= 0 ? mainImageIndex : 0);
         } else if (product.image && !product.image.includes('unsplash.com')) {
           setProductImages([product.image]);
+          setFeaturedImageIndex(0);
         }
       }
     } catch (error) {
@@ -165,6 +170,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       // Fallback to main product image if it's not a sample
       if (product.image && !product.image.includes('unsplash.com')) {
         setProductImages([product.image]);
+        setFeaturedImageIndex(0);
       }
     }
   };
@@ -186,8 +192,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         calculatedDiscount = parseInt(editProduct.discount_percentage);
       }
 
-      // Use the first selected image as main product image, or keep existing if no new images
-      const mainProductImage = productImages.length > 0 ? productImages[0] : product.image;
+      // Use the featured image as main product image, or keep existing if no new images
+      const mainProductImage = productImages.length > 0 ? productImages[featuredImageIndex] : product.image;
 
       // Filter out empty items and specs
       const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
@@ -238,7 +244,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           product_id: product.id,
           image_url: imageUrl,
           display_order: index,
-          is_main: index === 0
+          is_main: index === featuredImageIndex
         }));
 
         console.log('Saving updated gallery data:', galleryData);
@@ -256,7 +262,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: `Updated with ${validSpecs.length} specifications, ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
+        description: `Updated with featured image ${featuredImageIndex + 1} of ${productImages.length} total images`
       });
 
       onClose();
@@ -406,7 +412,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               onTagsChange={setProductTags}
             />
 
-            {/* Product Specifications - Enhanced */}
+            {/* Product Specifications */}
             <ProductSpecsInput 
               specs={productSpecs}
               onSpecsChange={setProductSpecs}
@@ -418,7 +424,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
               onItemsChange={setWhatsInBox}
             />
 
-            {/* Product Image Gallery */}
+            {/* Product Image Gallery with Featured Image Selection */}
             <div className="space-y-3">
               <ProductImageGallery 
                 images={productImages}
@@ -426,6 +432,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   console.log('Images changed in EditProductModal:', images);
                   setProductImages(images);
                 }}
+                featuredImageIndex={featuredImageIndex}
+                onFeaturedImageChange={setFeaturedImageIndex}
                 maxImages={15}
                 productId={product.id}
               />

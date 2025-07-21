@@ -6,7 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const FeaturedBrands = () => {
   const isMobile = useIsMobile();
   
-  // Brand logos with functional links
+  // Brand logos with functional links - Samsung and Apple removed
   const brands = [
     {
       name: 'PlayStation',
@@ -57,49 +57,42 @@ const FeaturedBrands = () => {
       name: 'LG',
       logo: '/lovable-uploads/96072f96-33db-4a2a-854f-ad95d2f76406.png',
       url: '/products?brand=lg'
-    },
-    {
-      name: 'Samsung',
-      logo: 'https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=200&h=200&fit=crop&crop=center',
-      url: '/products?brand=samsung'
-    },
-    {
-      name: 'Apple',
-      logo: 'https://images.unsplash.com/photo-1621768216002-5ac171876625?w=200&h=200&fit=crop&crop=center',
-      url: '/products?brand=apple'
     }
   ];
 
   return (
-    <div className="w-full py-4 sm:py-6">
-      <div className="text-center mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+    <div className="w-full py-6 sm:py-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
           Trusted Brands
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-base sm:text-lg text-gray-600">
           Shop from the world's leading technology brands
         </p>
       </div>
       
       <Card className="bg-white/70 backdrop-blur-sm border border-gray-200 shadow-sm">
-        <CardContent className="p-4 sm:p-6">
-          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-4 sm:gap-6">
+        <CardContent className="p-6 sm:p-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
             {brands.map((brand, index) => (
               <a
                 key={index}
                 href={brand.url}
-                className="group flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 cursor-pointer"
+                className="group flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-200"
               >
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm border border-gray-100">
                   <img
                     src={brand.logo}
                     alt={brand.name}
-                    className="w-full h-full object-contain p-1"
+                    className="w-full h-full object-contain p-2 sm:p-3"
                     onError={(e) => {
-                      e.currentTarget.src = `https://via.placeholder.com/56x56/e5e7eb/6b7280?text=${brand.name.charAt(0)}`;
+                      e.currentTarget.src = `https://via.placeholder.com/128x128/e5e7eb/6b7280?text=${brand.name.charAt(0)}`;
                     }}
                   />
                 </div>
+                <span className="text-xs sm:text-sm font-medium text-gray-700 mt-2 sm:mt-3 group-hover:text-gray-900 transition-colors">
+                  {brand.name}
+                </span>
               </a>
             ))}
           </div>

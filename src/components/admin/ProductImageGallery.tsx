@@ -1,251 +1,255 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, X, AlertCircle, Image } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Upload, X, ImageIcon, Star, StarOff } from 'lucide-react';
 
 interface ProductImageGalleryProps {
   images: string[];
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
-  productId?: number;
+  productId?: string;
+  featuredImageIndex?: number;
+  onFeaturedImageChange?: (index: number) => void;
 }
 
-const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ 
-  images, 
-  onImagesChange, 
-  maxImages = 15,
-  productId 
+const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
+  images,
+  onImagesChange,
+  maxImages = 10,
+  productId,
+  featuredImageIndex = 0,
+  onFeaturedImageChange
 }) => {
   const { toast } = useToast();
-  const [uploading, setUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const uploadImage = async (file: File): Promise<string | null> => {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error('You must be logged in to upload images');
-      }
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-      console.log('Uploading image to "gallary" bucket:', fileName);
-
-      const { data, error } = await supabase.storage
-        .from('gallary')
-        .upload(`products/${fileName}`, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: file.type
-        });
-
-      if (error) {
-        console.error('Storage upload error:', error);
-        throw new Error(`Upload failed: ${error.message}`);
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('gallary')
-        .getPublicUrl(`products/${fileName}`);
-
-      if (!urlData.publicUrl) {
-        throw new Error('Failed to generate public URL');
-      }
-
-      console.log('Image uploaded successfully:', urlData.publicUrl);
-      return urlData.publicUrl;
-    } catch (error: any) {
-      console.error('Image upload failed:', error);
-      toast({
-        title: "Image upload failed",
-        description: error.message,
-        variant: "destructive"
-      });
-      return null;
-    }
-  };
-
-  const saveGalleryImage = async (imageUrl: string, displayOrder: number, isMain: boolean = false) => {
-    if (!productId) return;
-    
-    try {
-      const { error } = await supabase.from('product_galleries').insert({
-        product_id: productId,
-        image_url: imageUrl,
-        display_order: displayOrder,
-        is_main: isMain
-      });
-
-      if (error) {
-        console.error('Error saving gallery image:', error);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Failed to save gallery image:', error);
-    }
-  };
-
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    if (files.length === 0) return;
-    
     if (images.length + files.length > maxImages) {
       toast({
         title: "Too many images",
-        description: `Maximum ${maxImages} images allowed`,
+        description: `You can only upload up to ${maxImages} images total`,
         variant: "destructive"
       });
       return;
     }
 
-    // Validate files
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select only image files",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select images smaller than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
+    setIsUploading(true);
+    const newImages: string[] = [];
 
-    setUploading(true);
-    
     try {
-      const uploadPromises = files.map(file => uploadImage(file));
-      const uploadedUrls = await Promise.all(uploadPromises);
-      
-      const successfulUploads = uploadedUrls.filter(url => url !== null) as string[];
-      
-      if (successfulUploads.length > 0) {
-        const newImages = [...images, ...successfulUploads];
-        onImagesChange(newImages);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         
-        if (productId) {
-          for (let i = 0; i < successfulUploads.length; i++) {
-            await saveGalleryImage(successfulUploads[i], images.length + i, images.length === 0 && i === 0);
-          }
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast({
+            title: "Invalid file type",
+            description: `${file.name} is not a valid image file`,
+            variant: "destructive"
+          });
+          continue;
         }
+
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `${file.name} is too large. Maximum size is 5MB`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `product-images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast({
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        newImages.push(publicUrl);
+      }
+
+      if (newImages.length > 0) {
+        const updatedImages = [...images, ...newImages];
+        onImagesChange(updatedImages);
         
         toast({
           title: "Images uploaded successfully",
-          description: `${successfulUploads.length} image(s) uploaded`,
+          description: `${newImages.length} image(s) uploaded`
         });
       }
     } catch (error) {
-      console.error('Batch upload error:', error);
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "An error occurred while uploading images",
+        variant: "destructive"
+      });
     } finally {
-      setUploading(false);
-      e.target.value = '';
+      setIsUploading(false);
     }
   };
 
-  const removeImage = async (indexToRemove: number) => {
-    const imageToRemove = images[indexToRemove];
-    const newImages = images.filter((_, index) => index !== indexToRemove);
+  const handleRemoveImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
     onImagesChange(newImages);
-
-    if (productId && imageToRemove) {
-      try {
-        const { error } = await supabase
-          .from('product_galleries')
-          .delete()
-          .eq('product_id', productId)
-          .eq('image_url', imageToRemove);
-
-        if (error) {
-          console.error('Error removing gallery image:', error);
-        }
-      } catch (error) {
-        console.error('Failed to remove gallery image:', error);
+    
+    // Adjust featured image index if needed
+    if (onFeaturedImageChange) {
+      if (index === featuredImageIndex) {
+        onFeaturedImageChange(0); // Reset to first image
+      } else if (index < featuredImageIndex) {
+        onFeaturedImageChange(featuredImageIndex - 1);
       }
+    }
+  };
+
+  const handleSetFeaturedImage = (index: number) => {
+    if (onFeaturedImageChange) {
+      onFeaturedImageChange(index);
+      toast({
+        title: "Featured image updated",
+        description: `Image ${index + 1} is now the featured image`
+      });
     }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-gray-300 font-medium">Product Images *</label>
-        <span className="text-sm text-gray-400">{images.length}/{maxImages}</span>
+        <Label className="text-gray-300 text-lg font-semibold">
+          Product Images ({images.length}/{maxImages})
+        </Label>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileUpload}
+            disabled={isUploading || images.length >= maxImages}
+            className="hidden"
+            id="image-upload"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => document.getElementById('image-upload')?.click()}
+            disabled={isUploading || images.length >= maxImages}
+            className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {isUploading ? 'Uploading...' : 'Upload Images'}
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center space-x-3">
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleImageSelect}
-          className="hidden"
-          id="gallery-upload"
-          disabled={uploading || images.length >= maxImages}
-        />
-        <label
-          htmlFor="gallery-upload"
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md cursor-pointer transition-colors ${
-            uploading || images.length >= maxImages
-              ? 'bg-gray-600 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
-          } text-white`}
-        >
-          <Upload className="w-4 h-4" />
-          <span>{uploading ? 'Uploading...' : 'Upload Images'}</span>
-        </label>
-        {uploading && (
-          <div className="flex items-center space-x-2 text-blue-400">
-            <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm">Processing...</span>
-          </div>
-        )}
-      </div>
-
-      {images.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((imageUrl, index) => (
-            <div key={index} className="relative group">
-              <div className="aspect-square bg-gray-800 rounded-lg overflow-hidden border-2 border-gray-600">
-                <img
-                  src={imageUrl}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error('Failed to load image:', imageUrl);
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
+      {images.length === 0 ? (
+        <Card className="bg-gray-800 border-gray-600 border-2 border-dashed">
+          <CardContent className="p-8">
+            <div className="text-center space-y-4">
+              <ImageIcon className="w-16 h-16 text-gray-400 mx-auto" />
+              <div>
+                <p className="text-gray-300 text-lg font-medium">No images uploaded yet</p>
+                <p className="text-gray-500 text-sm mt-2">
+                  Click "Upload Images" to add product photos
+                </p>
               </div>
-              <button
-                type="button"
-                onClick={() => removeImage(index)}
-                className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-              >
-                <X className="w-3 h-3" />
-              </button>
-              {index === 0 && (
-                <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                  Main
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {images.map((image, index) => (
+            <div key={index} className="relative group">
+              <div className={`relative rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                index === featuredImageIndex 
+                  ? 'border-yellow-400 shadow-lg shadow-yellow-400/20' 
+                  : 'border-gray-600 hover:border-gray-500'
+              }`}>
+                <img
+                  src={image}
+                  alt={`Product image ${index + 1}`}
+                  className="w-full h-32 object-cover"
+                />
+                
+                {/* Featured badge */}
+                {index === featuredImageIndex && (
+                  <div className="absolute top-2 left-2 bg-yellow-500 text-black px-2 py-1 rounded text-xs font-bold">
+                    Featured
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                  {onFeaturedImageChange && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSetFeaturedImage(index)}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white border-yellow-500"
+                      disabled={index === featuredImageIndex}
+                    >
+                      {index === featuredImageIndex ? (
+                        <Star className="w-4 h-4 fill-current" />
+                      ) : (
+                        <StarOff className="w-4 h-4" />
+                      )}
+                    </Button>
+                  )}
+                  
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRemoveImage(index)}
+                    className="bg-red-600 hover:bg-red-700 text-white border-red-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
-              )}
+              </div>
+              
+              <p className="text-xs text-gray-400 mt-1 text-center truncate">
+                Image {index + 1}
+              </p>
             </div>
           ))}
         </div>
-      ) : (
-        <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
-          <Image className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-          <p className="text-gray-400 mb-2">No images uploaded yet</p>
-          <p className="text-sm text-gray-500">Please upload at least one product image (up to {maxImages} images)</p>
+      )}
+      
+      {onFeaturedImageChange && images.length > 0 && (
+        <div className="bg-gray-800 border border-gray-600 rounded-lg p-4">
+          <div className="flex items-center space-x-2 text-sm text-gray-300">
+            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+            <span>
+              <strong>Featured Image:</strong> Image {featuredImageIndex + 1} will be used as the main product image
+            </span>
+          </div>
         </div>
       )}
     </div>
