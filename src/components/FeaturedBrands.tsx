@@ -11,62 +11,62 @@ const FeaturedBrands = () => {
     {
       name: 'PlayStation',
       logo: '/lovable-uploads/7ff66028-3d91-4af9-b272-7009eb87f13b.png',
-      url: 'https://www.playstation.com'
+      url: '/products?brand=playstation'
     },
     {
       name: 'Hisense',
       logo: '/lovable-uploads/508f6176-c6cf-4c01-b7d4-3f1845948212.png',
-      url: 'https://www.hisense.com'
+      url: '/products?brand=hisense'
     },
     {
       name: 'Huawei',
       logo: '/lovable-uploads/9b7ce684-d059-4786-961d-5409535966c0.png',
-      url: 'https://www.huawei.com'
+      url: '/products?brand=huawei'
     },
     {
       name: 'DOTMAX',
       logo: '/lovable-uploads/31cc2990-e814-49fd-b920-e4280e4151c3.png',
-      url: '#'
+      url: '/products?brand=dotmax'
     },
     {
       name: 'Sony',
       logo: '/lovable-uploads/42647a5a-c168-4d2f-850c-28be6a222268.png',
-      url: 'https://www.sony.com'
+      url: '/products?brand=sony'
     },
     {
       name: 'Vodafone',
       logo: '/lovable-uploads/178181c8-c57d-4d92-9b14-7cc56812f0d6.png',
-      url: 'https://www.vodafone.com'
+      url: '/products?brand=vodafone'
     },
     {
       name: 'ASUS',
       logo: '/lovable-uploads/a5acc118-aa35-40c9-ac78-658473318864.png',
-      url: 'https://www.asus.com'
+      url: '/products?brand=asus'
     },
     {
       name: 'HP',
       logo: '/lovable-uploads/85d21b6f-21ae-4fd0-a605-97b7046873eb.png',
-      url: 'https://www.hp.com'
+      url: '/products?brand=hp'
     },
     {
       name: 'Hi',
       logo: '/lovable-uploads/fbe0a02b-d58e-4d8f-95c7-7dfbff98c3db.png',
-      url: '#'
+      url: '/products?brand=hi'
     },
     {
       name: 'LG',
       logo: '/lovable-uploads/96072f96-33db-4a2a-854f-ad95d2f76406.png',
-      url: 'https://www.lg.com'
+      url: '/products?brand=lg'
     },
     {
       name: 'Samsung',
-      logo: 'https://images.unsplash.com/photo-1610792516307-4b3b2d94e5ac?w=200&h=200&fit=crop&crop=center',
-      url: 'https://www.samsung.com'
+      logo: 'https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=200&h=200&fit=crop&crop=center',
+      url: '/products?brand=samsung'
     },
     {
-      name: 'iPhone',
+      name: 'Apple',
       logo: 'https://images.unsplash.com/photo-1621768216002-5ac171876625?w=200&h=200&fit=crop&crop=center',
-      url: 'https://www.apple.com/iphone'
+      url: '/products?brand=apple'
     }
   ];
 
@@ -88,8 +88,6 @@ const FeaturedBrands = () => {
               <a
                 key={index}
                 href={brand.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="group flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 cursor-pointer"
               >
                 <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm">
