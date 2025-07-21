@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -19,12 +20,12 @@ const Products = () => {
   useEffect(() => {
     let filtered = allProducts;
 
-    // Filter by brand if specified
-    if (brandFilter) {
-      filtered = filtered.filter(product => 
-        product.brand?.toLowerCase() === brandFilter.toLowerCase()
-      );
-    }
+    // Remove brand filtering since brands are cleared
+    // if (brandFilter) {
+    //   filtered = filtered.filter(product => 
+    //     product.brand?.toLowerCase() === brandFilter.toLowerCase()
+    //   );
+    // }
 
     // Sort products
     filtered = [...filtered].sort((a, b) => {
@@ -63,7 +64,7 @@ const Products = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {brandFilter ? `${brandFilter} Products` : 'All Products'}
+            All Products
           </h1>
           <p className="text-gray-600">
             {filteredProducts.length} products found
@@ -133,7 +134,7 @@ const Products = () => {
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
             <p className="text-gray-500">
-              {brandFilter ? `No products available for ${brandFilter}` : 'No products match your criteria'}
+              No products match your criteria
             </p>
           </div>
         )}
