@@ -72,6 +72,14 @@ export const useProducts = (includeDeleted: boolean = false) => {
 
       const products: Product[] = data?.map(product => ({
         ...product,
+        specifications: Array.isArray(product.specifications) 
+          ? product.specifications as Array<{ key: string; value: string }>
+          : [],
+        colors: Array.isArray(product.colors) 
+          ? product.colors as Array<{ name: string; hex_code: string }>
+          : [],
+        tags: Array.isArray(product.tags) ? product.tags : [],
+        whats_in_box: Array.isArray(product.whats_in_box) ? product.whats_in_box : [],
         is_trashed: !!product.deleted_at
       })) || [];
 
@@ -111,7 +119,7 @@ export const useProduct = (id: string | number) => {
           updated_at,
           deleted_at
         `)
-        .eq('id', id)
+        .eq('id', Number(id))
         .single();
 
       if (error) {
@@ -121,6 +129,14 @@ export const useProduct = (id: string | number) => {
 
       return {
         ...data,
+        specifications: Array.isArray(data.specifications) 
+          ? data.specifications as Array<{ key: string; value: string }>
+          : [],
+        colors: Array.isArray(data.colors) 
+          ? data.colors as Array<{ name: string; hex_code: string }>
+          : [],
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        whats_in_box: Array.isArray(data.whats_in_box) ? data.whats_in_box : [],
         is_trashed: !!data.deleted_at
       } as Product;
     },
@@ -147,6 +163,14 @@ export const useFlashSaleProducts = () => {
 
       const products: Product[] = data?.map(product => ({
         ...product,
+        specifications: Array.isArray(product.specifications) 
+          ? product.specifications as Array<{ key: string; value: string }>
+          : [],
+        colors: Array.isArray(product.colors) 
+          ? product.colors as Array<{ name: string; hex_code: string }>
+          : [],
+        tags: Array.isArray(product.tags) ? product.tags : [],
+        whats_in_box: Array.isArray(product.whats_in_box) ? product.whats_in_box : [],
         is_trashed: !!product.deleted_at
       })) || [];
 
@@ -175,6 +199,14 @@ export const useFeaturedProducts = () => {
 
       const products: Product[] = data?.map(product => ({
         ...product,
+        specifications: Array.isArray(product.specifications) 
+          ? product.specifications as Array<{ key: string; value: string }>
+          : [],
+        colors: Array.isArray(product.colors) 
+          ? product.colors as Array<{ name: string; hex_code: string }>
+          : [],
+        tags: Array.isArray(product.tags) ? product.tags : [],
+        whats_in_box: Array.isArray(product.whats_in_box) ? product.whats_in_box : [],
         is_trashed: !!product.deleted_at
       })) || [];
 

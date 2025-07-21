@@ -220,7 +220,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
                 <Package className="w-5 h-5 text-green-500" />
                 <div>
                   <p className="text-sm text-gray-600">Stock</p>
-                  <p className="font-semibold">{product.stock} units</p>
+                  <p className="font-semibold">{product.stock_quantity} units</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">

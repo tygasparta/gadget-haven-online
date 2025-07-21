@@ -245,20 +245,12 @@ const ProductsTab = () => {
       <AddProductModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          refetch();
-          setIsAddModalOpen(false);
-        }}
       />
 
       <EditProductModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         product={selectedProduct}
-        onSuccess={() => {
-          refetch();
-          setIsEditModalOpen(false);
-        }}
       />
 
       <ViewProductModal
