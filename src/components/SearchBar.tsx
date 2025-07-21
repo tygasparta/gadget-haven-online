@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
@@ -13,7 +13,7 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
   className = '', 
-  placeholder = 'Search products...',
+  placeholder = 'Search for smartphones, electronics, gadgets...',
   onSearch 
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +22,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
   const { data: products = [] } = useProducts();
+
+  // Memoize filtered products to prevent unnecessary recalculations
+  const filteredProducts = useMemo(() => {
+    if (searchQuery.trim().length === 0) return [];
+    
+    return products
+      .filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      .slice(0, 8);
+  }, [searchQuery, products]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,22 +50,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
-      const filteredProducts = products
-        .filter(product => 
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
-        .slice(0, 8); // Limit to 8 suggestions
-
       setSuggestions(filteredProducts);
       setShowSuggestions(true);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, [searchQuery, products]);
+  }, [filteredProducts, searchQuery]);
 
   const handleSearch = (query: string = searchQuery) => {
     if (query.trim()) {

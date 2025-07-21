@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Heart } from 'lucide-react';
 import SearchBar from './SearchBar';
 
 const Header = () => {
@@ -13,8 +14,8 @@ const Header = () => {
   return (
     <header className="bg-white shadow-sm border-b">
       {/* Top Banner */}
-      <div className="bg-gray-100 py-2 text-center text-sm text-gray-600">
-        Free shipping on orders over $50!
+      <div className="bg-blue-600 py-2 text-center text-sm text-white">
+        Free delivery on orders over $50
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,29 +23,47 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">T</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">G</span>
               </div>
-              <span className="text-xl font-bold text-gray-900 hidden sm:block">TechShop</span>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-gray-900">GadgetGenie</h1>
+                <p className="text-xs text-gray-500">Your Ultimate Tech Destination</p>
+              </div>
             </Link>
           </div>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:block flex-1 max-w-lg mx-8">
+          <div className="hidden md:block flex-1 max-w-2xl mx-8">
             <SearchBar />
           </div>
 
-          {/* Icons and User Menu */}
+          {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            {/* Cart Icon */}
-            <Link to="/cart" className="text-gray-600 hover:text-gray-900">
-              <ShoppingCart className="w-5 h-5" />
-            </Link>
+            <div className="hidden lg:flex items-center space-x-6 text-sm">
+              <Link to="/help" className="text-gray-600 hover:text-blue-600">
+                Help Centre
+              </Link>
+              <Link to="/track-order" className="text-gray-600 hover:text-blue-600">
+                Track Order
+              </Link>
+            </div>
 
-            {/* User Icon */}
-            <Link to="/profile" className="text-gray-600 hover:text-gray-900">
-              <User className="w-5 h-5" />
-            </Link>
+            <div className="flex items-center space-x-3">
+              <Link to="/auth" className="flex items-center space-x-1 text-gray-600 hover:text-blue-600">
+                <User className="w-5 h-5" />
+                <span className="hidden sm:inline text-sm">Login</span>
+              </Link>
+
+              <Link to="/wishlist" className="text-gray-600 hover:text-blue-600">
+                <Heart className="w-5 h-5" />
+              </Link>
+
+              <Link to="/cart" className="flex items-center space-x-1 text-gray-600 hover:text-blue-600">
+                <ShoppingCart className="w-5 h-5" />
+                <span className="hidden sm:inline text-sm">Cart</span>
+              </Link>
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -79,11 +98,11 @@ const Header = () => {
             <Link to="/categories" className="block py-2 text-gray-700 hover:bg-gray-200">
               Categories
             </Link>
-            <Link to="/profile" className="block py-2 text-gray-700 hover:bg-gray-200">
-              Profile
+            <Link to="/help" className="block py-2 text-gray-700 hover:bg-gray-200">
+              Help Centre
             </Link>
-            <Link to="/cart" className="block py-2 text-gray-700 hover:bg-gray-200">
-              Cart
+            <Link to="/track-order" className="block py-2 text-gray-700 hover:bg-gray-200">
+              Track Order
             </Link>
           </div>
         </div>
