@@ -85,6 +85,7 @@ export const useProduct = (id: number) => {
         ...data,
         specifications: data.specifications as Array<{key: string, value: string}> | null,
         colors: data.colors as Array<{name: string, hex_code: string}> | null,
+        is_trashed: !!data.deleted_at,
       };
       
       console.log('Product fetched with specifications:', processedProduct.specifications?.length || 0);
