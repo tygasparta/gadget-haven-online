@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, ImageIcon, AlertCircle } from 'lucide-react';
 import ProductImageGallery from './ProductImageGallery';
 import ColorSelector from './ColorSelector';
 import TagsInput from './TagsInput';
@@ -175,8 +176,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     
     if (productImages.length === 0) {
       toast({
-        title: "Images required",
-        description: "Please upload at least one product image",
+        title: "Product Images Required",
+        description: "Please upload at least one product image before submitting",
         variant: "destructive"
       });
       return;
@@ -244,7 +245,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product added successfully",
-        description: `${newProduct.name} has been added to the catalog with ${selectedColors.length} colors, ${productTags.length} tags, ${validWhatsInBox.length} box items, and ${validSpecs.length} specifications`
+        description: `${newProduct.name} has been added to the catalog with ${productImages.length} images, ${selectedColors.length} colors, ${productTags.length} tags, ${validWhatsInBox.length} box items, and ${validSpecs.length} specifications`
       });
 
       resetForm();
@@ -303,6 +304,26 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Product Images Section - More Prominent */}
+            <div className="bg-gray-800 rounded-lg p-6 border-2 border-dashed border-gray-600">
+              <div className="flex items-center mb-4">
+                <ImageIcon className="w-5 h-5 text-blue-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">Product Images</h3>
+                <span className="ml-2 text-red-400">*</span>
+              </div>
+              {productImages.length === 0 && (
+                <div className="flex items-center mb-4 p-3 bg-amber-900/20 border border-amber-600 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-amber-400 mr-2" />
+                  <span className="text-amber-200 text-sm">At least one product image is required to publish the product</span>
+                </div>
+              )}
+              <ProductImageGallery 
+                images={productImages}
+                onImagesChange={setProductImages}
+                maxImages={15}
+              />
+            </div>
+
             {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -443,13 +464,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               onItemsChange={setWhatsInBox}
             />
 
-            {/* Product Images */}
-            <ProductImageGallery 
-              images={productImages}
-              onImagesChange={setProductImages}
-              maxImages={15}
-            />
-
             {/* Features */}
             <div className="flex space-x-4">
               <label className="flex items-center text-gray-300">
@@ -476,7 +490,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
               <Button type="button" variant="outline" onClick={onClose} className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                type="submit" 
+                disabled={isLoading || productImages.length === 0} 
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+              >
                 {isLoading ? 'Adding Product...' : 'Add Product'}
               </Button>
             </div>
