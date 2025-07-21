@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -145,8 +144,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     setShowAIGenerator(false);
 
     toast({
-      title: "AI Generation Complete!",
-      description: `Generated details for ${generatedData.name} with brand: ${generatedData.brand}`,
+      title: "🎉 AI Generation Complete!",
+      description: `Generated "${generatedData.name}" from ${generatedData.brand}. You can now add images and finalize the product.`,
     });
   };
 
@@ -277,14 +276,21 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 onClick={() => setShowAIGenerator(!showAIGenerator)}
                 variant="outline"
                 size="sm"
-                className="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 border-none text-white hover:from-blue-700 hover:to-purple-700"
+                className={`ml-4 border-none text-white transition-all duration-200 ${
+                  showAIGenerator 
+                    ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700' 
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                }`}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {showAIGenerator ? 'Hide AI' : 'Enhanced AI'}
+                {showAIGenerator ? 'Hide AI Generator' : 'AI Generator'}
               </Button>
             </CardTitle>
             <p className="text-gray-400 text-sm mt-1">
-              {showAIGenerator ? 'Generate product details with enhanced AI (auto-detects brands & colors)' : 'Add product manually or use enhanced AI to generate details'}
+              {showAIGenerator 
+                ? 'Use AI to generate comprehensive product details automatically' 
+                : 'Add product manually or use AI to generate details instantly'
+              }
             </p>
           </div>
           <Button
