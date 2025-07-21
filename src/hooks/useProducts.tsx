@@ -21,7 +21,6 @@ export interface Product {
   specifications?: Array<{ key: string; value: string }>;
   colors?: Array<{ name: string; hex_code: string }>;
   whats_in_box?: string[];
-  gallery?: string[];
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -53,7 +52,6 @@ export const useProducts = (includeDeleted: boolean = false) => {
         specifications,
         colors,
         whats_in_box,
-        gallery,
         created_at,
         updated_at,
         deleted_at
@@ -115,7 +113,6 @@ export const useProduct = (id: string | number) => {
           specifications,
           colors,
           whats_in_box,
-          gallery,
           created_at,
           updated_at,
           deleted_at
