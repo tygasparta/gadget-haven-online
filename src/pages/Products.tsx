@@ -1,15 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
 import { useProducts } from '@/hooks/useProducts';
-import { Filter, Grid, List } from 'lucide-react';
+import { Filter, Grid, List, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import SearchBar from '@/components/SearchBar';
 
 const Products = () => {
   const [searchParams] = useSearchParams();
   const brandFilter = searchParams.get('brand');
+  const searchQuery = searchParams.get('search');
   const { data: allProducts = [], isLoading } = useProducts();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('name');
@@ -18,6 +21,18 @@ const Products = () => {
 
   useEffect(() => {
     let filtered = allProducts;
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(query) ||
+        product.description?.toLowerCase().includes(query) ||
+        product.brand?.toLowerCase().includes(query) ||
+        product.category?.toLowerCase().includes(query) ||
+        product.tags?.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
 
     // Filter by brand if specified
     if (brandFilter) {
@@ -42,7 +57,29 @@ const Products = () => {
     });
 
     setFilteredProducts(filtered);
-  }, [allProducts, brandFilter, sortBy]);
+  }, [allProducts, brandFilter, searchQuery, sortBy]);
+
+  const getPageTitle = () => {
+    if (searchQuery && brandFilter) {
+      return `${brandFilter} Products - "${searchQuery}"`;
+    } else if (searchQuery) {
+      return `Search Results for "${searchQuery}"`;
+    } else if (brandFilter) {
+      return `${brandFilter} Products`;
+    }
+    return 'All Products';
+  };
+
+  const getPageDescription = () => {
+    if (searchQuery && brandFilter) {
+      return `${filteredProducts.length} ${brandFilter} products found for "${searchQuery}"`;
+    } else if (searchQuery) {
+      return `${filteredProducts.length} products found for "${searchQuery}"`;
+    } else if (brandFilter) {
+      return `${filteredProducts.length} ${brandFilter} products available`;
+    }
+    return `${filteredProducts.length} products found`;
+  };
 
   if (isLoading) {
     return (
@@ -63,12 +100,19 @@ const Products = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {brandFilter ? `${brandFilter} Products` : 'All Products'}
+            {getPageTitle()}
           </h1>
           <p className="text-gray-600">
-            {filteredProducts.length} products found
+            {getPageDescription()}
           </p>
         </div>
+
+        {/* Search Bar for this page */}
+        {!searchQuery && !brandFilter && (
+          <div className="mb-6">
+            <SearchBar placeholder="Search products on this page..." />
+          </div>
+        )}
 
         {/* Filters and Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -131,10 +175,22 @@ const Products = () => {
           </div>
         ) : (
           <div className="text-center py-12">
+            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-            <p className="text-gray-500">
-              {brandFilter ? `No products available for ${brandFilter}` : 'No products match your criteria'}
+            <p className="text-gray-500 mb-4">
+              {searchQuery 
+                ? `No products match "${searchQuery}"${brandFilter ? ` in ${brandFilter}` : ''}`
+                : brandFilter 
+                ? `No products available for ${brandFilter}`
+                : 'No products match your criteria'
+              }
             </p>
+            <Button 
+              onClick={() => window.location.href = '/products'} 
+              variant="outline"
+            >
+              View All Products
+            </Button>
           </div>
         )}
       </div>

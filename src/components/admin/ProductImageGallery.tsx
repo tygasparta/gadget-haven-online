@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, X, AlertCircle, Image } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import ImageUploadComponent from './ImageUploadComponent';
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -87,70 +87,27 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     }
   };
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    if (files.length === 0) return;
-    
-    if (images.length + files.length > maxImages) {
+  const handleImageUploaded = async (imageUrl: string) => {
+    if (images.length >= maxImages) {
       toast({
-        title: "Too many images",
+        title: "Maximum images reached",
         description: `Maximum ${maxImages} images allowed`,
         variant: "destructive"
       });
       return;
     }
 
-    // Validate files
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select only image files",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select images smaller than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
+    const newImages = [...images, imageUrl];
+    onImagesChange(newImages);
+
+    if (productId) {
+      await saveGalleryImage(imageUrl, images.length, images.length === 0);
     }
 
-    setUploading(true);
-    
-    try {
-      const uploadPromises = files.map(file => uploadImage(file));
-      const uploadedUrls = await Promise.all(uploadPromises);
-      
-      const successfulUploads = uploadedUrls.filter(url => url !== null) as string[];
-      
-      if (successfulUploads.length > 0) {
-        const newImages = [...images, ...successfulUploads];
-        onImagesChange(newImages);
-        
-        if (productId) {
-          for (let i = 0; i < successfulUploads.length; i++) {
-            await saveGalleryImage(successfulUploads[i], images.length + i, images.length === 0 && i === 0);
-          }
-        }
-        
-        toast({
-          title: "Images uploaded successfully",
-          description: `${successfulUploads.length} image(s) uploaded`,
-        });
-      }
-    } catch (error) {
-      console.error('Batch upload error:', error);
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
+    toast({
+      title: "Image added successfully",
+      description: "Image has been added to the gallery",
+    });
   };
 
   const removeImage = async (indexToRemove: number) => {
@@ -182,33 +139,23 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         <span className="text-sm text-gray-400">{images.length}/{maxImages}</span>
       </div>
 
-      <div className="flex items-center space-x-3">
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleImageSelect}
-          className="hidden"
-          id="gallery-upload"
-          disabled={uploading || images.length >= maxImages}
+      {/* Enhanced Upload Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <ImageUploadComponent
+          onImageUploaded={handleImageUploaded}
+          buttonText={uploading ? 'Uploading...' : 'Add Image'}
         />
-        <label
-          htmlFor="gallery-upload"
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md cursor-pointer transition-colors ${
-            uploading || images.length >= maxImages
-              ? 'bg-gray-600 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
-          } text-white`}
-        >
-          <Upload className="w-4 h-4" />
-          <span>{uploading ? 'Uploading...' : 'Upload Images'}</span>
-        </label>
+        
         {uploading && (
           <div className="flex items-center space-x-2 text-blue-400">
             <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-sm">Processing...</span>
           </div>
         )}
+        
+        <p className="text-xs text-gray-500">
+          Supports JPEG, PNG, WebP, GIF (max 5MB)
+        </p>
       </div>
 
       {images.length > 0 ? (
