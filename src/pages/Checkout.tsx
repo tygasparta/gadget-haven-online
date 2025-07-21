@@ -260,15 +260,16 @@ const Checkout = () => {
                         </div>
                       </div>
 
-                      {/* Enhanced Color Selection */}
+                      {/* Color Selection */}
                       {item.products.colors && Array.isArray(item.products.colors) && item.products.colors.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="pt-3 border-t border-gray-100">
                           <ProductColorSelector
                             colors={item.products.colors}
                             selectedColor={selectedColors[item.id] || null}
                             onColorSelect={(color) => handleColorSelect(item.id, color)}
                             size={isMobile ? 'sm' : 'md'}
                             showSelectedName={true}
+                            className="w-full"
                           />
                         </div>
                       )}
