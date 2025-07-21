@@ -48,7 +48,7 @@ export const useProducts = (includeDeleted: boolean = false) => {
         discount_percentage,
         is_flash_sale,
         is_featured,
-        stock_quantity,
+        stock,
         tags,
         specifications,
         colors,
@@ -72,6 +72,7 @@ export const useProducts = (includeDeleted: boolean = false) => {
 
       const products: Product[] = data?.map(product => ({
         ...product,
+        stock_quantity: product.stock,
         specifications: Array.isArray(product.specifications) 
           ? product.specifications as Array<{ key: string; value: string }>
           : [],
@@ -109,7 +110,7 @@ export const useProduct = (id: string | number) => {
           discount_percentage,
           is_flash_sale,
           is_featured,
-          stock_quantity,
+          stock,
           tags,
           specifications,
           colors,
@@ -129,6 +130,7 @@ export const useProduct = (id: string | number) => {
 
       return {
         ...data,
+        stock_quantity: data.stock,
         specifications: Array.isArray(data.specifications) 
           ? data.specifications as Array<{ key: string; value: string }>
           : [],
@@ -163,6 +165,7 @@ export const useFlashSaleProducts = () => {
 
       const products: Product[] = data?.map(product => ({
         ...product,
+        stock_quantity: product.stock,
         specifications: Array.isArray(product.specifications) 
           ? product.specifications as Array<{ key: string; value: string }>
           : [],
@@ -199,6 +202,7 @@ export const useFeaturedProducts = () => {
 
       const products: Product[] = data?.map(product => ({
         ...product,
+        stock_quantity: product.stock,
         specifications: Array.isArray(product.specifications) 
           ? product.specifications as Array<{ key: string; value: string }>
           : [],

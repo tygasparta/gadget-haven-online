@@ -140,22 +140,22 @@ const Wishlist = () => {
                           </span>
                         )}
                       </div>
-                      <div className={`text-sm font-medium ${product.stock && product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                      <div className={`text-sm font-medium ${product.stock_quantity && product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {product.stock_quantity && product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
                       </div>
                     </div>
                     
                     <Button 
                       className={`w-full ${
-                        product.stock && product.stock > 0
+                        product.stock_quantity && product.stock_quantity > 0
                           ? 'bg-blue-600 hover:bg-blue-700' 
                           : 'bg-gray-400 cursor-not-allowed'
                       }`}
-                      disabled={!product.stock || product.stock === 0}
+                      disabled={!product.stock_quantity || product.stock_quantity === 0}
                       onClick={() => handleAddToCart(product.id)}
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      {product.stock && product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                      {product.stock_quantity && product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                     </Button>
                   </div>
                 </CardContent>
