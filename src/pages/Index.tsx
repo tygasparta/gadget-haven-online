@@ -18,11 +18,13 @@ import MobileNavigation from '../components/MobileNavigation';
 import MobileQuickCategories from '../components/MobileQuickCategories';
 import MobileTopDeals from '../components/MobileTopDeals';
 import MobileLoadingScreen from '../components/MobileLoadingScreen';
+import TabletOptimizedBanners from '../components/TabletOptimizedBanners';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const isMobile = useIsMobile();
+  const isTablet = !isMobile && window.innerWidth < 1024;
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: flashSaleProducts = [], isLoading: flashLoading } = useFlashSaleProducts();
   const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts();
@@ -106,6 +108,9 @@ const Index = () => {
         <CartSidebar />
         
         <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 py-3 sm:py-6 pb-20 md:pb-6">
+          {/* Tablet Optimized Banners */}
+          {isTablet && <TabletOptimizedBanners />}
+          
           <div className="flex flex-col xl:flex-row gap-3 sm:gap-6">
             {/* Left Sidebar - Desktop Only */}
             <div className="hidden xl:block xl:w-80 flex-shrink-0">
@@ -122,7 +127,7 @@ const Index = () => {
             <main className="flex-1 min-w-0 w-full">
               <div className="w-full">
                 {/* Hero Banner - Desktop Only */}
-                {!isMobile && <HeroBanner />}
+                {!isMobile && !isTablet && <HeroBanner />}
                 
                 {/* Mobile-specific components */}
                 <div className="md:hidden space-y-6 mt-6">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +15,7 @@ import TagsInput from './TagsInput';
 import WhatsInBoxInput from './WhatsInBoxInput';
 import ProductSpecsInput from './ProductSpecsInput';
 import AIProductGenerator from './AIProductGenerator';
+import EnhancedAIProductGenerator from './EnhancedAIProductGenerator';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -101,6 +101,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     features: string[];
     whats_in_box: string[];
     tags: string[];
+    colors?: Array<{name: string, hex_code: string}>;
   }) => {
     console.log('Received AI generated data:', generatedData);
     
@@ -134,12 +135,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       setProductTags(generatedData.tags);
     }
 
+    // Set colors if provided
+    if (generatedData.colors && generatedData.colors.length > 0) {
+      setSelectedColors(generatedData.colors);
+    }
+
     // Hide AI generator after successful generation
     setShowAIGenerator(false);
 
     toast({
       title: "AI Generation Complete!",
-      description: `Generated details for ${generatedData.name} with ${generatedData.features?.length || 0} features`,
+      description: `Generated details for ${generatedData.name} with brand: ${generatedData.brand}`,
     });
   };
 
@@ -273,11 +279,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                 className="ml-4 bg-gradient-to-r from-blue-600 to-purple-600 border-none text-white hover:from-blue-700 hover:to-purple-700"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {showAIGenerator ? 'Hide AI' : 'Use AI'}
+                {showAIGenerator ? 'Hide AI' : 'Enhanced AI'}
               </Button>
             </CardTitle>
             <p className="text-gray-400 text-sm mt-1">
-              {showAIGenerator ? 'Generate product details with AI' : 'Add product manually or use AI to generate details'}
+              {showAIGenerator ? 'Generate product details with enhanced AI (auto-detects brands & colors)' : 'Add product manually or use enhanced AI to generate details'}
             </p>
           </div>
           <Button
@@ -292,7 +298,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         <CardContent className="p-6">
           {showAIGenerator && (
             <div className="mb-8">
-              <AIProductGenerator onGenerate={handleAIGenerate} />
+              <EnhancedAIProductGenerator onGenerate={handleAIGenerate} />
             </div>
           )}
           

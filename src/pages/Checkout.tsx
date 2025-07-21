@@ -26,13 +26,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
-import ColorSelector from '@/components/ColorSelector';
+import ProductColorSelector from '@/components/ProductColorSelector';
+import TabletOptimizedBanners from '@/components/TabletOptimizedBanners';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Checkout = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isTablet = !isMobile && window.innerWidth < 1024;
   const { data: cartItems = [] } = useCartItems();
   const updateCartItem = useUpdateCartItem();
   const removeFromCart = useRemoveFromCart();
@@ -129,6 +131,11 @@ const Checkout = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
+      {/* Tablet Optimized Banners */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <TabletOptimizedBanners />
+      </div>
+      
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         {/* Mobile Header */}
         {isMobile && (
@@ -147,13 +154,15 @@ const Checkout = () => {
           </div>
         )}
 
-        {/* Desktop Header */}
+        {/* Desktop/Tablet Header */}
         {!isMobile && (
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
               <ShoppingCart className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+                <h1 className={`font-bold text-gray-900 ${isTablet ? 'text-2xl' : 'text-3xl'}`}>
+                  Shopping Cart
+                </h1>
                 <p className="text-gray-600">{totalItems} items in your cart</p>
               </div>
             </div>
@@ -167,9 +176,9 @@ const Checkout = () => {
           </div>
         )}
 
-        <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-1 lg:grid-cols-3 gap-8'}`}>
+        <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3'}`}>
           {/* Cart Items */}
-          <div className={isMobile ? 'order-1' : 'lg:col-span-2'}>
+          <div className={isMobile ? 'order-1' : isTablet ? 'order-1' : 'lg:col-span-2'}>
             <Card className="shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center justify-between">
@@ -197,7 +206,7 @@ const Checkout = () => {
                           <img
                             src={item.products.image}
                             alt={item.products.name}
-                            className={`object-cover rounded-lg ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}`}
+                            className={`object-cover rounded-lg ${isMobile ? 'w-20 h-20' : isTablet ? 'w-24 h-24' : 'w-28 h-28'}`}
                             onError={(e) => {
                               e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
                             }}
@@ -251,14 +260,17 @@ const Checkout = () => {
                         </div>
                       </div>
 
-                      {/* Color Selection - Only show if colors exist */}
+                      {/* Enhanced Color Selection */}
                       {item.products.colors && Array.isArray(item.products.colors) && item.products.colors.length > 0 && (
-                        <ColorSelector
-                          colors={item.products.colors}
-                          selectedColor={selectedColors[item.id] || null}
-                          onColorSelect={(color) => handleColorSelect(item.id, color)}
-                          className="mt-3 pt-3 border-t border-gray-100"
-                        />
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <ProductColorSelector
+                            colors={item.products.colors}
+                            selectedColor={selectedColors[item.id] || null}
+                            onColorSelect={(color) => handleColorSelect(item.id, color)}
+                            size={isMobile ? 'sm' : 'md'}
+                            showSelectedName={true}
+                          />
+                        </div>
                       )}
                     </motion.div>
                   ))}
