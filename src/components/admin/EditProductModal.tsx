@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,6 @@ interface EditProductModalProps {
   product: Product;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
 }
 
 interface Color {
@@ -43,7 +41,7 @@ const PRODUCT_CATEGORIES = [
   'Electronics'
 ];
 
-const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, onClose, onSuccess }) => {
+const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, onClose }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +73,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         original_price: product.original_price?.toString() || '',
         category: product.category || '',
         brand: product.brand || '',
-        stock: product.stock_quantity?.toString() || '',
+        stock: product.stock?.toString() || '',
         is_featured: product.is_featured || false,
         is_flash_sale: product.is_flash_sale || false,
         discount_percentage: product.discount_percentage?.toString() || ''
@@ -207,7 +205,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         image: mainProductImage,
         category: editProduct.category,
         brand: editProduct.brand,
-        stock_quantity: parseInt(editProduct.stock),
+        stock: parseInt(editProduct.stock),
         is_featured: editProduct.is_featured,
         is_flash_sale: editProduct.is_flash_sale,
         discount_percentage: calculatedDiscount,
@@ -261,7 +259,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         description: `Updated with ${validSpecs.length} specifications, ${selectedColors.length} colors, ${productTags.length} tags, and ${validWhatsInBox.length} box items`
       });
 
-      onSuccess?.();
       onClose();
       
       // Refresh products list

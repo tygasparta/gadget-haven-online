@@ -47,7 +47,7 @@ export const useAnalytics = () => {
       const pendingOrders = orders.filter(order => order.status === 'pending').length;
 
       // Low stock items
-      const lowStockItems = products.filter(product => (product.stock_quantity || 0) <= 10).length;
+      const lowStockItems = products.filter(product => product.stock <= 10).length;
 
       // New customers today
       const newCustomersToday = users.filter(user => 
