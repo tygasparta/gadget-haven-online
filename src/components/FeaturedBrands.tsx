@@ -9,42 +9,50 @@ const FeaturedBrands = () => {
   const brands = [
     {
       name: 'Apple',
-      logo: 'https://images.unsplash.com/photo-1621768216002-5ac171876625?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png',
+      url: 'https://www.apple.com'
     },
     {
       name: 'Samsung',
-      logo: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png',
+      url: 'https://www.samsung.com'
     },
     {
       name: 'Sony',
-      logo: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/0ddc703b-d046-4e1d-8c7d-8a5624da50a7.png',
+      url: 'https://www.sony.com'
     },
     {
       name: 'Microsoft',
-      logo: 'https://images.unsplash.com/photo-1633419461186-7d40a38105ec?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/13f14634-a87f-479a-9c94-2f51dbc3dff8.png',
+      url: 'https://www.microsoft.com'
     },
     {
       name: 'Google',
-      logo: 'https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/30057c3b-ae96-41a4-bfa6-1aeb58d94099.png',
+      url: 'https://www.google.com'
     },
     {
       name: 'HP',
-      logo: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/36d3d9dc-ec5c-4454-b604-f7c66ecef7b5.png',
+      url: 'https://www.hp.com'
     },
     {
       name: 'Dell',
-      logo: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/4ce167d6-100c-409a-8a50-a2306b6d912b.png',
+      url: 'https://www.dell.com'
     },
     {
       name: 'Lenovo',
-      logo: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=100&h=100&fit=crop&crop=center'
+      logo: '/lovable-uploads/5fbe7e2c-8754-4920-96d1-0157a744cc23.png',
+      url: 'https://www.lenovo.com'
     }
   ];
 
   // Determine logo size based on device
   const getLogoSize = () => {
-    if (isMobile) return 'w-16 h-16'; // Mobile: smaller
-    return 'w-12 h-12 md:w-16 md:h-16'; // Tablet: reduced size, Desktop: normal
+    if (isMobile) return 'w-12 h-12'; // Mobile: smaller
+    return 'w-10 h-10 md:w-12 md:h-12'; // Tablet: reduced size, Desktop: normal
   };
 
   return (
@@ -62,21 +70,24 @@ const FeaturedBrands = () => {
         <CardContent className="p-4 sm:p-6">
           <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4 sm:gap-6">
             {brands.map((brand, index) => (
-              <div
+              <a
                 key={index}
+                href={brand.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group flex flex-col items-center justify-center p-2 sm:p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 cursor-pointer"
               >
-                <div className={`${getLogoSize()} rounded-full bg-gray-100 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform duration-300 overflow-hidden`}>
+                <div className={`${getLogoSize()} rounded-lg bg-white flex items-center justify-center mb-2 group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm`}>
                   <img
                     src={brand.logo}
                     alt={brand.name}
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-full h-full object-contain p-1"
                     onError={(e) => {
-                      e.currentTarget.src = `https://via.placeholder.com/64x64/e5e7eb/6b7280?text=${brand.name.charAt(0)}`;
+                      e.currentTarget.src = `https://via.placeholder.com/48x48/e5e7eb/6b7280?text=${brand.name.charAt(0)}`;
                     }}
                   />
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </CardContent>

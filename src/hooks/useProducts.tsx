@@ -24,17 +24,25 @@ export interface Product {
   specifications: Array<{key: string, value: string}> | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
-export const useProducts = () => {
+export const useProducts = (includeDeleted = false) => {
   return useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', includeDeleted],
     queryFn: async () => {
-      console.log('Fetching all products...');
-      const { data, error } = await supabase
+      console.log('Fetching products..., includeDeleted:', includeDeleted);
+      let query = supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      // If not including deleted, filter them out
+      if (!includeDeleted) {
+        query = query.is('deleted_at', null);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching products:', error);
@@ -49,7 +57,6 @@ export const useProducts = () => {
       })) || [];
       
       console.log('Products fetched:', processedProducts.length);
-      console.log('Sample product with specs:', processedProducts[0]?.specifications);
       return processedProducts as Product[];
     },
   });
@@ -95,6 +102,7 @@ export const useFlashSaleProducts = () => {
         .from('products')
         .select('*')
         .eq('is_flash_sale', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -117,6 +125,7 @@ export const useFeaturedProducts = () => {
         .from('products')
         .select('*')
         .eq('is_featured', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -136,37 +145,113 @@ export const useDeleteProduct = () => {
 
   return useMutation({
     mutationFn: async (productId: number) => {
-      console.log('Deleting product:', productId);
+      console.log('Soft deleting product:', productId);
       
-      // With CASCADE delete, we can simply delete the product
-      // All related records will be automatically deleted
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', productId);
+
+      if (error) {
+        console.error('Error soft deleting product:', error);
+        throw error;
+      }
+
+      console.log('Product soft deleted successfully');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['flashSaleProducts'] });
+      toast({
+        title: "Product moved to trash",
+        description: "The product has been moved to trash and can be restored"
+      });
+    },
+    onError: (error: any) => {
+      console.error('Delete product mutation error:', error);
+      toast({
+        title: "Error moving product to trash",
+        description: error.message || "Failed to move product to trash",
+        variant: "destructive"
+      });
+    }
+  });
+};
+
+export const useRestoreProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (productId: number) => {
+      console.log('Restoring product:', productId);
+      
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: null })
+        .eq('id', productId);
+
+      if (error) {
+        console.error('Error restoring product:', error);
+        throw error;
+      }
+
+      console.log('Product restored successfully');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['flashSaleProducts'] });
+      toast({
+        title: "Product restored",
+        description: "The product has been restored successfully"
+      });
+    },
+    onError: (error: any) => {
+      console.error('Restore product mutation error:', error);
+      toast({
+        title: "Error restoring product",
+        description: error.message || "Failed to restore product",
+        variant: "destructive"
+      });
+    }
+  });
+};
+
+export const usePermanentDeleteProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (productId: number) => {
+      console.log('Permanently deleting product:', productId);
+      
       const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', productId);
 
       if (error) {
-        console.error('Error deleting product:', error);
+        console.error('Error permanently deleting product:', error);
         throw error;
       }
 
-      console.log('Product deleted successfully');
+      console.log('Product permanently deleted successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['flashSaleProducts'] });
       queryClient.invalidateQueries({ queryKey: ['cartItems'] });
       toast({
-        title: "Product deleted",
-        description: "The product and all related data have been permanently removed"
+        title: "Product permanently deleted",
+        description: "The product has been permanently removed from the database"
       });
     },
     onError: (error: any) => {
-      console.error('Delete product mutation error:', error);
+      console.error('Permanent delete product mutation error:', error);
       toast({
-        title: "Error deleting product",
-        description: error.message || "Failed to delete product",
+        title: "Error permanently deleting product",
+        description: error.message || "Failed to permanently delete product",
         variant: "destructive"
       });
     }

@@ -225,6 +225,7 @@ export type Database = {
           category: string | null
           colors: Json | null
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           discount_percentage: number | null
           id: number
@@ -247,6 +248,7 @@ export type Database = {
           category?: string | null
           colors?: Json | null
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           discount_percentage?: number | null
           id?: number
@@ -269,6 +271,7 @@ export type Database = {
           category?: string | null
           colors?: Json | null
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           discount_percentage?: number | null
           id?: number
