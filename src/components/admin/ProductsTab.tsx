@@ -1,13 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, Grid, List, Search } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
-import { Product } from '@/hooks/useProducts';
+import { useProducts, Product, useDeleteProduct, useRestoreProduct, usePermanentDeleteProduct } from '@/hooks/useProducts';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Table,
   TableBody,
@@ -20,8 +21,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import ImageUploadComponent from './ImageUploadComponent';
 
-const ProductsTab = () => {
-  const { data: products = [], isLoading, mutate } = useProducts();
+interface ProductsTabProps {
+  onAddProduct?: () => void;
+  onEditProduct?: (product: Product) => void;
+}
+
+const ProductsTab: React.FC<ProductsTabProps> = ({ onAddProduct, onEditProduct }) => {
+  const { data: products = [], isLoading, refetch } = useProducts(true); // Include deleted products
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -29,6 +35,10 @@ const ProductsTab = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [viewFilter, setViewFilter] = useState<'all' | 'active' | 'trashed'>('all');
   const { toast } = useToast();
+  
+  const deleteProductMutation = useDeleteProduct();
+  const restoreProductMutation = useRestoreProduct();
+  const permanentDeleteMutation = usePermanentDeleteProduct();
 
   const filteredProducts = products.filter(product => {
     const searchTerm = searchQuery.toLowerCase();
@@ -53,18 +63,8 @@ const ProductsTab = () => {
       const confirmed = window.confirm(`Are you sure you want to trash ${product.name}?`);
       if (!confirmed) return;
 
-      const { error } = await supabase
-        .from('products')
-        .update({ is_trashed: true })
-        .eq('id', product.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Product moved to trash",
-        description: `${product.name} has been moved to the trash.`,
-      });
-      mutate(); // Refresh products
+      await deleteProductMutation.mutateAsync(product.id);
+      refetch(); // Refresh products
     } catch (error: any) {
       toast({
         title: "Error trashing product",
@@ -79,18 +79,8 @@ const ProductsTab = () => {
       const confirmed = window.confirm(`Are you sure you want to restore ${product.name}?`);
       if (!confirmed) return;
 
-      const { error } = await supabase
-        .from('products')
-        .update({ is_trashed: false })
-        .eq('id', product.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Product restored",
-        description: `${product.name} has been restored.`,
-      });
-      mutate(); // Refresh products
+      await restoreProductMutation.mutateAsync(product.id);
+      refetch(); // Refresh products
     } catch (error: any) {
       toast({
         title: "Error restoring product",
@@ -105,24 +95,31 @@ const ProductsTab = () => {
       const confirmed = window.confirm(`Are you sure you want to permanently delete ${product.name}? This action cannot be undone.`);
       if (!confirmed) return;
 
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', product.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Product permanently deleted",
-        description: `${product.name} has been permanently deleted.`,
-      });
-      mutate(); // Refresh products
+      await permanentDeleteMutation.mutateAsync(product.id);
+      refetch(); // Refresh products
     } catch (error: any) {
       toast({
         title: "Error deleting product",
         description: error.message,
         variant: "destructive"
       });
+    }
+  };
+
+  const handleAddProduct = () => {
+    if (onAddProduct) {
+      onAddProduct();
+    } else {
+      setShowAddModal(true);
+    }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    if (onEditProduct) {
+      onEditProduct(product);
+    } else {
+      setSelectedProduct(product);
+      setShowEditModal(true);
     }
   };
 
@@ -138,7 +135,7 @@ const ProductsTab = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-800 p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <Button
-            onClick={() => setShowAddModal(true)}
+            onClick={handleAddProduct}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -221,23 +218,29 @@ const ProductsTab = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowEditModal(true);
-                      }}
+                      onClick={() => handleEditProduct(product)}
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit
                     </Button>
                     {viewFilter === 'trashed' ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRestoreProduct(product)}
-                        className="text-green-500 hover:bg-gray-700"
-                      >
-                        Restore
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRestoreProduct(product)}
+                          className="text-green-500 hover:bg-gray-700"
+                        >
+                          Restore
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteProduct(product)}
+                        >
+                          Delete Forever
+                        </Button>
+                      </>
                     ) : (
                       <Button
                         variant="destructive"
@@ -287,23 +290,29 @@ const ProductsTab = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => {
-                              setSelectedProduct(product);
-                              setShowEditModal(true);
-                            }}
+                            onClick={() => handleEditProduct(product)}
                           >
                             <Edit className="w-4 h-4 mr-2" />
                             Edit
                           </Button>
                           {viewFilter === 'trashed' ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRestoreProduct(product)}
-                              className="text-green-500 hover:bg-gray-700"
-                            >
-                              Restore
-                            </Button>
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRestoreProduct(product)}
+                                className="text-green-500 hover:bg-gray-700"
+                              >
+                                Restore
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteProduct(product)}
+                              >
+                                Delete Forever
+                              </Button>
+                            </>
                           ) : (
                             <Button
                               variant="destructive"
