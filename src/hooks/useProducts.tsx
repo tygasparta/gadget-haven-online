@@ -25,6 +25,7 @@ export interface Product {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  is_trashed: boolean;
 }
 
 export const useProducts = (includeDeleted = false) => {
@@ -49,11 +50,12 @@ export const useProducts = (includeDeleted = false) => {
         throw error;
       }
       
-      // Process specifications to ensure they're properly typed
+      // Process specifications to ensure they're properly typed and add is_trashed computed property
       const processedProducts = data?.map(product => ({
         ...product,
         specifications: product.specifications as Array<{key: string, value: string}> | null,
         colors: product.colors as Array<{name: string, hex_code: string}> | null,
+        is_trashed: !!product.deleted_at,
       })) || [];
       
       console.log('Products fetched:', processedProducts.length);
@@ -83,6 +85,7 @@ export const useProduct = (id: number) => {
         ...data,
         specifications: data.specifications as Array<{key: string, value: string}> | null,
         colors: data.colors as Array<{name: string, hex_code: string}> | null,
+        is_trashed: !!data.deleted_at,
       };
       
       console.log('Product fetched with specifications:', processedProduct.specifications?.length || 0);
