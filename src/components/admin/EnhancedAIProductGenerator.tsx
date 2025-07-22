@@ -9,16 +9,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, Wand2, Zap, Brain, Target, Palette, Tag, Package, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface EnhancedAIProductGeneratorProps {
-  onGenerate: (data: any) => void;
-}
-
 const KNOWN_BRANDS = [
   'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Huawei', 'Sony', 'Dell', 
   'HP', 'Lenovo', 'Asus', 'Acer', 'Microsoft', 'Canon', 'Nikon', 'Bose', 
   'Beats', 'Garmin', 'Fitbit', 'LG', 'Panasonic', 'Philips', 'Logitech',
   'AMD', 'Intel', 'NVIDIA', 'Corsair', 'SteelSeries', 'HyperX', 'Anker'
 ];
+
+interface EnhancedAIProductGeneratorProps {
+  onGenerate: (data: any) => void;
+}
 
 const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({ onGenerate }) => {
   const [prompt, setPrompt] = useState('');
@@ -36,7 +36,6 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
       }
     }
     
-    // Additional brand detection patterns
     const brandPatterns = {
       'Apple': ['iphone', 'ipad', 'macbook', 'airpods', 'imac', 'ios'],
       'Samsung': ['galaxy', 'note', 'tab s', 'gear'],
@@ -71,7 +70,7 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
       { name: 'Midnight Blue', hex_code: '#1B263B' },
       { name: 'Rose Gold', hex_code: '#E8B4B8' },
       { name: 'Gold', hex_code: '#FFD700' },
-      { name: 'Red', hex_code: '#FF3B30' },
+      { name: 'Product Red', hex_code: '#FF3B30' },
       { name: 'Green', hex_code: '#34C759' }
     ];
 
@@ -132,10 +131,26 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
     const stageInterval = simulateGenerationStages();
 
     try {
-      console.log('Calling generate-product-details function with prompt:', prompt);
+      const enhancedPrompt = `Generate a complete product listing for: ${prompt}
+
+Please return a valid JSON object with the following structure:
+{
+  "name": "Product name",
+  "description": "Product description (2-3 sentences)",
+  "category": "Category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics",
+  "brand": "Brand name",
+  "price": 299.99,
+  "features": ["Feature 1", "Feature 2", "Feature 3"],
+  "whats_in_box": ["Item 1", "Item 2", "Item 3"],
+  "tags": ["tag1", "tag2", "tag3"]
+}
+
+Only return the JSON object, no additional text.`;
+
+      console.log('Calling generate-product-details function with prompt:', enhancedPrompt);
       
       const { data, error: functionError } = await supabase.functions.invoke('generate-product-details', {
-        body: { prompt }
+        body: { prompt: enhancedPrompt }
       });
 
       if (functionError) {
@@ -149,15 +164,21 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
 
       console.log('Generated data received:', data.generatedData);
       
-      // Parse the generated data
       let parsedData;
       try {
+        // Handle both string and object responses
         parsedData = typeof data.generatedData === 'string' 
           ? JSON.parse(data.generatedData) 
           : data.generatedData;
       } catch (parseError) {
         console.error('Error parsing generated data:', parseError);
-        throw new Error('Invalid response format from AI');
+        console.log('Raw data:', data.generatedData);
+        throw new Error('Invalid response format from AI. Please try again.');
+      }
+      
+      // Validate required fields
+      if (!parsedData.name || !parsedData.description) {
+        throw new Error('Generated data is missing required fields');
       }
       
       // Enhanced brand detection
@@ -165,17 +186,20 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
       const generatedColors = generateColors(parsedData.name || '', parsedData.category || '');
       
       const enhancedData = {
-        ...parsedData,
-        brand: detectedBrand,
-        colors: generatedColors,
-        price: typeof parsedData.price === 'string' ? parseFloat(parsedData.price) : parsedData.price,
-        tags: [...(parsedData.tags || []), detectedBrand.toLowerCase(), (parsedData.category || '').toLowerCase()],
-        whats_in_box: parsedData.whats_in_box || [
-          `${parsedData.name}`,
+        name: parsedData.name,
+        description: parsedData.description,
+        category: parsedData.category || 'Electronics',
+        brand: parsedData.brand || detectedBrand,
+        price: typeof parsedData.price === 'string' ? parseFloat(parsedData.price) : (parsedData.price || 99.99),
+        features: Array.isArray(parsedData.features) ? parsedData.features : [],
+        whats_in_box: Array.isArray(parsedData.whats_in_box) ? parsedData.whats_in_box : [
+          parsedData.name || 'Product',
           'USB Cable',
           'User Manual',
           'Warranty Card'
-        ]
+        ],
+        tags: Array.isArray(parsedData.tags) ? parsedData.tags : [detectedBrand.toLowerCase(), (parsedData.category || 'electronics').toLowerCase()],
+        colors: generatedColors
       };
 
       clearInterval(stageInterval);
@@ -188,11 +212,11 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
         
         toast({
           title: "✨ AI Generation Complete!",
-          description: `Successfully generated "${parsedData.name}" with brand: ${detectedBrand}`,
+          description: `Successfully generated "${parsedData.name}" with brand: ${enhancedData.brand}`,
         });
       }, 1000);
       
-    } catch (error) {
+    } catch (error: any) {
       clearInterval(stageInterval);
       console.error('Error generating product:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
