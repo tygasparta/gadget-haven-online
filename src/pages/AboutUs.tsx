@@ -2,13 +2,12 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Users, Award, Globe, Zap, Heart, Shield } from 'lucide-react';
+import { Users, Globe, Zap, Heart, Shield } from 'lucide-react';
 
 const AboutUs = () => {
   const stats = [
     { icon: Users, label: 'Happy Customers', value: '50K+', color: 'from-blue-500 to-blue-600' },
     { icon: Globe, label: 'Countries Served', value: '25+', color: 'from-green-500 to-green-600' },
-    { icon: Award, label: 'Awards Won', value: '15+', color: 'from-purple-500 to-purple-600' },
     { icon: Zap, label: 'Products Sold', value: '100K+', color: 'from-orange-500 to-orange-600' }
   ];
 
@@ -55,7 +54,7 @@ const AboutUs = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {stats.map((stat, index) => (
             <div key={index} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
               <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center mb-4 mx-auto`}>
@@ -91,8 +90,8 @@ const AboutUs = () => {
             </div>
             <div className="relative">
               <img 
-                src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop" 
-                alt="Team collaboration"
+                src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop" 
+                alt="Tech gadgets and circuit board"
                 className="rounded-2xl shadow-lg w-full"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-2xl"></div>
@@ -111,26 +110,6 @@ const AboutUs = () => {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">{value.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Team Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white text-center">
-          <h2 className="text-3xl font-bold mb-6">Meet Our Team</h2>
-          <p className="text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Our diverse team of tech enthusiasts, designers, and customer service experts work 
-            tirelessly to bring you the best shopping experience possible.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="text-center">
-                <div className="w-20 h-20 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="w-10 h-10 text-white" />
-                </div>
-                <div className="text-sm font-medium">Team Member {i}</div>
-                <div className="text-xs text-blue-200">Department</div>
               </div>
             ))}
           </div>
