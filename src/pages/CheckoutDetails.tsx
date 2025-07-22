@@ -2,22 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  CreditCard, 
-  MapPin, 
-  User, 
-  ArrowLeft,
-  Shield,
-  Truck,
-  Smartphone,
-  Package
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useCartItems } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -28,6 +13,10 @@ import { motion } from 'framer-motion';
 import usePaynow from '@/hooks/usePaynow';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import ContactInformationSection from '@/components/checkout/ContactInformationSection';
+import ShippingAddressSection from '@/components/checkout/ShippingAddressSection';
+import PaymentMethodSection from '@/components/checkout/PaymentMethodSection';
+import OrderSummarySection from '@/components/checkout/OrderSummarySection';
 
 const CheckoutDetails = () => {
   const { user } = useAuthContext();
@@ -75,8 +64,8 @@ const CheckoutDetails = () => {
   const tax = totalPrice * 0.08;
   const finalTotal = totalPrice + shipping + tax;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
     if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
       toast({
@@ -145,7 +134,6 @@ const CheckoutDetails = () => {
 
       // Handle different payment methods
       if (paymentMethod === 'cod') {
-        // For cash on delivery, redirect to success page immediately
         toast({
           title: "Order Confirmed",
           description: "Your order has been confirmed for cash on delivery",
@@ -165,7 +153,6 @@ const CheckoutDetails = () => {
       if (paymentMethod === 'web') {
         await initiateWebPayment(paymentData);
       } else if (paymentMethod === 'mobile') {
-        // Validate phone number format before making the request
         const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
         
         if (mobileMethod === 'ecocash' && !cleanPhone.startsWith('077')) {
@@ -200,314 +187,73 @@ const CheckoutDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <Header />
       
-      <div className={`max-w-6xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-8 bg-white rounded-2xl p-6 shadow-lg border-0"
+        >
+          <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/checkout')}
-              className="p-2"
+              className="p-3 rounded-xl hover:bg-gray-100 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Checkout Details</h1>
-              <p className="text-gray-600">Complete your order</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                Checkout Details
+              </h1>
+              <p className="text-gray-500 mt-1">Complete your order securely</p>
             </div>
           </div>
-        </div>
+          <div className="hidden md:flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-xl">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="text-sm font-medium text-blue-700">Step 2 of 3</span>
+          </div>
+        </motion.div>
 
-        <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-2 gap-8'}`}>
-          {/* Checkout Form */}
-          <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <User className="w-5 h-5" />
-                    <span>Contact Information</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">First Name *</Label>
-                      <Input
-                        id="firstName"
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                        className="mt-1"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName">Last Name *</Label>
-                      <Input
-                        id="lastName"
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                        className="mt-1"
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <MapPin className="w-5 h-5" />
-                    <span>Shipping Address</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="address">Street Address *</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="city">City *</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({...formData, city: e.target.value})}
-                        className="mt-1"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="zipCode">ZIP Code</Label>
-                      <Input
-                        id="zipCode"
-                        value={formData.zipCode}
-                        onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="country">Country</Label>
-                    <Select value={formData.country} onValueChange={(value) => setFormData({...formData, country: value})}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Zimbabwe">Zimbabwe</SelectItem>
-                        <SelectItem value="South Africa">South Africa</SelectItem>
-                        <SelectItem value="Botswana">Botswana</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <CreditCard className="w-5 h-5" />
-                    <span>Payment Method</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="web" id="web" />
-                      <label htmlFor="web" className="font-medium">Web Payment (Card/Bank)</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="mobile" id="mobile" />
-                      <label htmlFor="mobile" className="font-medium flex items-center">
-                        <Smartphone className="w-4 h-4 mr-2" />
-                        Mobile Payment
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="cod" id="cod" />
-                      <label htmlFor="cod" className="font-medium flex items-center">
-                        <Package className="w-4 h-4 mr-2" />
-                        Cash on Delivery
-                      </label>
-                    </div>
-                  </RadioGroup>
-
-                  {paymentMethod === 'mobile' && (
-                    <div className="space-y-4 pl-6 border-l-2 border-gray-200">
-                      <RadioGroup value={mobileMethod} onValueChange={setMobileMethod}>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="ecocash" id="ecocash" />
-                          <label htmlFor="ecocash">EcoCash</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="onemoney" id="onemoney" />
-                          <label htmlFor="onemoney">OneMoney</label>
-                        </div>
-                      </RadioGroup>
-                      
-                      <div>
-                        <Label htmlFor="phoneNumber">
-                          Mobile Number * ({mobileMethod === 'ecocash' ? '077' : '071'} required)
-                        </Label>
-                        <Input
-                          id="phoneNumber"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          placeholder={mobileMethod === 'ecocash' ? '0771234567' : '0711234567'}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentMethod === 'cod' && (
-                    <div className="pl-6 border-l-2 border-gray-200">
-                      <p className="text-sm text-gray-600">
-                        Pay with cash when your order is delivered to your doorstep.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-5 gap-8'}`}>
+          {/* Form Sections */}
+          <div className={`${isMobile ? '' : 'col-span-3'} space-y-6`}>
+            <ContactInformationSection 
+              formData={formData}
+              setFormData={setFormData}
+            />
+            
+            <ShippingAddressSection 
+              formData={formData}
+              setFormData={setFormData}
+            />
+            
+            <PaymentMethodSection 
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              mobileMethod={mobileMethod}
+              setMobileMethod={setMobileMethod}
+              phoneNumber={phoneNumber}
+              setPhoneNumber={setPhoneNumber}
+            />
           </div>
 
           {/* Order Summary */}
-          <div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Card className="sticky top-4">
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span>{item.products.name} × {item.quantity}</span>
-                        <span>${(item.products.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>${totalPrice.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Shipping</span>
-                      <span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Tax</span>
-                      <span>${tax.toFixed(2)}</span>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span className="text-blue-600">${finalTotal.toFixed(2)}</span>
-                  </div>
-
-                  {/* Payment Info */}
-                  {paymentMethod === 'web' && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
-                      <Shield className="w-5 h-5 text-green-600" />
-                      <span className="text-sm text-green-700">Secure payment via Paynow</span>
-                    </div>
-                  )}
-
-                  {paymentMethod === 'mobile' && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
-                      <Smartphone className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm text-blue-700">Mobile payment via {mobileMethod === 'ecocash' ? 'EcoCash' : 'OneMoney'}</span>
-                    </div>
-                  )}
-
-                  {paymentMethod === 'cod' && (
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center space-x-2">
-                      <Package className="w-5 h-5 text-orange-600" />
-                      <span className="text-sm text-orange-700">Pay cash on delivery</span>
-                    </div>
-                  )}
-
-                  {/* Shipping Info */}
-                  {totalPrice >= 50 ? (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
-                      <Truck className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm text-blue-700">FREE shipping included!</span>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center space-x-2">
-                      <Truck className="w-5 h-5 text-gray-600" />
-                      <span className="text-sm text-gray-700">
-                        Add ${(50 - totalPrice).toFixed(2)} more for FREE shipping
-                      </span>
-                    </div>
-                  )}
-
-                  <Button 
-                    onClick={handleSubmit}
-                    disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Processing...
-                      </>
-                    ) : (
-                      paymentMethod === 'cod' ? `Confirm Order - $${finalTotal.toFixed(2)}` : `Complete Order - $${finalTotal.toFixed(2)}`
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
+          <div className={`${isMobile ? '' : 'col-span-2'}`}>
+            <OrderSummarySection 
+              cartItems={cartItems}
+              totalPrice={totalPrice}
+              shipping={shipping}
+              tax={tax}
+              finalTotal={finalTotal}
+              paymentMethod={paymentMethod}
+              mobileMethod={mobileMethod}
+              isProcessing={isProcessing}
+              onSubmit={handleSubmit}
+            />
           </div>
         </div>
       </div>
