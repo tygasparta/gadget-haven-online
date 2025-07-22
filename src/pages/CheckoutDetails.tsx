@@ -170,19 +170,32 @@ const CheckoutDetails = () => {
       } else if (paymentMethod === 'mobile') {
         const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
         
-        if (mobileMethod === 'ecocash' && !cleanPhone.startsWith('077')) {
+        // Updated validation for all Zimbabwe mobile numbers
+        const isValidZimbabweNumber = /^07[1378]\d{7}$/.test(cleanPhone);
+        
+        if (!isValidZimbabweNumber) {
           toast({
             title: "Invalid Phone Number",
-            description: "EcoCash requires an Econet number starting with 077",
+            description: "Please enter a valid Zimbabwe mobile number (071, 073, 077, or 078)",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Check specific provider requirements
+        if (mobileMethod === 'ecocash' && !cleanPhone.match(/^07[78]/)) {
+          toast({
+            title: "Invalid Phone Number",
+            description: "EcoCash requires an Econet number starting with 077 or 078",
             variant: "destructive"
           });
           return;
         }
         
-        if (mobileMethod === 'onemoney' && !cleanPhone.startsWith('071')) {
+        if (mobileMethod === 'onemoney' && !cleanPhone.match(/^07[13]/)) {
           toast({
             title: "Invalid Phone Number", 
-            description: "OneMoney requires a NetOne number starting with 071",
+            description: "OneMoney requires a NetOne number starting with 071 or 073",
             variant: "destructive"
           });
           return;

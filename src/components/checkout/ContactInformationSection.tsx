@@ -50,7 +50,7 @@ const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+              className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all bg-white"
               placeholder="your@email.com"
               required
             />
@@ -64,7 +64,7 @@ const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all bg-white"
                 placeholder="John"
                 required
               />
@@ -77,7 +77,7 @@ const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all bg-white"
                 placeholder="Doe"
                 required
               />

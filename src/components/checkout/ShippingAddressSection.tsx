@@ -50,7 +50,7 @@ const ShippingAddressSection: React.FC<ShippingAddressSectionProps> = ({
               id="address"
               value={formData.address}
               onChange={(e) => setFormData({...formData, address: e.target.value})}
-              className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 transition-all"
+              className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 transition-all bg-white"
               placeholder="123 Main Street"
               required
             />
@@ -64,7 +64,7 @@ const ShippingAddressSection: React.FC<ShippingAddressSectionProps> = ({
                 id="city"
                 value={formData.city}
                 onChange={(e) => setFormData({...formData, city: e.target.value})}
-                className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 transition-all"
+                className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 transition-all bg-white"
                 placeholder="Harare"
                 required
               />
@@ -77,7 +77,7 @@ const ShippingAddressSection: React.FC<ShippingAddressSectionProps> = ({
                 id="zipCode"
                 value={formData.zipCode}
                 onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
-                className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 transition-all"
+                className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 transition-all bg-white"
                 placeholder="12345"
               />
             </div>
@@ -87,7 +87,7 @@ const ShippingAddressSection: React.FC<ShippingAddressSectionProps> = ({
               Country
             </Label>
             <Select value={formData.country} onValueChange={(value) => setFormData({...formData, country: value})}>
-              <SelectTrigger className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20">
+              <SelectTrigger className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 bg-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

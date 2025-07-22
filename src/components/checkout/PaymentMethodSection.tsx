@@ -24,6 +24,18 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
   phoneNumber,
   setPhoneNumber
 }) => {
+  const getPlaceholder = () => {
+    if (mobileMethod === 'ecocash') return '0771234567 or 0781234567';
+    if (mobileMethod === 'onemoney') return '0711234567 or 0731234567';
+    return '07XXXXXXXX';
+  };
+
+  const getRequiredPrefix = () => {
+    if (mobileMethod === 'ecocash') return 'Econet (077/078)';
+    if (mobileMethod === 'onemoney') return 'NetOne (071/073)';
+    return 'Zimbabwe mobile';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -97,25 +109,28 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               <RadioGroup value={mobileMethod} onValueChange={setMobileMethod} className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="ecocash" id="ecocash" />
-                  <label htmlFor="ecocash" className="font-medium">EcoCash</label>
+                  <label htmlFor="ecocash" className="font-medium">EcoCash (Econet - 077/078)</label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="onemoney" id="onemoney" />
-                  <label htmlFor="onemoney" className="font-medium">OneMoney</label>
+                  <label htmlFor="onemoney" className="font-medium">OneMoney (NetOne - 071/073)</label>
                 </div>
               </RadioGroup>
               
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
-                  Mobile Number * ({mobileMethod === 'ecocash' ? '077' : '071'} required)
+                  Mobile Number * ({getRequiredPrefix()} required)
                 </Label>
                 <Input
                   id="phoneNumber"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder={mobileMethod === 'ecocash' ? '0771234567' : '0711234567'}
-                  className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20"
+                  placeholder={getPlaceholder()}
+                  className="h-12 border-gray-200 focus:border-green-500 focus:ring-green-500/20 bg-white"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter your Zimbabwe mobile number (10 digits starting with 07)
+                </p>
               </div>
             </motion.div>
           )}
