@@ -29,7 +29,7 @@ interface Color {
 
 const PRODUCT_CATEGORIES = [
   'Smartphones',
-  'Laptops',
+  'Laptops', 
   'Tablets',
   'Headphones',
   'Cameras',
@@ -432,8 +432,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   console.log('Images changed in EditProductModal:', images);
                   setProductImages(images);
                 }}
-                featuredImageIndex={featuredImageIndex}
-                onFeaturedImageChange={setFeaturedImageIndex}
+                featuredImageIndex={featuredImageIndex.toString()}
+                onFeaturedImageChange={(index) => setFeaturedImageIndex(parseInt(index))}
                 maxImages={15}
                 productId={product.id}
               />
