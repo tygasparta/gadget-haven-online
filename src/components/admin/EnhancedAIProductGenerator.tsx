@@ -245,31 +245,31 @@ Only return the JSON object, no additional text.`;
   ];
 
   return (
-    <Card className="bg-gradient-to-br from-blue-900/50 via-purple-900/50 to-indigo-900/50 border-blue-500/20 shadow-2xl">
-      <CardHeader className="border-b border-blue-500/20">
-        <CardTitle className="text-white flex items-center text-xl">
+    <Card className="bg-white/95 backdrop-blur-sm border-gray-300 shadow-2xl">
+      <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+        <CardTitle className="text-gray-800 flex items-center text-xl">
           <div className="flex items-center">
             <div className="relative">
-              <Wand2 className="w-6 h-6 mr-3 text-blue-400" />
-              <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-yellow-400" />
+              <Wand2 className="w-6 h-6 mr-3 text-blue-600" />
+              <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-yellow-500" />
             </div>
             Enhanced AI Product Generator
           </div>
         </CardTitle>
-        <p className="text-blue-200 text-sm mt-2">
+        <p className="text-gray-600 text-sm mt-2">
           Generate comprehensive product details with intelligent brand detection and smart features
         </p>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-6 space-y-6 bg-white">
         {/* Error Display */}
         {error && (
-          <div className="bg-gradient-to-r from-red-900/30 to-pink-900/30 rounded-lg p-4 border border-red-500/20">
+          <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-4 border border-red-200">
             <div className="flex items-center space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
               <div className="flex-1">
-                <div className="text-red-200 font-medium">Generation Failed</div>
-                <div className="text-red-300 text-sm mt-1">{error}</div>
-                <div className="text-red-400 text-xs mt-2">
+                <div className="text-red-800 font-medium">Generation Failed</div>
+                <div className="text-red-700 text-sm mt-1">{error}</div>
+                <div className="text-red-600 text-xs mt-2">
                   Please try again with a different prompt or check your connection
                 </div>
               </div>
@@ -279,37 +279,37 @@ Only return the JSON object, no additional text.`;
 
         {/* AI Status Display */}
         {isGenerating && (
-          <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-4 border border-blue-500/20">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <Brain className="w-5 h-5 text-blue-400 animate-pulse" />
+                <Brain className="w-5 h-5 text-blue-600 animate-pulse" />
                 <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-ping"></div>
               </div>
               <div className="flex-1">
-                <div className="text-blue-200 font-medium">AI Processing</div>
-                <div className="text-blue-300 text-sm">{generationStage}</div>
+                <div className="text-blue-800 font-medium">AI Processing</div>
+                <div className="text-blue-700 text-sm">{generationStage}</div>
               </div>
-              <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
             </div>
-            <div className="mt-3 bg-blue-900/20 rounded-full h-2 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-full animate-pulse rounded-full"></div>
+            <div className="mt-3 bg-blue-100 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-full animate-pulse rounded-full"></div>
             </div>
           </div>
         )}
 
         {/* Success State */}
         {!isGenerating && !error && generationStage === 'Generation complete!' && (
-          <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg p-4 border border-green-500/20">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
             <div className="flex items-center space-x-3">
-              <CheckCircle className="w-5 h-5 text-green-400" />
-              <div className="text-green-200 font-medium">Generation Successful!</div>
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <div className="text-green-800 font-medium">Generation Successful!</div>
             </div>
           </div>
         )}
 
         {/* Main Input */}
         <div className="space-y-3">
-          <Label htmlFor="ai-prompt" className="text-gray-300 flex items-center text-base font-medium">
+          <Label htmlFor="ai-prompt" className="text-gray-700 flex items-center text-base font-medium">
             <Target className="w-4 h-4 mr-2" />
             Product Description *
           </Label>
@@ -318,17 +318,17 @@ Only return the JSON object, no additional text.`;
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Describe the product you want to create in detail... (e.g., 'Latest iPhone with advanced camera features and titanium design')"
-            className="bg-gray-800/50 border-gray-600 text-white min-h-[120px] focus:border-blue-400 focus:ring-blue-400/20 resize-none"
+            className="bg-white border-gray-300 text-gray-800 min-h-[120px] focus:border-blue-500 focus:ring-blue-500/20 resize-none"
             disabled={isGenerating}
           />
-          <p className="text-gray-400 text-xs">
+          <p className="text-gray-500 text-xs">
             Be specific about features, specifications, and brand to get better results
           </p>
         </div>
 
         {/* Quick Prompts */}
         <div className="space-y-3">
-          <Label className="text-gray-300 flex items-center text-base font-medium">
+          <Label className="text-gray-700 flex items-center text-base font-medium">
             <Zap className="w-4 h-4 mr-2" />
             Quick Examples
           </Label>
@@ -340,7 +340,7 @@ Only return the JSON object, no additional text.`;
                 size="sm"
                 onClick={() => setPrompt(quickPrompt)}
                 disabled={isGenerating}
-                className="bg-gray-800/30 border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white text-left justify-start h-auto py-3 px-4 font-normal"
+                className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:text-gray-800 text-left justify-start h-auto py-3 px-4 font-normal"
               >
                 <span className="text-sm text-left leading-relaxed">{quickPrompt}</span>
               </Button>
@@ -349,27 +349,27 @@ Only return the JSON object, no additional text.`;
         </div>
 
         {/* Enhanced Features Grid */}
-        <div className="bg-gray-800/30 rounded-lg p-5 border border-gray-700/50">
-          <h3 className="text-white font-medium mb-4 flex items-center text-base">
-            <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
+        <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
+          <h3 className="text-gray-800 font-medium mb-4 flex items-center text-base">
+            <Sparkles className="w-4 h-4 mr-2 text-yellow-500" />
             AI-Powered Features
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center space-x-3">
-              <Brain className="w-5 h-5 text-blue-400 flex-shrink-0" />
-              <span className="text-gray-300 text-sm">Smart brand detection</span>
+              <Brain className="w-5 h-5 text-blue-500 flex-shrink-0" />
+              <span className="text-gray-700 text-sm">Smart brand detection</span>
             </div>
             <div className="flex items-center space-x-3">
-              <Palette className="w-5 h-5 text-purple-400 flex-shrink-0" />
-              <span className="text-gray-300 text-sm">Automatic color generation</span>
+              <Palette className="w-5 h-5 text-purple-500 flex-shrink-0" />
+              <span className="text-gray-700 text-sm">Automatic color generation</span>
             </div>
             <div className="flex items-center space-x-3">
-              <Tag className="w-5 h-5 text-green-400 flex-shrink-0" />
-              <span className="text-gray-300 text-sm">Intelligent tagging</span>
+              <Tag className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <span className="text-gray-700 text-sm">Intelligent tagging</span>
             </div>
             <div className="flex items-center space-x-3">
-              <Package className="w-5 h-5 text-orange-400 flex-shrink-0" />
-              <span className="text-gray-300 text-sm">Box contents generation</span>
+              <Package className="w-5 h-5 text-orange-500 flex-shrink-0" />
+              <span className="text-gray-700 text-sm">Box contents generation</span>
             </div>
           </div>
         </div>
@@ -378,7 +378,7 @@ Only return the JSON object, no additional text.`;
         <Button 
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim()}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-medium py-4 text-base shadow-lg hover:shadow-xl transition-all duration-200 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-4 text-base shadow-lg hover:shadow-xl transition-all duration-200 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
