@@ -144,6 +144,8 @@ const CheckoutDetails = () => {
 
       if (itemsError) throw itemsError;
 
+      console.log('Order created successfully:', order.id);
+
       // Handle different payment methods
       if (paymentMethod === 'cod') {
         toast({
@@ -163,7 +165,8 @@ const CheckoutDetails = () => {
       };
 
       if (paymentMethod === 'web') {
-        const response = await initiateWebPayment(paymentData);
+        console.log('Initiating web payment with order ID:', order.id);
+        const response = await initiateWebPayment(paymentData, order.id);
         if (!response.success) {
           navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
         }
@@ -201,7 +204,8 @@ const CheckoutDetails = () => {
           return;
         }
 
-        const response = await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney');
+        console.log('Initiating mobile payment with order ID:', order.id);
+        const response = await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney', order.id);
         setTimeout(() => {
           navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
         }, 3000);

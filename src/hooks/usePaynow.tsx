@@ -33,9 +33,10 @@ const usePaynow = () => {
     }
   };
 
-  const initiateWebPayment = async (paymentData: PaynowPaymentData): Promise<PaynowResponse> => {
+  const initiateWebPayment = async (paymentData: PaynowPaymentData, orderId?: string): Promise<PaynowResponse> => {
     console.log('=== STARTING WEB PAYMENT ===');
     console.log('Web payment data:', paymentData);
+    console.log('Order ID:', orderId);
     setIsProcessing(true);
     setPaymentStatus('processing');
 
@@ -58,7 +59,7 @@ const usePaynow = () => {
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
 
       console.log('Payment object created, now sending...');
-      const response = await paynowService.send(payment);
+      const response = await paynowService.send(payment, orderId);
       console.log('=== WEB PAYMENT RESPONSE ===', response);
       
       if (response && response.success) {
@@ -110,10 +111,11 @@ const usePaynow = () => {
   const initiateMobilePayment = async (
     paymentData: PaynowPaymentData, 
     phoneNumber: string, 
-    method: 'ecocash' | 'onemoney'
+    method: 'ecocash' | 'onemoney',
+    orderId?: string
   ): Promise<PaynowResponse> => {
     console.log('=== STARTING MOBILE PAYMENT ===');
-    console.log('Mobile payment data:', { paymentData, phoneNumber, method });
+    console.log('Mobile payment data:', { paymentData, phoneNumber, method, orderId });
     setIsProcessing(true);
     setPaymentStatus('processing');
 
@@ -149,7 +151,7 @@ const usePaynow = () => {
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
 
       console.log('Mobile payment object created, now sending...');
-      const response = await paynowService.sendMobile(payment, phoneNumber, method);
+      const response = await paynowService.sendMobile(payment, phoneNumber, method, orderId);
       console.log('=== MOBILE PAYMENT RESPONSE ===', response);
       
       if (response && response.success) {

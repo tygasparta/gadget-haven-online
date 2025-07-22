@@ -1,5 +1,6 @@
 
 import { Paynow } from 'paynow';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PaynowPaymentData {
   reference: string;
@@ -18,6 +19,20 @@ interface PaynowResponse {
   reference?: string;
   error?: string;
   instructions?: string;
+}
+
+interface PaymentRecord {
+  id?: string;
+  order_id?: string;
+  payment_reference: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'failed' | 'cancelled';
+  payment_method: string;
+  poll_url?: string;
+  redirect_url?: string;
+  instructions?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 class PaynowService {
@@ -55,16 +70,77 @@ class PaynowService {
     return payment;
   }
 
+  // Save payment record to database
+  private async savePaymentRecord(paymentData: PaymentRecord): Promise<string | null> {
+    try {
+      console.log('Saving payment record:', paymentData);
+      
+      const { data, error } = await supabase
+        .from('payment_records')
+        .insert([paymentData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving payment record:', error);
+        return null;
+      }
+
+      console.log('Payment record saved:', data);
+      return data.id;
+    } catch (error) {
+      console.error('Exception saving payment record:', error);
+      return null;
+    }
+  }
+
+  // Update payment record status
+  private async updatePaymentRecord(paymentReference: string, updates: Partial<PaymentRecord>): Promise<boolean> {
+    try {
+      console.log('Updating payment record:', paymentReference, updates);
+      
+      const { error } = await supabase
+        .from('payment_records')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('payment_reference', paymentReference);
+
+      if (error) {
+        console.error('Error updating payment record:', error);
+        return false;
+      }
+
+      console.log('Payment record updated successfully');
+      return true;
+    } catch (error) {
+      console.error('Exception updating payment record:', error);
+      return false;
+    }
+  }
+
   // Send web-based payment
-  async send(payment: any): Promise<PaynowResponse> {
+  async send(payment: any, orderId?: string): Promise<PaynowResponse> {
     try {
       console.log('Sending web payment with payment object:', payment);
+      
+      // Save initial payment record
+      const paymentRecord: PaymentRecord = {
+        order_id: orderId,
+        payment_reference: payment.reference,
+        amount: payment.total,
+        status: 'pending',
+        payment_method: 'paynow_web'
+      };
+      
+      const recordId = await this.savePaymentRecord(paymentRecord);
       
       const response = await this.paynow.send(payment);
       console.log('Raw Paynow web response:', response);
 
       if (!response) {
-        console.error('No response received from Paynow');
+        await this.updatePaymentRecord(payment.reference, { status: 'failed' });
         return {
           success: false,
           error: 'No response received from payment gateway'
@@ -73,6 +149,13 @@ class PaynowService {
 
       // Handle the response based on Paynow SDK documentation
       if (response.success) {
+        // Update payment record with response data
+        await this.updatePaymentRecord(payment.reference, {
+          status: 'pending',
+          poll_url: response.pollUrl,
+          redirect_url: response.redirectUrl
+        });
+
         return {
           success: true,
           redirectUrl: response.redirectUrl,
@@ -80,6 +163,7 @@ class PaynowService {
           reference: response.reference || payment.reference
         };
       } else {
+        await this.updatePaymentRecord(payment.reference, { status: 'failed' });
         console.error('Web payment failed:', response.error);
         return {
           success: false,
@@ -88,6 +172,7 @@ class PaynowService {
       }
     } catch (error) {
       console.error('Paynow web payment error:', error);
+      await this.updatePaymentRecord(payment.reference, { status: 'failed' });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error occurred'
@@ -96,9 +181,20 @@ class PaynowService {
   }
 
   // Send mobile-based payment (EcoCash/OneMoney)
-  async sendMobile(payment: any, phoneNumber: string, method: 'ecocash' | 'onemoney'): Promise<PaynowResponse> {
+  async sendMobile(payment: any, phoneNumber: string, method: 'ecocash' | 'onemoney', orderId?: string): Promise<PaynowResponse> {
     try {
       console.log('Sending mobile payment:', { payment, phoneNumber, method });
+      
+      // Save initial payment record
+      const paymentRecord: PaymentRecord = {
+        order_id: orderId,
+        payment_reference: payment.reference,
+        amount: payment.total,
+        status: 'pending',
+        payment_method: `paynow_${method}`
+      };
+      
+      await this.savePaymentRecord(paymentRecord);
       
       // Clean phone number (remove spaces, ensure proper format)
       const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
@@ -108,7 +204,7 @@ class PaynowService {
       console.log('Raw Paynow mobile response:', response);
 
       if (!response) {
-        console.error('No mobile response received from Paynow');
+        await this.updatePaymentRecord(payment.reference, { status: 'failed' });
         return {
           success: false,
           error: 'No response received from mobile payment gateway'
@@ -117,6 +213,13 @@ class PaynowService {
 
       // Handle mobile response based on Paynow SDK documentation
       if (response.success) {
+        // Update payment record with response data
+        await this.updatePaymentRecord(payment.reference, {
+          status: 'pending',
+          poll_url: response.pollUrl,
+          instructions: response.instructions
+        });
+
         return {
           success: true,
           pollUrl: response.pollUrl,
@@ -124,6 +227,7 @@ class PaynowService {
           instructions: response.instructions
         };
       } else {
+        await this.updatePaymentRecord(payment.reference, { status: 'failed' });
         console.error('Mobile payment failed:', response.error);
         return {
           success: false,
@@ -132,6 +236,7 @@ class PaynowService {
       }
     } catch (error) {
       console.error('Paynow mobile payment error:', error);
+      await this.updatePaymentRecord(payment.reference, { status: 'failed' });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Mobile payment network error occurred'
@@ -152,6 +257,19 @@ class PaynowService {
       const status = await this.paynow.pollTransaction(pollUrl);
       console.log('Poll response:', status);
 
+      // Update payment record based on status
+      if (status?.reference) {
+        const paymentStatus = status.paid() ? 'paid' : 'pending';
+        await this.updatePaymentRecord(status.reference, { 
+          status: paymentStatus as 'paid' | 'pending' 
+        });
+
+        // If payment is successful, update the associated order
+        if (status.paid()) {
+          await this.updateOrderOnPaymentSuccess(status.reference);
+        }
+      }
+
       return {
         status: status?.status || 'Unknown',
         paid: () => status?.paid() === true,
@@ -164,6 +282,57 @@ class PaynowService {
         status: 'Error',
         paid: () => false
       };
+    }
+  }
+
+  // Update order status when payment is successful
+  private async updateOrderOnPaymentSuccess(paymentReference: string): Promise<void> {
+    try {
+      // Extract order ID from payment reference
+      const orderIdMatch = paymentReference.match(/ORDER-(.+)/);
+      if (orderIdMatch) {
+        const orderId = orderIdMatch[1];
+        
+        console.log('Updating order status for successful payment:', orderId);
+        
+        const { error } = await supabase
+          .from('orders')
+          .update({ 
+            status: 'confirmed',
+            payment_reference: paymentReference,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', orderId);
+
+        if (error) {
+          console.error('Error updating order status:', error);
+        } else {
+          console.log('Order status updated to confirmed');
+        }
+      }
+    } catch (error) {
+      console.error('Exception updating order on payment success:', error);
+    }
+  }
+
+  // Get payment record by reference
+  async getPaymentRecord(paymentReference: string): Promise<PaymentRecord | null> {
+    try {
+      const { data, error } = await supabase
+        .from('payment_records')
+        .select('*')
+        .eq('payment_reference', paymentReference)
+        .single();
+
+      if (error) {
+        console.error('Error fetching payment record:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Exception fetching payment record:', error);
+      return null;
     }
   }
 
@@ -193,4 +362,4 @@ class PaynowService {
 }
 
 export default PaynowService;
-export type { PaynowPaymentData, PaynowResponse };
+export type { PaynowPaymentData, PaynowResponse, PaymentRecord };
