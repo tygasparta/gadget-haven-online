@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import PaynowService from '@/services/paynowService';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -26,13 +25,27 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
+      console.log('PaymentSuccess: Starting payment status check', {
+        reference,
+        orderId,
+        error,
+        isTest,
+        isMobile,
+        method,
+        user: user?.id
+      });
+
+      // Handle error case first
       if (error) {
+        console.log('PaymentSuccess: Error parameter found:', error);
         setPaymentStatus('failed');
         setPaymentDetails({ error: decodeURIComponent(error) });
         return;
       }
 
+      // Handle missing reference
       if (!reference) {
+        console.log('PaymentSuccess: No payment reference found');
         setPaymentStatus('failed');
         setPaymentDetails({ error: 'No payment reference found' });
         return;
@@ -41,6 +54,7 @@ const PaymentSuccess = () => {
       try {
         // If this is a test payment, simulate success
         if (isTest) {
+          console.log('PaymentSuccess: Processing test payment');
           setPaymentStatus('success');
           setPaymentDetails({ 
             reference,
@@ -50,65 +64,52 @@ const PaymentSuccess = () => {
           
           // Clear cart if payment is successful and user exists
           if (user) {
+            console.log('PaymentSuccess: Clearing cart for test payment');
             await supabase.from('cart_items').delete().eq('user_id', user.id);
           }
           return;
         }
 
         // Try to get payment record from database
+        console.log('PaymentSuccess: Fetching payment record from database');
         const { data: paymentRecord, error: dbError } = await supabase
           .from('payment_records')
           .select('*')
           .eq('payment_reference', reference)
-          .single();
+          .maybeSingle();
         
-        if (dbError && dbError.code !== 'PGRST116') { // PGRST116 is "not found"
-          console.error('Database error:', dbError);
+        if (dbError) {
+          console.error('PaymentSuccess: Database error:', dbError);
+          setPaymentStatus('failed');
+          setPaymentDetails({ error: 'Failed to verify payment status' });
+          return;
         }
+
+        console.log('PaymentSuccess: Payment record found:', paymentRecord);
 
         if (paymentRecord) {
           setPaymentDetails(paymentRecord);
           
-          // If we have a poll URL, check the actual payment status
-          if (paymentRecord.poll_url && paymentRecord.status === 'pending') {
-            try {
-              const paynowService = new PaynowService();
-              const statusResponse = await paynowService.pollTransaction(paymentRecord.poll_url);
-              
-              if (statusResponse.paid()) {
-                setPaymentStatus('success');
-                // Clear cart if payment is successful
-                if (user) {
-                  await supabase.from('cart_items').delete().eq('user_id', user.id);
-                }
-              } else if (statusResponse.status === 'Cancelled' || statusResponse.status === 'Failed') {
-                setPaymentStatus('failed');
-              } else {
-                setPaymentStatus('pending');
+          // Set status based on payment record
+          switch (paymentRecord.status) {
+            case 'paid':
+              setPaymentStatus('success');
+              // Clear cart if payment is successful
+              if (user) {
+                console.log('PaymentSuccess: Clearing cart for successful payment');
+                await supabase.from('cart_items').delete().eq('user_id', user.id);
               }
-            } catch (pollError) {
-              console.error('Error polling payment status:', pollError);
+              break;
+            case 'failed':
+            case 'cancelled':
+              setPaymentStatus('failed');
+              break;
+            default:
               setPaymentStatus('pending');
-            }
-          } else {
-            // Set status based on payment record
-            switch (paymentRecord.status) {
-              case 'paid':
-                setPaymentStatus('success');
-                if (user) {
-                  await supabase.from('cart_items').delete().eq('user_id', user.id);
-                }
-                break;
-              case 'failed':
-              case 'cancelled':
-                setPaymentStatus('failed');
-                break;
-              default:
-                setPaymentStatus('pending');
-            }
           }
         } else {
-          // No payment record found - this could be a direct access or test
+          // No payment record found - show pending status
+          console.log('PaymentSuccess: No payment record found, showing pending status');
           setPaymentStatus('pending');
           setPaymentDetails({ 
             reference, 
@@ -116,7 +117,7 @@ const PaymentSuccess = () => {
           });
         }
       } catch (error) {
-        console.error('Error checking payment status:', error);
+        console.error('PaymentSuccess: Error checking payment status:', error);
         setPaymentStatus('failed');
         setPaymentDetails({ error: 'Failed to verify payment status' });
       }
@@ -181,6 +182,21 @@ const PaymentSuccess = () => {
   const handleRetryPayment = () => {
     navigate('/checkout');
   };
+
+  // Show loading state while checking payment status
+  if (paymentStatus === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center justify-center p-8">
+            <AlertCircle className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-pulse" />
+            <h2 className="text-xl font-semibold mb-2">Checking Payment Status...</h2>
+            <p className="text-gray-600 text-center">Please wait while we verify your payment.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
@@ -253,12 +269,6 @@ const PaymentSuccess = () => {
                   Return to Home
                 </Button>
               </>
-            )}
-            
-            {paymentStatus === 'loading' && (
-              <Button disabled className="w-full">
-                Checking Status...
-              </Button>
             )}
           </div>
         </CardContent>

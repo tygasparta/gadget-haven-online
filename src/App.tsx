@@ -52,6 +52,8 @@ function App() {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="/payment-test" element={<PaymentTest />} />
+                {/* Add a catch-all route for unmatched paths */}
+                <Route path="*" element={<Index />} />
               </Routes>
             </BrowserRouter>
             <Toaster />
