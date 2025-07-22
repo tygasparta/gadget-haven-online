@@ -317,7 +317,7 @@ Only return the JSON object, no additional text.`;
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Describe the product you want to create in detail... (e.g., 'Latest iPhone with advanced camera features and titanium design')"
-            className="bg-navy-800 border-navy-600 text-white placeholder-gray-400 min-h-[120px] focus:border-blue-500 focus:ring-blue-500/20 resize-none"
+            className="bg-navy-800 border-navy-600 text-white placeholder-gray-400 min-h-[120px] focus:border-blue-500 focus:ring-blue-500/20 resize-none [&]:text-white"
             disabled={isGenerating}
           />
           <p className="text-gray-400 text-xs">
