@@ -1,5 +1,4 @@
 
-import { Paynow } from 'paynow';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PaynowPaymentData {
@@ -36,38 +35,18 @@ interface PaymentRecord {
 }
 
 class PaynowService {
-  private paynow: Paynow;
   public resultUrl: string;
   public returnUrl: string;
 
-  constructor(integrationId?: string, integrationKey?: string) {
-    // Use provided credentials or fallback to defaults for development
-    const id = integrationId || '21058';
-    const key = integrationKey || 'ece6db09-1654-4bcf-8494-ac98155f41e7';
-    
-    console.log('Initializing Paynow with ID:', id);
-    
-    // Initialize Paynow with credentials using correct constructor
-    this.paynow = new Paynow(id, key);
-    
+  constructor() {
     // Set return and result URLs
     this.resultUrl = `${window.location.origin}/api/paynow/webhook`;
     this.returnUrl = `${window.location.origin}/payment/success`;
     
-    this.paynow.resultUrl = this.resultUrl;
-    this.paynow.returnUrl = this.returnUrl;
-
-    console.log('Paynow initialized with URLs:', {
+    console.log('PaynowService initialized with URLs:', {
       resultUrl: this.resultUrl,
       returnUrl: this.returnUrl
     });
-  }
-
-  // Create a payment with reference and optional email
-  createPayment(reference: string, email?: string) {
-    const payment = this.paynow.createPayment(reference, email || '');
-    console.log('Created payment:', { reference, email });
-    return payment;
   }
 
   // Save payment record to database
@@ -77,16 +56,7 @@ class PaynowService {
       
       const { data, error } = await supabase
         .from('payment_records')
-        .insert([{
-          order_id: paymentData.order_id || null,
-          payment_reference: paymentData.payment_reference,
-          amount: paymentData.amount,
-          status: paymentData.status,
-          payment_method: paymentData.payment_method,
-          poll_url: paymentData.poll_url || null,
-          redirect_url: paymentData.redirect_url || null,
-          instructions: paymentData.instructions || null
-        }])
+        .insert([paymentData])
         .select()
         .single();
 
@@ -131,14 +101,14 @@ class PaynowService {
     }
   }
 
-  // Send web-based payment via Supabase Edge Function to avoid CORS
+  // Send web-based payment via Supabase Edge Function
   async send(payment: any, orderId?: string): Promise<PaynowResponse> {
     try {
       console.log('Sending web payment via Edge Function:', payment);
       
       // Save initial payment record
       const paymentRecord = {
-        order_id: orderId,
+        order_id: orderId || null,
         payment_reference: payment.reference,
         amount: payment.total,
         status: 'pending' as const,
@@ -210,7 +180,7 @@ class PaynowService {
       
       // Save initial payment record
       const paymentRecord = {
-        order_id: orderId,
+        order_id: orderId || null,
         payment_reference: payment.reference,
         amount: payment.total,
         status: 'pending' as const,
@@ -385,27 +355,17 @@ class PaynowService {
     }
   }
 
-  // Legacy method for backward compatibility
-  async initiatePayment(paymentData: PaynowPaymentData): Promise<PaynowResponse> {
-    const payment = this.createPayment(paymentData.reference, paymentData.email);
-    payment.add(paymentData.additionalInfo || 'Order', paymentData.amount);
-    
-    return this.send(payment);
-  }
-
-  // Legacy method for backward compatibility
-  async checkPaymentStatus(pollUrl: string): Promise<{
-    status: string;
-    paid: boolean;
-    reference?: string;
-    amount?: number;
-  }> {
-    const result = await this.pollTransaction(pollUrl);
+  // Create a mock payment object for compatibility
+  createPayment(reference: string, email?: string) {
     return {
-      status: result.status,
-      paid: result.paid(),
-      reference: result.reference,
-      amount: result.amount
+      reference,
+      email: email || '',
+      items: [],
+      total: 0,
+      add: function(description: string, amount: number) {
+        this.items.push({ name: description, amount });
+        this.total += amount;
+      }
     };
   }
 }
