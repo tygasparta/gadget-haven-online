@@ -133,11 +133,11 @@ const usePaynow = () => {
 
       // Validate phone number format
       const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
-      if (method === 'ecocash' && !cleanPhone.startsWith('077')) {
-        throw new Error('EcoCash requires an Econet number (077)');
+      if (method === 'ecocash' && !cleanPhone.startsWith('077') && !cleanPhone.startsWith('078')) {
+        throw new Error('EcoCash requires an Econet number (077/078)');
       }
-      if (method === 'onemoney' && !cleanPhone.startsWith('071')) {
-        throw new Error('OneMoney requires a NetOne number (071)');
+      if (method === 'onemoney' && !cleanPhone.startsWith('071') && !cleanPhone.startsWith('073')) {
+        throw new Error('OneMoney requires a NetOne number (071/073)');
       }
 
       console.log('Getting Paynow service...');

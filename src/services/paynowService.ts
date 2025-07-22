@@ -32,7 +32,7 @@ class PaynowService {
     
     console.log('Initializing Paynow with ID:', id);
     
-    // Initialize Paynow with credentials
+    // Initialize Paynow with credentials using correct constructor
     this.paynow = new Paynow(id, key);
     
     // Set return and result URLs
@@ -62,10 +62,7 @@ class PaynowService {
       
       const response = await this.paynow.send(payment);
       console.log('Raw Paynow web response:', response);
-      console.log('Response type:', typeof response);
-      console.log('Response keys:', response ? Object.keys(response) : 'No response');
 
-      // The Paynow SDK might return different response formats
       if (!response) {
         console.error('No response received from Paynow');
         return {
@@ -74,56 +71,19 @@ class PaynowService {
         };
       }
 
-      // Check if it's a successful response based on common Paynow response patterns
-      let isSuccess = false;
-      let redirectUrl = '';
-      let pollUrl = '';
-      let errorMessage = '';
-
-      // Handle different possible response formats
-      if (typeof response === 'object') {
-        // Check for success indicators
-        isSuccess = response.success === true || 
-                   response.success === 'true' || 
-                   response.status === 'Ok' ||
-                   response.status === 'ok' ||
-                   (response.browserurl && response.browserurl.length > 0) ||
-                   (response.redirecturl && response.redirecturl.length > 0);
-
-        // Extract redirect URL from various possible properties
-        redirectUrl = response.browserurl || 
-                     response.redirecturl || 
-                     response.redirectUrl || 
-                     response.redirect_url || 
-                     '';
-
-        // Extract poll URL
-        pollUrl = response.pollurl || 
-                 response.pollUrl || 
-                 response.poll_url || 
-                 '';
-
-        // Extract error message
-        errorMessage = response.error || 
-                      response.message || 
-                      response.statusmessage ||
-                      '';
-      }
-
-      console.log('Parsed response:', { isSuccess, redirectUrl, pollUrl, errorMessage });
-
-      if (isSuccess && redirectUrl) {
+      // Handle the response based on Paynow SDK documentation
+      if (response.success) {
         return {
           success: true,
-          redirectUrl: redirectUrl,
-          pollUrl: pollUrl,
-          reference: payment.reference || response.reference
+          redirectUrl: response.redirectUrl,
+          pollUrl: response.pollUrl,
+          reference: response.reference || payment.reference
         };
       } else {
-        console.error('Web payment failed:', { response, errorMessage });
+        console.error('Web payment failed:', response.error);
         return {
           success: false,
-          error: errorMessage || 'Payment initiation failed - please check your Paynow credentials'
+          error: response.error || 'Payment initiation failed'
         };
       }
     } catch (error) {
@@ -144,20 +104,8 @@ class PaynowService {
       const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
       console.log('Cleaned phone number:', cleanPhone);
       
-      let response;
-      if (method === 'ecocash') {
-        console.log('Calling sendMobile for EcoCash...');
-        response = await this.paynow.sendMobile(payment, cleanPhone, 'ecocash');
-      } else if (method === 'onemoney') {
-        console.log('Calling sendMobile for OneMoney...');
-        response = await this.paynow.sendMobile(payment, cleanPhone, 'onemoney');
-      } else {
-        throw new Error(`Unsupported mobile method: ${method}`);
-      }
-
+      const response = await this.paynow.sendMobile(payment, cleanPhone, method);
       console.log('Raw Paynow mobile response:', response);
-      console.log('Mobile response type:', typeof response);
-      console.log('Mobile response keys:', response ? Object.keys(response) : 'No response');
 
       if (!response) {
         console.error('No mobile response received from Paynow');
@@ -167,54 +115,19 @@ class PaynowService {
         };
       }
 
-      // Handle mobile response formats
-      let isSuccess = false;
-      let pollUrl = '';
-      let instructions = '';
-      let errorMessage = '';
-
-      if (typeof response === 'object') {
-        // Check for success indicators
-        isSuccess = response.success === true || 
-                   response.success === 'true' || 
-                   response.status === 'Ok' ||
-                   response.status === 'ok' ||
-                   (response.pollurl && response.pollurl.length > 0) ||
-                   (response.poll_url && response.poll_url.length > 0);
-
-        // Extract poll URL
-        pollUrl = response.pollurl || 
-                 response.pollUrl || 
-                 response.poll_url || 
-                 '';
-
-        // Extract instructions
-        instructions = response.instructions || 
-                      response.message || 
-                      response.statusmessage ||
-                      `Please check your ${method} for payment instructions`;
-
-        // Extract error message
-        errorMessage = response.error || 
-                      response.message || 
-                      response.statusmessage ||
-                      '';
-      }
-
-      console.log('Parsed mobile response:', { isSuccess, pollUrl, instructions, errorMessage });
-
-      if (isSuccess) {
+      // Handle mobile response based on Paynow SDK documentation
+      if (response.success) {
         return {
           success: true,
-          pollUrl: pollUrl,
-          reference: payment.reference || response.reference,
-          instructions: instructions
+          pollUrl: response.pollUrl,
+          reference: response.reference || payment.reference,
+          instructions: response.instructions
         };
       } else {
-        console.error('Mobile payment failed:', { response, errorMessage });
+        console.error('Mobile payment failed:', response.error);
         return {
           success: false,
-          error: errorMessage || 'Mobile payment initiation failed - please check your credentials and phone number'
+          error: response.error || 'Mobile payment initiation failed'
         };
       }
     } catch (error) {
@@ -241,7 +154,7 @@ class PaynowService {
 
       return {
         status: status?.status || 'Unknown',
-        paid: () => status?.paid === true || status?.paid === 'true',
+        paid: () => status?.paid() === true,
         reference: status?.reference,
         amount: status?.amount ? parseFloat(status.amount) : undefined
       };
