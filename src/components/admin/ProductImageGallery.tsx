@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -87,9 +86,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         console.log('Uploading file:', fileName, 'Size:', file.size, 'Type:', file.type);
 
         try {
-          // Upload to product-images bucket
+          // Upload to gallary bucket (which has the correct RLS policies)
           const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('product-images')
+            .from('gallary')
             .upload(filePath, file, {
               cacheControl: '3600',
               upsert: false,
@@ -103,9 +102,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
           console.log('Upload successful:', uploadData);
 
-          // Get public URL
+          // Get public URL from gallary bucket
           const { data: urlData } = supabase.storage
-            .from('product-images')
+            .from('gallary')
             .getPublicUrl(filePath);
 
           if (!urlData.publicUrl) {
