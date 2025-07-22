@@ -7,8 +7,18 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const FeaturedBrands = () => {
   const isMobile = useIsMobile();
   
-  // Brand logos with functional links - Samsung and Apple removed
+  // Brand logos with functional links - now including Samsung and Apple
   const brands = [
+    {
+      name: 'Samsung',
+      logo: '/lovable-uploads/5aef0a9d-04f9-41d0-8d6e-15968139f07b.png',
+      url: '/products?brand=samsung'
+    },
+    {
+      name: 'Apple',
+      logo: '/lovable-uploads/87d49910-7e5d-4ce7-9245-d001dd8e7926.png',
+      url: '/products?brand=apple'
+    },
     {
       name: 'PlayStation',
       logo: '/lovable-uploads/7ff66028-3d91-4af9-b272-7009eb87f13b.png',
@@ -86,7 +96,7 @@ const FeaturedBrands = () => {
                 <CarouselItem key={index} className="pl-1 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                   <a
                     href={brand.url}
-                    className="group flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-200 h-full"
+                    className="group flex items-center justify-center p-4 sm:p-6 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-200 h-full"
                   >
                     <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm border border-gray-100">
                       <img
@@ -98,9 +108,6 @@ const FeaturedBrands = () => {
                         }}
                       />
                     </div>
-                    <span className="text-xs sm:text-sm font-medium text-gray-700 mt-2 sm:mt-3 group-hover:text-gray-900 transition-colors text-center">
-                      {brand.name}
-                    </span>
                   </a>
                 </CarouselItem>
               ))}
