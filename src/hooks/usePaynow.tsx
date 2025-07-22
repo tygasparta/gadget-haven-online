@@ -9,8 +9,25 @@ const usePaynow = () => {
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
   const { toast } = useToast();
 
-  // Initialize Paynow service - credentials will be managed securely
-  const paynowService = new PaynowService();
+  // Initialize Paynow service with credentials from Supabase secrets
+  const getPaynowService = async () => {
+    try {
+      // Get credentials from Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('get-paynow-credentials');
+      
+      if (error) {
+        console.error('Failed to get Paynow credentials:', error);
+        // Fallback to default credentials for testing
+        return new PaynowService();
+      }
+      
+      return new PaynowService(data?.integrationId, data?.integrationKey);
+    } catch (error) {
+      console.error('Error initializing Paynow service:', error);
+      // Fallback to default credentials
+      return new PaynowService();
+    }
+  };
 
   const initiateWebPayment = async (paymentData: PaynowPaymentData): Promise<PaynowResponse> => {
     console.log('Initiating web payment with data:', paymentData);
@@ -26,6 +43,8 @@ const usePaynow = () => {
       if (!paymentData.email || !paymentData.email.includes('@')) {
         throw new Error('Valid email address is required');
       }
+
+      const paynowService = await getPaynowService();
 
       // Create payment using the official SDK
       const payment = paynowService.createPayment(paymentData.reference, paymentData.email);
@@ -112,6 +131,8 @@ const usePaynow = () => {
         throw new Error('OneMoney requires a NetOne number (071)');
       }
 
+      const paynowService = await getPaynowService();
+
       // Create payment using the official SDK
       const payment = paynowService.createPayment(paymentData.reference, paymentData.email);
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
@@ -160,6 +181,7 @@ const usePaynow = () => {
   const checkPaymentStatus = async (pollUrl: string) => {
     try {
       console.log('Checking payment status for:', pollUrl);
+      const paynowService = await getPaynowService();
       const status = await paynowService.pollTransaction(pollUrl);
       console.log('Payment status result:', status);
       
@@ -188,8 +210,7 @@ const usePaynow = () => {
     checkPaymentStatus,
     isProcessing,
     paymentStatus,
-    setPaymentStatus,
-    paynowService
+    setPaymentStatus
   };
 };
 

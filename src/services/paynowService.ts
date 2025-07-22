@@ -88,9 +88,11 @@ class PaynowService {
       
       let response;
       if (method === 'ecocash') {
-        response = await this.paynow.sendEcoCash(payment, cleanPhone, 'ecocash');
+        // Use the correct method for EcoCash
+        response = await this.paynow.sendMobile(payment, cleanPhone, 'ecocash');
       } else if (method === 'onemoney') {
-        response = await this.paynow.sendOneMoney(payment, cleanPhone, 'onemoney');
+        // Use the correct method for OneMoney
+        response = await this.paynow.sendMobile(payment, cleanPhone, 'onemoney');
       } else {
         throw new Error(`Unsupported mobile method: ${method}`);
       }
