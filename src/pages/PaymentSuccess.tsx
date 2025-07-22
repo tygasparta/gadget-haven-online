@@ -37,7 +37,23 @@ const PaymentSuccess = () => {
     clearCart();
   }, []);
 
-  const orderReference = searchParams.get('reference') || 'N/A';
+  // Get order reference from URL params or generate a fallback
+  const orderReference = searchParams.get('reference') || 
+                        searchParams.get('order_id') || 
+                        `ORDER-${Date.now()}`;
+
+  // Check if we have valid order data, if not redirect after showing success
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only redirect if no valid order reference exists
+      if (!searchParams.get('reference') && !searchParams.get('order_id')) {
+        console.log('No order reference found, redirecting to home after 5 seconds');
+        navigate('/');
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">
