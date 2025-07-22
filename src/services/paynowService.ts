@@ -71,13 +71,22 @@ class PaynowService {
   }
 
   // Save payment record to database
-  private async savePaymentRecord(paymentData: PaymentRecord): Promise<string | null> {
+  private async savePaymentRecord(paymentData: Omit<PaymentRecord, 'id' | 'created_at' | 'updated_at'>): Promise<string | null> {
     try {
       console.log('Saving payment record:', paymentData);
       
       const { data, error } = await supabase
         .from('payment_records')
-        .insert([paymentData])
+        .insert([{
+          order_id: paymentData.order_id || null,
+          payment_reference: paymentData.payment_reference,
+          amount: paymentData.amount,
+          status: paymentData.status,
+          payment_method: paymentData.payment_method,
+          poll_url: paymentData.poll_url || null,
+          redirect_url: paymentData.redirect_url || null,
+          instructions: paymentData.instructions || null
+        }])
         .select()
         .single();
 
@@ -95,16 +104,18 @@ class PaynowService {
   }
 
   // Update payment record status
-  private async updatePaymentRecord(paymentReference: string, updates: Partial<PaymentRecord>): Promise<boolean> {
+  private async updatePaymentRecord(paymentReference: string, updates: Partial<Omit<PaymentRecord, 'id' | 'created_at'>>): Promise<boolean> {
     try {
       console.log('Updating payment record:', paymentReference, updates);
       
+      const updateData: any = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+
       const { error } = await supabase
         .from('payment_records')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('payment_reference', paymentReference);
 
       if (error) {
@@ -120,35 +131,48 @@ class PaynowService {
     }
   }
 
-  // Send web-based payment
+  // Send web-based payment via Supabase Edge Function to avoid CORS
   async send(payment: any, orderId?: string): Promise<PaynowResponse> {
     try {
-      console.log('Sending web payment with payment object:', payment);
+      console.log('Sending web payment via Edge Function:', payment);
       
       // Save initial payment record
-      const paymentRecord: PaymentRecord = {
+      const paymentRecord = {
         order_id: orderId,
         payment_reference: payment.reference,
         amount: payment.total,
-        status: 'pending',
+        status: 'pending' as const,
         payment_method: 'paynow_web'
       };
       
-      const recordId = await this.savePaymentRecord(paymentRecord);
-      
-      const response = await this.paynow.send(payment);
-      console.log('Raw Paynow web response:', response);
+      await this.savePaymentRecord(paymentRecord);
 
-      if (!response) {
+      // Call Supabase Edge Function to handle Paynow API
+      const { data: response, error } = await supabase.functions.invoke('paynow-payment', {
+        body: {
+          type: 'web',
+          payment: {
+            reference: payment.reference,
+            email: payment.email,
+            items: payment.items || [{ name: 'Order Items', amount: payment.total }],
+            returnUrl: this.returnUrl,
+            resultUrl: this.resultUrl
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
         await this.updatePaymentRecord(payment.reference, { status: 'failed' });
         return {
           success: false,
-          error: 'No response received from payment gateway'
+          error: error.message || 'Payment initiation failed'
         };
       }
 
-      // Handle the response based on Paynow SDK documentation
-      if (response.success) {
+      console.log('Edge function response:', response);
+
+      if (response?.success) {
         // Update payment record with response data
         await this.updatePaymentRecord(payment.reference, {
           status: 'pending',
@@ -164,14 +188,13 @@ class PaynowService {
         };
       } else {
         await this.updatePaymentRecord(payment.reference, { status: 'failed' });
-        console.error('Web payment failed:', response.error);
         return {
           success: false,
-          error: response.error || 'Payment initiation failed'
+          error: response?.error || 'Payment initiation failed'
         };
       }
     } catch (error) {
-      console.error('Paynow web payment error:', error);
+      console.error('Payment error:', error);
       await this.updatePaymentRecord(payment.reference, { status: 'failed' });
       return {
         success: false,
@@ -180,39 +203,52 @@ class PaynowService {
     }
   }
 
-  // Send mobile-based payment (EcoCash/OneMoney)
+  // Send mobile-based payment via Supabase Edge Function
   async sendMobile(payment: any, phoneNumber: string, method: 'ecocash' | 'onemoney', orderId?: string): Promise<PaynowResponse> {
     try {
-      console.log('Sending mobile payment:', { payment, phoneNumber, method });
+      console.log('Sending mobile payment via Edge Function:', { payment, phoneNumber, method });
       
       // Save initial payment record
-      const paymentRecord: PaymentRecord = {
+      const paymentRecord = {
         order_id: orderId,
         payment_reference: payment.reference,
         amount: payment.total,
-        status: 'pending',
+        status: 'pending' as const,
         payment_method: `paynow_${method}`
       };
       
       await this.savePaymentRecord(paymentRecord);
       
-      // Clean phone number (remove spaces, ensure proper format)
+      // Clean phone number
       const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
       console.log('Cleaned phone number:', cleanPhone);
       
-      const response = await this.paynow.sendMobile(payment, cleanPhone, method);
-      console.log('Raw Paynow mobile response:', response);
+      // Call Supabase Edge Function to handle Paynow API
+      const { data: response, error } = await supabase.functions.invoke('paynow-payment', {
+        body: {
+          type: 'mobile',
+          payment: {
+            reference: payment.reference,
+            email: payment.email,
+            items: payment.items || [{ name: 'Order Items', amount: payment.total }],
+            phone: cleanPhone,
+            method: method
+          }
+        }
+      });
 
-      if (!response) {
+      if (error) {
+        console.error('Mobile edge function error:', error);
         await this.updatePaymentRecord(payment.reference, { status: 'failed' });
         return {
           success: false,
-          error: 'No response received from mobile payment gateway'
+          error: error.message || 'Mobile payment initiation failed'
         };
       }
 
-      // Handle mobile response based on Paynow SDK documentation
-      if (response.success) {
+      console.log('Mobile edge function response:', response);
+
+      if (response?.success) {
         // Update payment record with response data
         await this.updatePaymentRecord(payment.reference, {
           status: 'pending',
@@ -228,14 +264,13 @@ class PaynowService {
         };
       } else {
         await this.updatePaymentRecord(payment.reference, { status: 'failed' });
-        console.error('Mobile payment failed:', response.error);
         return {
           success: false,
-          error: response.error || 'Mobile payment initiation failed'
+          error: response?.error || 'Mobile payment initiation failed'
         };
       }
     } catch (error) {
-      console.error('Paynow mobile payment error:', error);
+      console.error('Mobile payment error:', error);
       await this.updatePaymentRecord(payment.reference, { status: 'failed' });
       return {
         success: false,
@@ -244,7 +279,7 @@ class PaynowService {
     }
   }
 
-  // Poll transaction status
+  // Poll transaction status via Edge Function
   async pollTransaction(pollUrl: string): Promise<{
     status: string;
     paid: () => boolean;
@@ -252,29 +287,43 @@ class PaynowService {
     amount?: number;
   }> {
     try {
-      console.log('Polling transaction:', pollUrl);
+      console.log('Polling transaction via Edge Function:', pollUrl);
       
-      const status = await this.paynow.pollTransaction(pollUrl);
-      console.log('Poll response:', status);
+      const { data: response, error } = await supabase.functions.invoke('paynow-payment', {
+        body: {
+          type: 'poll',
+          pollUrl: pollUrl
+        }
+      });
+
+      if (error) {
+        console.error('Poll edge function error:', error);
+        return {
+          status: 'Error',
+          paid: () => false
+        };
+      }
+
+      console.log('Poll response:', response);
 
       // Update payment record based on status
-      if (status?.reference) {
-        const paymentStatus = status.paid() ? 'paid' : 'pending';
-        await this.updatePaymentRecord(status.reference, { 
+      if (response?.reference) {
+        const paymentStatus = response.paid ? 'paid' : 'pending';
+        await this.updatePaymentRecord(response.reference, { 
           status: paymentStatus as 'paid' | 'pending' 
         });
 
         // If payment is successful, update the associated order
-        if (status.paid()) {
-          await this.updateOrderOnPaymentSuccess(status.reference);
+        if (response.paid) {
+          await this.updateOrderOnPaymentSuccess(response.reference);
         }
       }
 
       return {
-        status: status?.status || 'Unknown',
-        paid: () => status?.paid() === true,
-        reference: status?.reference,
-        amount: status?.amount ? parseFloat(status.amount.toString()) : undefined
+        status: response?.status || 'Unknown',
+        paid: () => response?.paid === true,
+        reference: response?.reference,
+        amount: response?.amount ? parseFloat(response.amount.toString()) : undefined
       };
     } catch (error) {
       console.error('Payment status check error:', error);

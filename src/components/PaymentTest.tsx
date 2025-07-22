@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import usePaynow from '@/hooks/usePaynow';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const PaymentTest = () => {
   const [amount, setAmount] = useState('10.00');
@@ -17,22 +19,75 @@ const PaymentTest = () => {
   
   const { initiateWebPayment, initiateMobilePayment, isProcessing } = usePaynow();
   const { toast } = useToast();
+  const { user } = useAuthContext();
 
   const handleTestPayment = async () => {
-    const paymentData = {
-      reference: `TEST-${Date.now()}`,
-      amount: parseFloat(amount),
-      email: email,
-      additionalInfo: 'Test Payment'
-    };
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to test payments",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
+      // Create a test order first
+      const orderData = {
+        user_id: user.id,
+        total_amount: parseFloat(amount),
+        status: 'pending',
+        payment_method: paymentMethod === 'web' ? 'paynow_web' : `paynow_${mobileMethod}`,
+        shipping_address: {
+          firstName: 'Test',
+          lastName: 'User',
+          address: '123 Test Street',
+          city: 'Test City',
+          zipCode: '12345',
+          country: 'Zimbabwe'
+        },
+        billing_address: {
+          firstName: 'Test',
+          lastName: 'User',
+          address: '123 Test Street',
+          city: 'Test City',
+          zipCode: '12345',
+          country: 'Zimbabwe'
+        }
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData)
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error('Error creating test order:', orderError);
+        toast({
+          title: "Order Creation Failed",
+          description: "Failed to create test order",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Test order created:', order.id);
+
+      const paymentData = {
+        reference: `TEST-ORDER-${order.id}`,
+        amount: parseFloat(amount),
+        email: email,
+        additionalInfo: 'Test Payment'
+      };
+
       if (paymentMethod === 'web') {
-        await initiateWebPayment(paymentData);
+        await initiateWebPayment(paymentData, order.id);
       } else if (paymentMethod === 'mobile') {
-        await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney');
+        await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney', order.id);
       }
     } catch (error) {
+      console.error('Test payment error:', error);
       toast({
         title: "Test Payment Failed",
         description: error instanceof Error ? error.message : "Unknown error",
@@ -45,6 +100,9 @@ const PaymentTest = () => {
     <Card className="max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Payment Test</CardTitle>
+        <p className="text-sm text-gray-600">
+          {user ? `Testing as: ${user.email}` : 'Please log in to test payments'}
+        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -112,11 +170,17 @@ const PaymentTest = () => {
 
         <Button 
           onClick={handleTestPayment}
-          disabled={isProcessing}
+          disabled={isProcessing || !user}
           className="w-full"
         >
           {isProcessing ? 'Processing...' : 'Test Payment'}
         </Button>
+
+        {!user && (
+          <p className="text-sm text-amber-600 text-center">
+            Please log in to test payment functionality
+          </p>
+        )}
       </CardContent>
     </Card>
   );
