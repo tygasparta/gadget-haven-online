@@ -63,7 +63,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           continue;
         }
 
-        // Validate file size (10MB limit increased from 5MB)
+        // Validate file size (10MB limit)
         if (file.size > 10 * 1024 * 1024) {
           toast({
             title: "File too large",
@@ -73,23 +73,19 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           continue;
         }
 
-        // Create a clean filename
+        // Create a clean filename - store directly in bucket root like existing files
         const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const cleanFileName = file.name
-          .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars with underscores
-          .replace(/_{2,}/g, '_') // Replace multiple underscores with single
-          .toLowerCase();
-        
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${cleanFileName}`;
-        const filePath = `product-images/${fileName}`;
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(7);
+        const fileName = `${timestamp}${randomId}.${fileExt}`;
 
         console.log('Uploading file:', fileName, 'Size:', file.size, 'Type:', file.type);
 
         try {
-          // Upload to gallary bucket (which has the correct RLS policies)
+          // Upload directly to gallary bucket root (no subfolder)
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('gallary')
-            .upload(filePath, file, {
+            .upload(fileName, file, {
               cacheControl: '3600',
               upsert: false,
               contentType: file.type
@@ -105,7 +101,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           // Get public URL from gallary bucket
           const { data: urlData } = supabase.storage
             .from('gallary')
-            .getPublicUrl(filePath);
+            .getPublicUrl(fileName);
 
           if (!urlData.publicUrl) {
             throw new Error(`Failed to get public URL for ${file.name}`);
