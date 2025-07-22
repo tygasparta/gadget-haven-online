@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { X, Sparkles, ImageIcon, AlertCircle } from 'lucide-react';
+import { X, Sparkles, ImageIcon, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import ProductImageGallery from './ProductImageGallery';
 import ColorSelector from './ColorSelector';
 import TagsInput from './TagsInput';
@@ -275,27 +275,37 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between border-b border-gray-700">
-          <div>
-            <CardTitle className="text-white flex items-center">
-              Add New Product
+          <div className="flex-1">
+            <CardTitle className="text-white flex items-center justify-between">
+              <span>Add New Product</span>
               <Button
                 onClick={() => setShowAIGenerator(!showAIGenerator)}
                 variant="outline"
                 size="sm"
-                className={`ml-4 border-none text-white transition-all duration-200 ${
+                className={`ml-4 border-none text-white transition-all duration-300 shadow-lg ${
                   showAIGenerator 
-                    ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700' 
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 shadow-red-500/25' 
+                    : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-purple-500/25'
                 }`}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {showAIGenerator ? 'Hide AI Generator' : 'AI Generator'}
+                {showAIGenerator ? (
+                  <>
+                    Hide AI Generator
+                    <ChevronUp className="w-4 h-4 ml-2" />
+                  </>
+                ) : (
+                  <>
+                    AI Generator
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </>
+                )}
               </Button>
             </CardTitle>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-400 text-sm mt-2">
               {showAIGenerator 
-                ? 'Use AI to generate comprehensive product details automatically' 
-                : 'Add product manually or use AI to generate details instantly'
+                ? '🤖 AI is ready to generate comprehensive product details automatically' 
+                : '✨ Use AI to generate product details instantly or add manually below'
               }
             </p>
           </div>
@@ -303,15 +313,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
             onClick={onClose}
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white ml-4"
           >
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
         <CardContent className="p-6">
           {showAIGenerator && (
-            <div className="mb-8">
-              <EnhancedAIProductGenerator onGenerate={handleAIGenerate} />
+            <div className="mb-8 p-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg border border-purple-500/30">
+              <div className="bg-gray-900 rounded-md">
+                <EnhancedAIProductGenerator onGenerate={handleAIGenerate} />
+              </div>
             </div>
           )}
           

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const FeaturedBrands = () => {
@@ -73,29 +74,40 @@ const FeaturedBrands = () => {
       
       <Card className="bg-white/70 backdrop-blur-sm border border-gray-200 shadow-sm">
         <CardContent className="p-6 sm:p-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
-            {brands.map((brand, index) => (
-              <a
-                key={index}
-                href={brand.url}
-                className="group flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-200"
-              >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm border border-gray-100">
-                  <img
-                    src={brand.logo}
-                    alt={brand.name}
-                    className="w-full h-full object-contain p-2 sm:p-3"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://via.placeholder.com/128x128/e5e7eb/6b7280?text=${brand.name.charAt(0)}`;
-                    }}
-                  />
-                </div>
-                <span className="text-xs sm:text-sm font-medium text-gray-700 mt-2 sm:mt-3 group-hover:text-gray-900 transition-colors">
-                  {brand.name}
-                </span>
-              </a>
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-1">
+              {brands.map((brand, index) => (
+                <CarouselItem key={index} className="pl-1 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                  <a
+                    href={brand.url}
+                    className="group flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-200 h-full"
+                  >
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden shadow-sm border border-gray-100">
+                      <img
+                        src={brand.logo}
+                        alt={brand.name}
+                        className="w-full h-full object-contain p-2 sm:p-3"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://via.placeholder.com/128x128/e5e7eb/6b7280?text=${brand.name.charAt(0)}`;
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700 mt-2 sm:mt-3 group-hover:text-gray-900 transition-colors text-center">
+                      {brand.name}
+                    </span>
+                  </a>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex -left-12" />
+            <CarouselNext className="hidden sm:flex -right-12" />
+          </Carousel>
         </CardContent>
       </Card>
     </div>
