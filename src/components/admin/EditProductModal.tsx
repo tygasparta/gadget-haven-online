@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -159,7 +160,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         
         if (actualImages.length > 0) {
           setProductImages(actualImages);
-          setFeaturedImageIndex(mainImageIndex >= 0 ? mainImageIndex : 0);
+          setFeaturedImageIndex(Math.max(0, mainImageIndex));
         } else if (product.image && !product.image.includes('unsplash.com')) {
           setProductImages([product.image]);
           setFeaturedImageIndex(0);
@@ -280,6 +281,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFeaturedImageChange = (index: number) => {
+    console.log('Setting featured image index to:', index);
+    setFeaturedImageIndex(index);
   };
 
   if (!isOpen) return null;
@@ -433,10 +439,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   setProductImages(images);
                 }}
                 featuredImageIndex={featuredImageIndex}
-                onFeaturedImageChange={(index: number) => {
-                  console.log('Setting featured image index to:', index);
-                  setFeaturedImageIndex(index);
-                }}
+                onFeaturedImageChange={handleFeaturedImageChange}
                 maxImages={15}
                 productId={product.id}
               />
