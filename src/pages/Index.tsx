@@ -18,7 +18,6 @@ import MobileHeader from "@/components/MobileHeader";
 import MobileQuickCategories from "@/components/MobileQuickCategories";
 import MobileTopDeals from "@/components/MobileTopDeals";
 import TabletOptimizedBanners from "@/components/TabletOptimizedBanners";
-import PaymentTest from "@/components/PaymentTest";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Product {
@@ -84,12 +83,6 @@ const Index = () => {
         {isMobile ? <MobileQuickCategories /> : <QuickCategories />}
         
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Payment Test Section - Only show in development */}
-          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4 text-yellow-800">Payment Testing</h2>
-            <PaymentTest />
-          </div>
-          
           <TrendingCarousel />
           
           {isMobile ? <MobileTopDeals /> : <LiveDeals />}
