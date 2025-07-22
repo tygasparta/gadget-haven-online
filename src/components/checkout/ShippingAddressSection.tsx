@@ -7,14 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+interface FormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  country: string;
+}
+
 interface ShippingAddressSectionProps {
-  formData: {
-    address: string;
-    city: string;
-    zipCode: string;
-    country: string;
-  };
-  setFormData: (data: any) => void;
+  formData: FormData;
+  setFormData: (data: FormData) => void;
 }
 
 const ShippingAddressSection: React.FC<ShippingAddressSectionProps> = ({

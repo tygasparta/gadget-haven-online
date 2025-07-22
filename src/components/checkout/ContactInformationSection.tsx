@@ -6,13 +6,19 @@ import { Label } from '@/components/ui/label';
 import { User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+interface FormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  country: string;
+}
+
 interface ContactInformationSectionProps {
-  formData: {
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-  setFormData: (data: any) => void;
+  formData: FormData;
+  setFormData: (data: FormData) => void;
 }
 
 const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({

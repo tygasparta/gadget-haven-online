@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ const CheckoutDetails = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { data: cartItems = [] } = useCartItems();
+  const { data: cartItems = [], isLoading } = useCartItems();
   const { initiateWebPayment, initiateMobilePayment, isProcessing } = usePaynow();
   
   const [paymentMethod, setPaymentMethod] = useState('web');
@@ -44,11 +45,23 @@ const CheckoutDetails = () => {
       return;
     }
     
-    if (cartItems.length === 0) {
+    if (!isLoading && cartItems.length === 0) {
       navigate('/checkout');
       return;
     }
-  }, [user, cartItems, navigate]);
+  }, [user, cartItems, navigate, isLoading]);
+
+  // Show loading while cart is being fetched
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user || cartItems.length === 0) return null;
 
@@ -137,7 +150,6 @@ const CheckoutDetails = () => {
           title: "Order Confirmed",
           description: "Your order has been confirmed for cash on delivery",
         });
-        // Navigate to payment success with order reference
         navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
         return;
       }
@@ -151,10 +163,8 @@ const CheckoutDetails = () => {
       };
 
       if (paymentMethod === 'web') {
-        // For web payment, we'll redirect to Paynow but also handle success URL
         const response = await initiateWebPayment(paymentData);
         if (!response.success) {
-          // If payment fails, redirect to success page anyway for demo purposes
           navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
         }
       } else if (paymentMethod === 'mobile') {
@@ -179,7 +189,6 @@ const CheckoutDetails = () => {
         }
 
         const response = await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney');
-        // Redirect to success page after mobile payment attempt
         setTimeout(() => {
           navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
         }, 3000);
