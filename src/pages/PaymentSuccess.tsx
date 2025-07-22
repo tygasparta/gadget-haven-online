@@ -20,6 +20,7 @@ const PaymentSuccess = () => {
   const reference = searchParams.get('reference');
   const orderId = searchParams.get('order_id');
   const error = searchParams.get('error');
+  const isTest = searchParams.get('test') === 'true';
   const isMobile = searchParams.get('mobile') === 'true';
   const method = searchParams.get('method');
 
@@ -38,26 +39,55 @@ const PaymentSuccess = () => {
       }
 
       try {
+        // If this is a test payment, simulate success
+        if (isTest) {
+          setPaymentStatus('success');
+          setPaymentDetails({ 
+            reference,
+            amount: 53.19,
+            message: 'Test payment completed successfully'
+          });
+          
+          // Clear cart if payment is successful and user exists
+          if (user) {
+            await supabase.from('cart_items').delete().eq('user_id', user.id);
+          }
+          return;
+        }
+
         // Try to get payment record from database
-        const paynowService = new PaynowService();
-        const paymentRecord = await paynowService.getPaymentRecord(reference);
+        const { data: paymentRecord, error: dbError } = await supabase
+          .from('payment_records')
+          .select('*')
+          .eq('payment_reference', reference)
+          .single();
         
+        if (dbError && dbError.code !== 'PGRST116') { // PGRST116 is "not found"
+          console.error('Database error:', dbError);
+        }
+
         if (paymentRecord) {
           setPaymentDetails(paymentRecord);
           
           // If we have a poll URL, check the actual payment status
           if (paymentRecord.poll_url && paymentRecord.status === 'pending') {
-            const statusResponse = await paynowService.pollTransaction(paymentRecord.poll_url);
-            
-            if (statusResponse.paid()) {
-              setPaymentStatus('success');
-              // Clear cart if payment is successful
-              if (user) {
-                await supabase.from('cart_items').delete().eq('user_id', user.id);
+            try {
+              const paynowService = new PaynowService();
+              const statusResponse = await paynowService.pollTransaction(paymentRecord.poll_url);
+              
+              if (statusResponse.paid()) {
+                setPaymentStatus('success');
+                // Clear cart if payment is successful
+                if (user) {
+                  await supabase.from('cart_items').delete().eq('user_id', user.id);
+                }
+              } else if (statusResponse.status === 'Cancelled' || statusResponse.status === 'Failed') {
+                setPaymentStatus('failed');
+              } else {
+                setPaymentStatus('pending');
               }
-            } else if (statusResponse.status === 'Cancelled' || statusResponse.status === 'Failed') {
-              setPaymentStatus('failed');
-            } else {
+            } catch (pollError) {
+              console.error('Error polling payment status:', pollError);
               setPaymentStatus('pending');
             }
           } else {
@@ -78,11 +108,11 @@ const PaymentSuccess = () => {
             }
           }
         } else {
-          // No payment record found, might be a test or error
+          // No payment record found - this could be a direct access or test
           setPaymentStatus('pending');
           setPaymentDetails({ 
             reference, 
-            message: 'Payment record not found. This might be a test payment.' 
+            message: 'Payment verification in progress. Please check back shortly.' 
           });
         }
       } catch (error) {
@@ -93,7 +123,7 @@ const PaymentSuccess = () => {
     };
 
     checkPaymentStatus();
-  }, [reference, error, user]);
+  }, [reference, error, user, isTest]);
 
   const getStatusIcon = () => {
     switch (paymentStatus) {
@@ -111,7 +141,7 @@ const PaymentSuccess = () => {
   const getStatusTitle = () => {
     switch (paymentStatus) {
       case 'success':
-        return 'Payment Successful!';
+        return isTest ? 'Test Payment Successful!' : 'Payment Successful!';
       case 'failed':
         return 'Payment Failed';
       case 'pending':
@@ -124,6 +154,9 @@ const PaymentSuccess = () => {
   const getStatusMessage = () => {
     switch (paymentStatus) {
       case 'success':
+        if (isTest) {
+          return 'This was a test payment and has been processed successfully. In production, this would be a real transaction.';
+        }
         return 'Your payment has been processed successfully. Your order is confirmed!';
       case 'failed':
         return paymentDetails?.error || 'Your payment could not be processed. Please try again.';
@@ -175,6 +208,13 @@ const PaymentSuccess = () => {
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="text-sm text-gray-500">Amount</p>
               <p className="font-medium">${paymentDetails.amount.toFixed(2)}</p>
+            </div>
+          )}
+
+          {isTest && (
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-700 font-medium">⚠️ Test Mode</p>
+              <p className="text-xs text-blue-600">This is a development environment. No real payment was processed.</p>
             </div>
           )}
           
