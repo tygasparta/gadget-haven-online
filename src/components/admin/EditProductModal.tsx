@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -434,7 +433,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             <div className="space-y-3">
               <ProductImageGallery 
                 images={productImages}
-                onImagesChange={(images) => {
+                onImagesChange={(images: string[]) => {
                   console.log('Images changed in EditProductModal:', images);
                   setProductImages(images);
                 }}
