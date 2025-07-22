@@ -1,6 +1,5 @@
 
 import { Paynow } from 'paynow';
-import { supabase } from '@/integrations/supabase/client';
 
 interface PaynowPaymentData {
   reference: string;
@@ -26,10 +25,13 @@ class PaynowService {
   public resultUrl: string;
   public returnUrl: string;
 
-  constructor() {
-    // These will be retrieved from Supabase Edge Function
-    // The edge function has access to the secure credentials
-    this.paynow = new Paynow('', ''); // Placeholder - will be set via edge function
+  constructor(integrationId?: string, integrationKey?: string) {
+    // Use provided credentials or fallback to defaults for development
+    const id = integrationId || '21058';
+    const key = integrationKey || 'ece6db09-1654-4bcf-8494-ac98155f41e7';
+    
+    // Initialize Paynow with credentials
+    this.paynow = new Paynow(id, key);
     
     // Set return and result URLs
     this.resultUrl = `${window.location.origin}/api/paynow/webhook`;
@@ -45,43 +47,26 @@ class PaynowService {
     return payment;
   }
 
-  // Send web-based payment via edge function
+  // Send web-based payment
   async send(payment: any): Promise<PaynowResponse> {
     try {
-      console.log('Sending web payment via edge function:', payment);
+      console.log('Sending web payment:', payment);
       
-      const { data, error } = await supabase.functions.invoke('paynow-payment', {
-        body: {
-          type: 'web',
-          reference: payment.reference,
-          email: payment.email,
-          items: payment.items,
-          returnUrl: this.returnUrl,
-          resultUrl: this.resultUrl
-        }
-      });
+      const response = await this.paynow.send(payment);
+      console.log('Paynow web response:', response);
 
-      if (error) {
-        console.error('Edge function error:', error);
-        return {
-          success: false,
-          error: error.message || 'Payment initiation failed'
-        };
-      }
-
-      console.log('Paynow web response:', data);
-
-      if (data.success) {
+      if (response.success) {
         return {
           success: true,
-          redirectUrl: data.redirectUrl,
-          pollUrl: data.pollUrl,
+          redirectUrl: response.redirectUrl,
+          pollUrl: response.pollUrl,
           reference: payment.reference
         };
       } else {
+        console.error('Web payment failed:', response.error);
         return {
           success: false,
-          error: data.error || 'Payment initiation failed'
+          error: response.error || 'Payment initiation failed'
         };
       }
     } catch (error) {
@@ -93,45 +78,37 @@ class PaynowService {
     }
   }
 
-  // Send mobile-based payment via edge function
+  // Send mobile-based payment (EcoCash/OneMoney)
   async sendMobile(payment: any, phoneNumber: string, method: 'ecocash' | 'onemoney'): Promise<PaynowResponse> {
     try {
-      console.log('Sending mobile payment via edge function:', { payment, phoneNumber, method });
+      console.log('Sending mobile payment:', { payment, phoneNumber, method });
       
-      const { data, error } = await supabase.functions.invoke('paynow-payment', {
-        body: {
-          type: 'mobile',
-          method: method,
-          reference: payment.reference,
-          email: payment.email,
-          items: payment.items,
-          phoneNumber: phoneNumber,
-          returnUrl: this.returnUrl,
-          resultUrl: this.resultUrl
-        }
-      });
-
-      if (error) {
-        console.error('Edge function error:', error);
-        return {
-          success: false,
-          error: error.message || 'Mobile payment initiation failed'
-        };
+      // Clean phone number (remove spaces, ensure proper format)
+      const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
+      
+      let response;
+      if (method === 'ecocash') {
+        response = await this.paynow.sendEcoCash(payment, cleanPhone, 'ecocash');
+      } else if (method === 'onemoney') {
+        response = await this.paynow.sendOneMoney(payment, cleanPhone, 'onemoney');
+      } else {
+        throw new Error(`Unsupported mobile method: ${method}`);
       }
 
-      console.log('Paynow mobile response:', data);
+      console.log('Paynow mobile response:', response);
 
-      if (data.success) {
+      if (response.success) {
         return {
           success: true,
-          pollUrl: data.pollUrl,
+          pollUrl: response.pollUrl,
           reference: payment.reference,
-          instructions: data.instructions || `Please check your ${method} for payment instructions`
+          instructions: response.instructions || `Please check your ${method} for payment instructions`
         };
       } else {
+        console.error('Mobile payment failed:', response.error);
         return {
           success: false,
-          error: data.error || 'Mobile payment initiation failed'
+          error: response.error || 'Mobile payment initiation failed'
         };
       }
     } catch (error) {
@@ -143,7 +120,7 @@ class PaynowService {
     }
   }
 
-  // Poll transaction status via edge function
+  // Poll transaction status
   async pollTransaction(pollUrl: string): Promise<{
     status: string;
     paid: () => boolean;
@@ -151,30 +128,16 @@ class PaynowService {
     amount?: number;
   }> {
     try {
-      console.log('Polling transaction via edge function:', pollUrl);
+      console.log('Polling transaction:', pollUrl);
       
-      const { data, error } = await supabase.functions.invoke('paynow-payment', {
-        body: {
-          type: 'poll',
-          pollUrl: pollUrl
-        }
-      });
-
-      if (error) {
-        console.error('Poll error:', error);
-        return {
-          status: 'Error',
-          paid: () => false
-        };
-      }
-
-      console.log('Poll response:', data);
+      const status = await this.paynow.pollTransaction(pollUrl);
+      console.log('Poll response:', status);
 
       return {
-        status: data.status || 'Unknown',
-        paid: () => data.paid || false,
-        reference: data.reference,
-        amount: data.amount ? parseFloat(data.amount) : undefined
+        status: status.status || 'Unknown',
+        paid: () => status.paid,
+        reference: status.reference,
+        amount: status.amount ? parseFloat(status.amount) : undefined
       };
     } catch (error) {
       console.error('Payment status check error:', error);
