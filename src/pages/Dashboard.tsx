@@ -19,6 +19,8 @@ import {
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOrders } from '@/hooks/useOrders';
+import { useWishlist } from '@/hooks/useWishlist';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -28,6 +30,8 @@ const Dashboard = () => {
   const { isAdmin } = useUserRole();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { data: orders = [] } = useOrders();
+  const { data: wishlistItems = [] } = useWishlist();
 
   React.useEffect(() => {
     if (!user) {
@@ -47,6 +51,12 @@ const Dashboard = () => {
       console.error('Logout error:', error);
     }
   };
+
+  // Calculate stats from real data
+  const totalOrders = orders.length;
+  const wishlistCount = wishlistItems.length;
+  const completedOrders = orders.filter(order => order.status === 'completed' || order.status === 'delivered').length;
+  const loyaltyPoints = Math.floor(completedOrders * 20 + totalOrders * 5); // Sample calculation
 
   const menuItems = [
     {
@@ -134,7 +144,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100">Total Orders</p>
-                  <p className="text-3xl font-bold">12</p>
+                  <p className="text-3xl font-bold">{totalOrders}</p>
                 </div>
                 <Package className="w-8 h-8 text-blue-200" />
               </div>
@@ -146,7 +156,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-100">Wishlist Items</p>
-                  <p className="text-3xl font-bold">8</p>
+                  <p className="text-3xl font-bold">{wishlistCount}</p>
                 </div>
                 <Heart className="w-8 h-8 text-green-200" />
               </div>
@@ -158,13 +168,45 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-purple-100">Loyalty Points</p>
-                  <p className="text-3xl font-bold">240</p>
+                  <p className="text-3xl font-bold">{loyaltyPoints}</p>
                 </div>
                 <Settings className="w-8 h-8 text-purple-200" />
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Recent Orders Summary */}
+        {orders.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Recent Orders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {orders.slice(0, 3).map((order) => (
+                  <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">#{order.id.slice(-8).toUpperCase()}</p>
+                      <p className="text-sm text-gray-600">{new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${Number(order.total_amount).toFixed(2)}</p>
+                      <Badge variant="outline" className="text-xs">
+                        {order.status?.replace('_', ' ') || 'pending'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {orders.length > 3 && (
+                <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/orders')}>
+                  View All Orders
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Menu Items */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

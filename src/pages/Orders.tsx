@@ -29,10 +29,13 @@ const Orders = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
+      case 'delivered':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'shipped':
+      case 'in_transit':
         return <Truck className="w-4 h-4 text-blue-600" />;
       case 'pending':
+      case 'processing':
         return <Clock className="w-4 h-4 text-yellow-600" />;
       default:
         return <Package className="w-4 h-4 text-gray-600" />;
@@ -42,14 +45,21 @@ const Orders = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
+      case 'delivered':
         return 'bg-green-100 text-green-800';
       case 'shipped':
+      case 'in_transit':
         return 'bg-blue-100 text-blue-800';
       case 'pending':
+      case 'processing':
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleTrackOrder = (orderId: string) => {
+    navigate(`/track-order?orderId=${orderId}`);
   };
 
   if (isLoading) {
@@ -112,7 +122,7 @@ const Orders = () => {
                   </div>
                   <Badge className={`${getStatusColor(order.status || 'pending')} flex items-center space-x-1`}>
                     {getStatusIcon(order.status || 'pending')}
-                    <span className="capitalize">{order.status || 'pending'}</span>
+                    <span className="capitalize">{order.status?.replace('_', ' ') || 'pending'}</span>
                   </Badge>
                 </div>
               </CardHeader>
@@ -154,12 +164,21 @@ const Orders = () => {
                   
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
-                    <Button variant="outline" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => handleTrackOrder(order.id)}
+                    >
                       Track Order
                     </Button>
-                    {order.status === 'completed' && (
+                    {(order.status === 'completed' || order.status === 'delivered') && (
                       <Button variant="outline" className="flex-1">
                         Leave Review
+                      </Button>
+                    )}
+                    {order.status === 'pending' && (
+                      <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50">
+                        Cancel Order
                       </Button>
                     )}
                   </div>
