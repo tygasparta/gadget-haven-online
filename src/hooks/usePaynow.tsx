@@ -26,12 +26,11 @@ const usePaynow = () => {
         throw new Error('Valid email address is required');
       }
 
-      // Create payment using the new structure
+      // Create payment using the official SDK
       const payment = paynowService.createPayment(paymentData.reference, paymentData.email);
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
 
       console.log('Created payment object:', payment);
-      console.log('Payment total:', payment.getTotal());
 
       const response = await paynowService.send(payment);
       console.log('Payment response:', response);
@@ -112,12 +111,11 @@ const usePaynow = () => {
         throw new Error('OneMoney requires a NetOne number (071)');
       }
 
-      // Create payment using the new structure
+      // Create payment using the official SDK
       const payment = paynowService.createPayment(paymentData.reference, paymentData.email);
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
 
       console.log('Created mobile payment object:', payment);
-      console.log('Payment total:', payment.getTotal());
 
       const response = await paynowService.sendMobile(payment, phoneNumber, method);
       console.log('Mobile payment response:', response);
