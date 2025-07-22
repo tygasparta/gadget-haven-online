@@ -30,6 +30,8 @@ class PaynowService {
     const id = integrationId || '21058';
     const key = integrationKey || 'ece6db09-1654-4bcf-8494-ac98155f41e7';
     
+    console.log('Initializing Paynow with ID:', id);
+    
     // Initialize Paynow with credentials
     this.paynow = new Paynow(id, key);
     
@@ -39,34 +41,55 @@ class PaynowService {
     
     this.paynow.resultUrl = this.resultUrl;
     this.paynow.returnUrl = this.returnUrl;
+
+    console.log('Paynow initialized with URLs:', {
+      resultUrl: this.resultUrl,
+      returnUrl: this.returnUrl
+    });
   }
 
   // Create a payment with reference and optional email
   createPayment(reference: string, email?: string) {
     const payment = this.paynow.createPayment(reference, email || '');
+    console.log('Created payment:', { reference, email });
     return payment;
   }
 
   // Send web-based payment
   async send(payment: any): Promise<PaynowResponse> {
     try {
-      console.log('Sending web payment:', payment);
+      console.log('Sending web payment with payment object:', payment);
       
       const response = await this.paynow.send(payment);
-      console.log('Paynow web response:', response);
+      console.log('Raw Paynow web response:', response);
 
-      if (response.success) {
-        return {
-          success: true,
-          redirectUrl: response.redirectUrl,
-          pollUrl: response.pollUrl,
-          reference: payment.reference
-        };
+      // Handle different response formats
+      if (response && typeof response === 'object') {
+        // Check if response has success property or if it's successful based on other indicators
+        const isSuccess = response.success === true || 
+                         response.success === 'true' || 
+                         (response.status && response.status.toLowerCase() === 'ok') ||
+                         (response.redirectUrl && response.redirectUrl.length > 0);
+
+        if (isSuccess) {
+          return {
+            success: true,
+            redirectUrl: response.redirectUrl || response.redirect_url || response.redirecturl,
+            pollUrl: response.pollUrl || response.poll_url || response.pollurl,
+            reference: payment.reference || response.reference
+          };
+        } else {
+          console.error('Web payment failed:', response);
+          return {
+            success: false,
+            error: response.error || response.message || 'Payment initiation failed'
+          };
+        }
       } else {
-        console.error('Web payment failed:', response.error);
+        console.error('Invalid response format:', response);
         return {
           success: false,
-          error: response.error || 'Payment initiation failed'
+          error: 'Invalid response from payment gateway'
         };
       }
     } catch (error) {
@@ -85,39 +108,56 @@ class PaynowService {
       
       // Clean phone number (remove spaces, ensure proper format)
       const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
+      console.log('Cleaned phone number:', cleanPhone);
       
       let response;
       if (method === 'ecocash') {
-        // Use the correct method for EcoCash
+        console.log('Calling sendMobile for EcoCash...');
         response = await this.paynow.sendMobile(payment, cleanPhone, 'ecocash');
       } else if (method === 'onemoney') {
-        // Use the correct method for OneMoney
+        console.log('Calling sendMobile for OneMoney...');
         response = await this.paynow.sendMobile(payment, cleanPhone, 'onemoney');
       } else {
         throw new Error(`Unsupported mobile method: ${method}`);
       }
 
-      console.log('Paynow mobile response:', response);
+      console.log('Raw Paynow mobile response:', response);
 
-      if (response.success) {
-        return {
-          success: true,
-          pollUrl: response.pollUrl,
-          reference: payment.reference,
-          instructions: response.instructions || `Please check your ${method} for payment instructions`
-        };
+      // Handle different response formats
+      if (response && typeof response === 'object') {
+        // Check if response has success property or if it's successful based on other indicators
+        const isSuccess = response.success === true || 
+                         response.success === 'true' || 
+                         (response.status && response.status.toLowerCase() === 'ok') ||
+                         (response.pollUrl && response.pollUrl.length > 0) ||
+                         (response.poll_url && response.poll_url.length > 0);
+
+        if (isSuccess) {
+          return {
+            success: true,
+            pollUrl: response.pollUrl || response.poll_url || response.pollurl,
+            reference: payment.reference || response.reference,
+            instructions: response.instructions || response.message || `Please check your ${method} for payment instructions`
+          };
+        } else {
+          console.error('Mobile payment failed:', response);
+          return {
+            success: false,
+            error: response.error || response.message || 'Mobile payment initiation failed'
+          };
+        }
       } else {
-        console.error('Mobile payment failed:', response.error);
+        console.error('Invalid mobile response format:', response);
         return {
           success: false,
-          error: response.error || 'Mobile payment initiation failed'
+          error: 'Invalid response from mobile payment gateway'
         };
       }
     } catch (error) {
       console.error('Paynow mobile payment error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Network error occurred'
+        error: error instanceof Error ? error.message : 'Mobile payment network error occurred'
       };
     }
   }
@@ -136,10 +176,10 @@ class PaynowService {
       console.log('Poll response:', status);
 
       return {
-        status: status.status || 'Unknown',
-        paid: () => status.paid,
-        reference: status.reference,
-        amount: status.amount ? parseFloat(status.amount) : undefined
+        status: status?.status || 'Unknown',
+        paid: () => status?.paid === true || status?.paid === 'true',
+        reference: status?.reference,
+        amount: status?.amount ? parseFloat(status.amount) : undefined
       };
     } catch (error) {
       console.error('Payment status check error:', error);

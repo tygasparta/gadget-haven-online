@@ -12,25 +12,30 @@ const usePaynow = () => {
   // Initialize Paynow service with credentials from Supabase secrets
   const getPaynowService = async () => {
     try {
+      console.log('Getting Paynow credentials from Supabase...');
       // Get credentials from Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('get-paynow-credentials');
       
       if (error) {
         console.error('Failed to get Paynow credentials:', error);
         // Fallback to default credentials for testing
+        console.log('Using fallback credentials');
         return new PaynowService();
       }
       
+      console.log('Successfully retrieved credentials from Supabase');
       return new PaynowService(data?.integrationId, data?.integrationKey);
     } catch (error) {
       console.error('Error initializing Paynow service:', error);
       // Fallback to default credentials
+      console.log('Using fallback credentials due to error');
       return new PaynowService();
     }
   };
 
   const initiateWebPayment = async (paymentData: PaynowPaymentData): Promise<PaynowResponse> => {
-    console.log('Initiating web payment with data:', paymentData);
+    console.log('=== STARTING WEB PAYMENT ===');
+    console.log('Web payment data:', paymentData);
     setIsProcessing(true);
     setPaymentStatus('processing');
 
@@ -44,18 +49,19 @@ const usePaynow = () => {
         throw new Error('Valid email address is required');
       }
 
+      console.log('Getting Paynow service...');
       const paynowService = await getPaynowService();
 
       // Create payment using the official SDK
+      console.log('Creating payment...');
       const payment = paynowService.createPayment(paymentData.reference, paymentData.email);
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
 
-      console.log('Created payment object:', payment);
-
+      console.log('Payment object created, now sending...');
       const response = await paynowService.send(payment);
-      console.log('Payment response:', response);
+      console.log('=== WEB PAYMENT RESPONSE ===', response);
       
-      if (response.success) {
+      if (response && response.success) {
         setPaymentStatus('success');
         toast({
           title: "Payment Initiated",
@@ -72,27 +78,29 @@ const usePaynow = () => {
         }
       } else {
         setPaymentStatus('failed');
-        console.error('Payment failed with error:', response.error);
+        const errorMsg = response?.error || 'Payment initiation failed';
+        console.error('Web payment failed:', errorMsg);
         toast({
           title: "Payment Failed",
-          description: response.error || "Failed to initiate payment",
+          description: errorMsg,
           variant: "destructive"
         });
       }
       
-      return response;
+      return response || { success: false, error: 'No response received' };
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('=== WEB PAYMENT ERROR ===', error);
       setPaymentStatus('failed');
+      const errorMessage = error instanceof Error ? error.message : "An error occurred while processing payment";
       toast({
         title: "Payment Error",
-        description: error instanceof Error ? error.message : "An error occurred while processing payment",
+        description: errorMessage,
         variant: "destructive"
       });
       
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Payment processing failed"
+        error: errorMessage
       };
     } finally {
       setIsProcessing(false);
@@ -104,7 +112,8 @@ const usePaynow = () => {
     phoneNumber: string, 
     method: 'ecocash' | 'onemoney'
   ): Promise<PaynowResponse> => {
-    console.log('Initiating mobile payment with data:', { paymentData, phoneNumber, method });
+    console.log('=== STARTING MOBILE PAYMENT ===');
+    console.log('Mobile payment data:', { paymentData, phoneNumber, method });
     setIsProcessing(true);
     setPaymentStatus('processing');
 
@@ -131,18 +140,19 @@ const usePaynow = () => {
         throw new Error('OneMoney requires a NetOne number (071)');
       }
 
+      console.log('Getting Paynow service...');
       const paynowService = await getPaynowService();
 
       // Create payment using the official SDK
+      console.log('Creating mobile payment...');
       const payment = paynowService.createPayment(paymentData.reference, paymentData.email);
       payment.add(paymentData.additionalInfo || 'Order Items', paymentData.amount);
 
-      console.log('Created mobile payment object:', payment);
-
+      console.log('Mobile payment object created, now sending...');
       const response = await paynowService.sendMobile(payment, phoneNumber, method);
-      console.log('Mobile payment response:', response);
+      console.log('=== MOBILE PAYMENT RESPONSE ===', response);
       
-      if (response.success) {
+      if (response && response.success) {
         setPaymentStatus('success');
         toast({
           title: "Mobile Payment Initiated",
@@ -151,27 +161,29 @@ const usePaynow = () => {
         });
       } else {
         setPaymentStatus('failed');
-        console.error('Mobile payment failed with error:', response.error);
+        const errorMsg = response?.error || 'Mobile payment initiation failed';
+        console.error('Mobile payment failed:', errorMsg);
         toast({
           title: "Mobile Payment Failed",
-          description: response.error || "Failed to initiate mobile payment",
+          description: errorMsg,
           variant: "destructive"
         });
       }
       
-      return response;
+      return response || { success: false, error: 'No response received' };
     } catch (error) {
-      console.error('Mobile payment error:', error);
+      console.error('=== MOBILE PAYMENT ERROR ===', error);
       setPaymentStatus('failed');
+      const errorMessage = error instanceof Error ? error.message : "An error occurred while processing mobile payment";
       toast({
         title: "Mobile Payment Error",
-        description: error instanceof Error ? error.message : "An error occurred while processing mobile payment",
+        description: errorMessage,
         variant: "destructive"
       });
       
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Mobile payment processing failed"
+        error: errorMessage
       };
     } finally {
       setIsProcessing(false);
