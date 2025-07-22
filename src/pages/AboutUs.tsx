@@ -90,8 +90,8 @@ const AboutUs = () => {
             </div>
             <div className="relative">
               <img 
-                src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop" 
-                alt="Tech gadgets and circuit board"
+                src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=400&fit=crop" 
+                alt="Modern smartphones and tech gadgets"
                 className="rounded-2xl shadow-lg w-full"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-2xl"></div>
