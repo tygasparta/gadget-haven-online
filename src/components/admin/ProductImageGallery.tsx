@@ -45,6 +45,12 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     const newImages: string[] = [];
 
     try {
+      // Check if user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('You must be logged in to upload images');
+      }
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
@@ -58,39 +64,65 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           continue;
         }
 
-        // Validate file size (5MB limit)
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size (10MB limit increased from 5MB)
+        if (file.size > 10 * 1024 * 1024) {
           toast({
             title: "File too large",
-            description: `${file.name} is too large. Maximum size is 5MB`,
+            description: `${file.name} is too large. Maximum size is 10MB`,
             variant: "destructive"
           });
           continue;
         }
 
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        // Create a clean filename
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const cleanFileName = file.name
+          .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars with underscores
+          .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+          .toLowerCase();
+        
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${cleanFileName}`;
         const filePath = `product-images/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, file);
+        console.log('Uploading file:', fileName, 'Size:', file.size, 'Type:', file.type);
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
+        try {
+          // Upload to product-images bucket
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: file.type
+            });
+
+          if (uploadError) {
+            console.error('Upload error for file:', fileName, uploadError);
+            throw new Error(`Upload failed for ${file.name}: ${uploadError.message}`);
+          }
+
+          console.log('Upload successful:', uploadData);
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(filePath);
+
+          if (!urlData.publicUrl) {
+            throw new Error(`Failed to get public URL for ${file.name}`);
+          }
+
+          console.log('Public URL generated:', urlData.publicUrl);
+          newImages.push(urlData.publicUrl);
+
+        } catch (fileError: any) {
+          console.error('Error processing file:', file.name, fileError);
           toast({
             title: "Upload failed",
-            description: `Failed to upload ${file.name}`,
+            description: `Failed to upload ${file.name}: ${fileError.message}`,
             variant: "destructive"
           });
-          continue;
         }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-
-        newImages.push(publicUrl);
       }
 
       if (newImages.length > 0) {
@@ -101,16 +133,24 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           title: "Images uploaded successfully",
           description: `${newImages.length} image(s) uploaded`
         });
+      } else if (files.length > 0) {
+        toast({
+          title: "Upload failed",
+          description: "No images were successfully uploaded. Please try again.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error('Upload error:', error);
+    } catch (error: any) {
+      console.error('Upload process error:', error);
       toast({
         title: "Upload failed",
-        description: "An error occurred while uploading images",
+        description: error.message || "An error occurred while uploading images",
         variant: "destructive"
       });
     } finally {
       setIsUploading(false);
+      // Reset the input
+      event.target.value = '';
     }
   };
 
@@ -194,6 +234,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                   src={image}
                   alt={`Product image ${index + 1}`}
                   className="w-full h-32 object-cover"
+                  onError={(e) => {
+                    console.error('Failed to load image:', image);
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 
                 {/* Featured badge */}
