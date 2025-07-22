@@ -62,34 +62,68 @@ class PaynowService {
       
       const response = await this.paynow.send(payment);
       console.log('Raw Paynow web response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', response ? Object.keys(response) : 'No response');
 
-      // Handle different response formats
-      if (response && typeof response === 'object') {
-        // Check if response has success property or if it's successful based on other indicators
-        const isSuccess = response.success === true || 
-                         response.success === 'true' || 
-                         (response.status && response.status.toLowerCase() === 'ok') ||
-                         (response.redirectUrl && response.redirectUrl.length > 0);
-
-        if (isSuccess) {
-          return {
-            success: true,
-            redirectUrl: response.redirectUrl || response.redirect_url || response.redirecturl,
-            pollUrl: response.pollUrl || response.poll_url || response.pollurl,
-            reference: payment.reference || response.reference
-          };
-        } else {
-          console.error('Web payment failed:', response);
-          return {
-            success: false,
-            error: response.error || response.message || 'Payment initiation failed'
-          };
-        }
-      } else {
-        console.error('Invalid response format:', response);
+      // The Paynow SDK might return different response formats
+      if (!response) {
+        console.error('No response received from Paynow');
         return {
           success: false,
-          error: 'Invalid response from payment gateway'
+          error: 'No response received from payment gateway'
+        };
+      }
+
+      // Check if it's a successful response based on common Paynow response patterns
+      let isSuccess = false;
+      let redirectUrl = '';
+      let pollUrl = '';
+      let errorMessage = '';
+
+      // Handle different possible response formats
+      if (typeof response === 'object') {
+        // Check for success indicators
+        isSuccess = response.success === true || 
+                   response.success === 'true' || 
+                   response.status === 'Ok' ||
+                   response.status === 'ok' ||
+                   (response.browserurl && response.browserurl.length > 0) ||
+                   (response.redirecturl && response.redirecturl.length > 0);
+
+        // Extract redirect URL from various possible properties
+        redirectUrl = response.browserurl || 
+                     response.redirecturl || 
+                     response.redirectUrl || 
+                     response.redirect_url || 
+                     '';
+
+        // Extract poll URL
+        pollUrl = response.pollurl || 
+                 response.pollUrl || 
+                 response.poll_url || 
+                 '';
+
+        // Extract error message
+        errorMessage = response.error || 
+                      response.message || 
+                      response.statusmessage ||
+                      '';
+      }
+
+      console.log('Parsed response:', { isSuccess, redirectUrl, pollUrl, errorMessage });
+
+      if (isSuccess && redirectUrl) {
+        return {
+          success: true,
+          redirectUrl: redirectUrl,
+          pollUrl: pollUrl,
+          reference: payment.reference || response.reference
+        };
+      } else {
+        console.error('Web payment failed:', { response, errorMessage });
+        return {
+          success: false,
+          error: errorMessage || 'Payment initiation failed - please check your Paynow credentials'
         };
       }
     } catch (error) {
@@ -122,35 +156,65 @@ class PaynowService {
       }
 
       console.log('Raw Paynow mobile response:', response);
+      console.log('Mobile response type:', typeof response);
+      console.log('Mobile response keys:', response ? Object.keys(response) : 'No response');
 
-      // Handle different response formats
-      if (response && typeof response === 'object') {
-        // Check if response has success property or if it's successful based on other indicators
-        const isSuccess = response.success === true || 
-                         response.success === 'true' || 
-                         (response.status && response.status.toLowerCase() === 'ok') ||
-                         (response.pollUrl && response.pollUrl.length > 0) ||
-                         (response.poll_url && response.poll_url.length > 0);
-
-        if (isSuccess) {
-          return {
-            success: true,
-            pollUrl: response.pollUrl || response.poll_url || response.pollurl,
-            reference: payment.reference || response.reference,
-            instructions: response.instructions || response.message || `Please check your ${method} for payment instructions`
-          };
-        } else {
-          console.error('Mobile payment failed:', response);
-          return {
-            success: false,
-            error: response.error || response.message || 'Mobile payment initiation failed'
-          };
-        }
-      } else {
-        console.error('Invalid mobile response format:', response);
+      if (!response) {
+        console.error('No mobile response received from Paynow');
         return {
           success: false,
-          error: 'Invalid response from mobile payment gateway'
+          error: 'No response received from mobile payment gateway'
+        };
+      }
+
+      // Handle mobile response formats
+      let isSuccess = false;
+      let pollUrl = '';
+      let instructions = '';
+      let errorMessage = '';
+
+      if (typeof response === 'object') {
+        // Check for success indicators
+        isSuccess = response.success === true || 
+                   response.success === 'true' || 
+                   response.status === 'Ok' ||
+                   response.status === 'ok' ||
+                   (response.pollurl && response.pollurl.length > 0) ||
+                   (response.poll_url && response.poll_url.length > 0);
+
+        // Extract poll URL
+        pollUrl = response.pollurl || 
+                 response.pollUrl || 
+                 response.poll_url || 
+                 '';
+
+        // Extract instructions
+        instructions = response.instructions || 
+                      response.message || 
+                      response.statusmessage ||
+                      `Please check your ${method} for payment instructions`;
+
+        // Extract error message
+        errorMessage = response.error || 
+                      response.message || 
+                      response.statusmessage ||
+                      '';
+      }
+
+      console.log('Parsed mobile response:', { isSuccess, pollUrl, instructions, errorMessage });
+
+      if (isSuccess) {
+        return {
+          success: true,
+          pollUrl: pollUrl,
+          reference: payment.reference || response.reference,
+          instructions: instructions
+        };
+      } else {
+        console.error('Mobile payment failed:', { response, errorMessage });
+        return {
+          success: false,
+          error: errorMessage || 'Mobile payment initiation failed - please check your credentials and phone number'
         };
       }
     } catch (error) {
