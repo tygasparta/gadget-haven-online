@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -20,12 +19,18 @@ const Products = () => {
   useEffect(() => {
     let filtered = allProducts;
 
-    // Remove brand filtering since brands are cleared
-    // if (brandFilter) {
-    //   filtered = filtered.filter(product => 
-    //     product.brand?.toLowerCase() === brandFilter.toLowerCase()
-    //   );
-    // }
+    // Apply search filter if there's a search term from URL
+    const searchQuery = searchParams.get('q');
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(searchLower) ||
+        product.description?.toLowerCase().includes(searchLower) ||
+        product.category?.toLowerCase().includes(searchLower) ||
+        product.brand?.toLowerCase().includes(searchLower) ||
+        product.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      );
+    }
 
     // Sort products
     filtered = [...filtered].sort((a, b) => {
@@ -43,7 +48,7 @@ const Products = () => {
     });
 
     setFilteredProducts(filtered);
-  }, [allProducts, brandFilter, sortBy]);
+  }, [allProducts, searchParams, sortBy]);
 
   if (isLoading) {
     return (
@@ -64,7 +69,7 @@ const Products = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            All Products
+            {searchParams.get('q') ? `Search Results for "${searchParams.get('q')}"` : 'All Products'}
           </h1>
           <p className="text-gray-600">
             {filteredProducts.length} products found
