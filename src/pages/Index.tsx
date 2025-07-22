@@ -36,7 +36,7 @@ const Index = () => {
     if (isMobile) {
       const timer = setTimeout(() => {
         setShowMobileLoading(false);
-      }, 2000); // Show loading for 2 seconds
+      }, 1500); // Show loading for 1.5 seconds
 
       return () => clearTimeout(timer);
     } else {
@@ -45,9 +45,9 @@ const Index = () => {
   }, [isMobile]);
 
   // Show loading if data is still loading or mobile loading screen is active
-  const isLoading = productsLoading || flashLoading || featuredLoading || (isMobile && showMobileLoading);
+  const isLoading = productsLoading || flashLoading || featuredLoading;
 
-  // Show mobile loading screen
+  // Show mobile loading screen only on mobile
   if (isMobile && showMobileLoading) {
     return <MobileLoadingScreen />;
   }
