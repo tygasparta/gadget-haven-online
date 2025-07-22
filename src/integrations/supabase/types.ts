@@ -130,6 +130,7 @@ export type Database = {
           created_at: string | null
           id: string
           payment_method: string | null
+          payment_reference: string | null
           shipping_address: Json | null
           status: string | null
           total_amount: number
@@ -141,6 +142,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           payment_method?: string | null
+          payment_reference?: string | null
           shipping_address?: Json | null
           status?: string | null
           total_amount: number
@@ -152,6 +154,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           payment_method?: string | null
+          payment_reference?: string | null
           shipping_address?: Json | null
           status?: string | null
           total_amount?: number
@@ -159,6 +162,56 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      payment_records: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          instructions: string | null
+          order_id: string | null
+          payment_method: string
+          payment_reference: string
+          poll_url: string | null
+          redirect_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          order_id?: string | null
+          payment_method: string
+          payment_reference: string
+          poll_url?: string | null
+          redirect_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          order_id?: string | null
+          payment_method?: string
+          payment_reference?: string
+          poll_url?: string | null
+          redirect_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_records_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_colors: {
         Row: {

@@ -76,7 +76,7 @@ class PaynowService {
       console.log('Saving payment record:', paymentData);
       
       const { data, error } = await supabase
-        .from('payment_records')
+        .from('payment_records' as any)
         .insert([paymentData])
         .select()
         .single();
@@ -87,7 +87,7 @@ class PaynowService {
       }
 
       console.log('Payment record saved:', data);
-      return data.id;
+      return data?.id || null;
     } catch (error) {
       console.error('Exception saving payment record:', error);
       return null;
@@ -100,7 +100,7 @@ class PaynowService {
       console.log('Updating payment record:', paymentReference, updates);
       
       const { error } = await supabase
-        .from('payment_records')
+        .from('payment_records' as any)
         .update({
           ...updates,
           updated_at: new Date().toISOString()
@@ -274,7 +274,7 @@ class PaynowService {
         status: status?.status || 'Unknown',
         paid: () => status?.paid() === true,
         reference: status?.reference,
-        amount: status?.amount ? parseFloat(status.amount) : undefined
+        amount: status?.amount ? parseFloat(status.amount.toString()) : undefined
       };
     } catch (error) {
       console.error('Payment status check error:', error);
@@ -319,7 +319,7 @@ class PaynowService {
   async getPaymentRecord(paymentReference: string): Promise<PaymentRecord | null> {
     try {
       const { data, error } = await supabase
-        .from('payment_records')
+        .from('payment_records' as any)
         .select('*')
         .eq('payment_reference', paymentReference)
         .single();
@@ -329,7 +329,7 @@ class PaynowService {
         return null;
       }
 
-      return data;
+      return data as PaymentRecord;
     } catch (error) {
       console.error('Exception fetching payment record:', error);
       return null;
