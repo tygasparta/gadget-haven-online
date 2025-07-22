@@ -440,7 +440,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                 featuredImageIndex={featuredImageIndex}
                 onFeaturedImageChange={handleFeaturedImageChange}
                 maxImages={15}
-                productId={product.id}
+                productId={product.id.toString()}
               />
             </div>
 
