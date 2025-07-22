@@ -76,7 +76,7 @@ class PaynowService {
       console.log('Saving payment record:', paymentData);
       
       const { data, error } = await supabase
-        .from('payment_records' as any)
+        .from('payment_records')
         .insert([paymentData])
         .select()
         .single();
@@ -100,7 +100,7 @@ class PaynowService {
       console.log('Updating payment record:', paymentReference, updates);
       
       const { error } = await supabase
-        .from('payment_records' as any)
+        .from('payment_records')
         .update({
           ...updates,
           updated_at: new Date().toISOString()
@@ -319,7 +319,7 @@ class PaynowService {
   async getPaymentRecord(paymentReference: string): Promise<PaymentRecord | null> {
     try {
       const { data, error } = await supabase
-        .from('payment_records' as any)
+        .from('payment_records')
         .select('*')
         .eq('payment_reference', paymentReference)
         .single();
