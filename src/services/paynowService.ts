@@ -25,12 +25,16 @@ class PaynowService {
   public resultUrl: string;
   public returnUrl: string;
 
-  constructor(integrationId: string, integrationKey: string) {
-    // Initialize Paynow with your credentials
-    this.paynow = new Paynow(integrationId, integrationKey);
+  constructor(integrationId?: string, integrationKey?: string) {
+    // Use provided credentials or fallback to defaults for development
+    const id = integrationId || '21058';
+    const key = integrationKey || 'ece6db09-1654-4bcf-8494-ac98155f41e7';
+    
+    // Initialize Paynow with credentials
+    this.paynow = new Paynow(id, key);
     
     // Set return and result URLs
-    this.resultUrl = `${window.location.origin}/api/paynow/update`;
+    this.resultUrl = `${window.location.origin}/api/paynow/webhook`;
     this.returnUrl = `${window.location.origin}/payment/success`;
     
     this.paynow.resultUrl = this.resultUrl;

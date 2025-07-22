@@ -2,14 +2,15 @@
 import { useState } from 'react';
 import PaynowService, { PaynowPaymentData, PaynowResponse } from '@/services/paynowService';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const usePaynow = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
   const { toast } = useToast();
 
-  // Initialize Paynow service with your actual credentials
-  const paynowService = new PaynowService('21058', 'ece6db09-1654-4bcf-8494-ac98155f41e7');
+  // Initialize Paynow service - credentials will be managed securely
+  const paynowService = new PaynowService();
 
   const initiateWebPayment = async (paymentData: PaynowPaymentData): Promise<PaynowResponse> => {
     console.log('Initiating web payment with data:', paymentData);
