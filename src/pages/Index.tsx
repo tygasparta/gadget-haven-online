@@ -21,9 +21,29 @@ import TabletOptimizedBanners from "@/components/TabletOptimizedBanners";
 import PaymentTest from "@/components/PaymentTest";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+interface Product {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number;
+  original_price: number | null;
+  image: string;
+  category: string | null;
+  brand: string | null;
+  rating: number;
+  reviews: number;
+  stock: number;
+  is_featured: boolean;
+  is_flash_sale: boolean;
+  discount_percentage: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -32,7 +52,7 @@ const Index = () => {
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          .eq('is_active', true)
+          .is('deleted_at', null)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -70,7 +90,7 @@ const Index = () => {
             <PaymentTest />
           </div>
           
-          <TrendingCarousel products={products} />
+          <TrendingCarousel />
           
           {isMobile ? <MobileTopDeals /> : <LiveDeals />}
           
