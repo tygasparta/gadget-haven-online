@@ -2,112 +2,137 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { MapPin, Phone, Mail, Users, Award, Shield, Truck } from 'lucide-react';
+import { Users, Award, Globe, Zap, Heart, Shield } from 'lucide-react';
 
 const AboutUs = () => {
+  const stats = [
+    { icon: Users, label: 'Happy Customers', value: '50K+', color: 'from-blue-500 to-blue-600' },
+    { icon: Globe, label: 'Countries Served', value: '25+', color: 'from-green-500 to-green-600' },
+    { icon: Award, label: 'Awards Won', value: '15+', color: 'from-purple-500 to-purple-600' },
+    { icon: Zap, label: 'Products Sold', value: '100K+', color: 'from-orange-500 to-orange-600' }
+  ];
+
+  const values = [
+    {
+      icon: Heart,
+      title: 'Customer First',
+      description: 'Every decision we make is driven by what\'s best for our customers.',
+      color: 'from-pink-500 to-rose-600'
+    },
+    {
+      icon: Shield,
+      title: 'Quality Assured',
+      description: 'We guarantee the authenticity and quality of every product we sell.',
+      color: 'from-blue-500 to-indigo-600'
+    },
+    {
+      icon: Zap,
+      title: 'Innovation',
+      description: 'We stay ahead of tech trends to bring you the latest innovations.',
+      color: 'from-yellow-500 to-orange-600'
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-100">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">About Gadget Genie</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Zimbabwe's premier destination for cutting-edge technology. We've been serving tech enthusiasts 
-            with the latest smartphones, electronics, and home appliances since our inception.
+          <div className="inline-flex items-center space-x-3 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg animate-pulse">
+              <span className="text-white font-bold text-xl">G</span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              GadgetGenie
+            </h1>
+          </div>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Your trusted destination for cutting-edge technology and innovative gadgets. 
+            We make tech accessible, affordable, and exciting for everyone.
           </p>
         </div>
 
-        {/* Story Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
-            <p className="text-gray-600 mb-4">
-              Founded with a vision to bring the latest technology to Zimbabwe, Gadget Genie has grown 
-              from a small startup to the country's most trusted electronics retailer. We believe that 
-              everyone deserves access to quality technology at competitive prices.
-            </p>
-            <p className="text-gray-600 mb-4">
-              Our journey began with a simple mission: to make technology accessible, affordable, and 
-              reliable for every Zimbabwean. Today, we serve thousands of customers nationwide with 
-              fast delivery and exceptional customer service.
-            </p>
-            <p className="text-gray-600">
-              We're not just a retailer – we're your technology partner, helping you stay connected 
-              to what matters most in an increasingly digital world.
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Us</h3>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <Shield className="w-6 h-6 text-blue-500 mr-3" />
-                <span>Authentic products with warranty</span>
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+          {stats.map((stat, index) => (
+            <div key={index} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center mb-4 mx-auto`}>
+                <stat.icon className="w-6 h-6 text-white" />
               </div>
-              <div className="flex items-center">
-                <Truck className="w-6 h-6 text-blue-500 mr-3" />
-                <span>Fast nationwide delivery</span>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
               </div>
-              <div className="flex items-center">
-                <Award className="w-6 h-6 text-blue-500 mr-3" />
-                <span>Award-winning customer service</span>
-              </div>
-              <div className="flex items-center">
-                <Users className="w-6 h-6 text-blue-500 mr-3" />
-                <span>Expert technical support</span>
-              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Our Story */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Story</h2>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Founded in 2020, GadgetGenie started with a simple mission: to make the latest technology 
+                accessible to everyone. What began as a small startup has grown into a trusted platform 
+                serving thousands of tech enthusiasts worldwide.
+              </p>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                We believe that technology should enhance lives, not complicate them. That's why we 
+                carefully curate our product selection, ensuring every item meets our high standards 
+                for quality, innovation, and value.
+              </p>
+              <p className="text-gray-600 leading-relaxed">
+                Today, GadgetGenie continues to evolve, always staying ahead of the curve to bring 
+                you the most exciting tech innovations before they become mainstream.
+              </p>
+            </div>
+            <div className="relative">
+              <img 
+                src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop" 
+                alt="Team collaboration"
+                className="rounded-2xl shadow-lg w-full"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-2xl"></div>
             </div>
           </div>
         </div>
 
-        {/* Values Section */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Our Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-blue-600" />
+        {/* Our Values */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Our Values</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {values.map((value, index) => (
+              <div key={index} className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div className={`w-16 h-16 bg-gradient-to-r ${value.color} rounded-2xl flex items-center justify-center mb-6`}>
+                  <value.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{value.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{value.description}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Trust</h3>
-              <p className="text-gray-600">We build lasting relationships through transparency and reliability.</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Excellence</h3>
-              <p className="text-gray-600">We strive for excellence in every product and service we offer.</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Community</h3>
-              <p className="text-gray-600">We're committed to serving and supporting our local community.</p>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Contact Info */}
-        <div className="bg-gray-900 text-white rounded-lg p-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">Get in Touch</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div>
-              <Phone className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-              <p className="font-semibold">Call Us</p>
-              <p>+263719337910</p>
-            </div>
-            <div>
-              <Mail className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-              <p className="font-semibold">Email Us</p>
-              <p>info@gadgetgenie.org</p>
-            </div>
-            <div>
-              <MapPin className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-              <p className="font-semibold">Visit Us</p>
-              <p>Harare, Zimbabwe</p>
-            </div>
+        {/* Team Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white text-center">
+          <h2 className="text-3xl font-bold mb-6">Meet Our Team</h2>
+          <p className="text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Our diverse team of tech enthusiasts, designers, and customer service experts work 
+            tirelessly to bring you the best shopping experience possible.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="text-center">
+                <div className="w-20 h-20 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <Users className="w-10 h-10 text-white" />
+                </div>
+                <div className="text-sm font-medium">Team Member {i}</div>
+                <div className="text-xs text-blue-200">Department</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

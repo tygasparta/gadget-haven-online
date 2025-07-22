@@ -22,7 +22,7 @@ const Footer = () => {
                 <div className="absolute inset-0 w-10 h-10 border-2 border-gradient-to-r from-blue-400 to-purple-400 rounded-xl opacity-0 group-hover:opacity-100 animate-spin transition-opacity duration-300"></div>
               </div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Gadget Genie
+                GadgetGenie
               </h3>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -34,10 +34,16 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2">
-              {['About Us', 'Contact', 'Help Centre', 'Careers', 'Press'].map(link => (
-                <li key={link}>
-                  <a href={`/${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
-                    {link}
+              {[
+                { name: 'About Us', path: '/about' },
+                { name: 'Contact', path: '/contact' },
+                { name: 'Help Centre', path: '/help' },
+                { name: 'Careers', path: '/careers' },
+                { name: 'Press', path: '/press' }
+              ].map(link => (
+                <li key={link.name}>
+                  <a href={link.path} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                    {link.name}
                   </a>
                 </li>
               ))}
@@ -48,10 +54,16 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Customer Service</h4>
             <ul className="space-y-2">
-              {['Shipping Info', 'Returns', 'Warranty', 'Track Order', 'Payment Methods'].map(link => (
-                <li key={link}>
-                  <a href={`/${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
-                    {link}
+              {[
+                { name: 'Shipping Info', path: '/shipping' },
+                { name: 'Returns', path: '/returns' },
+                { name: 'Warranty', path: '/warranty' },
+                { name: 'Track Order', path: '/track-order' },
+                { name: 'Payment Methods', path: '/payment-methods' }
+              ].map(link => (
+                <li key={link.name}>
+                  <a href={link.path} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                    {link.name}
                   </a>
                 </li>
               ))}
@@ -62,10 +74,16 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Legal & Connect</h4>
             <ul className="space-y-2">
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility', 'Sell With Us'].map(link => (
-                <li key={link}>
-                  <a href={`/${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
-                    {link}
+              {[
+                { name: 'Privacy Policy', path: '/privacy' },
+                { name: 'Terms of Service', path: '/terms' },
+                { name: 'Cookie Policy', path: '/cookies' },
+                { name: 'Accessibility', path: '/accessibility' },
+                { name: 'Sell With Us', path: '/sell' }
+              ].map(link => (
+                <li key={link.name}>
+                  <a href={link.path} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                    {link.name}
                   </a>
                 </li>
               ))}
@@ -77,7 +95,7 @@ const Footer = () => {
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-sm text-gray-400">© 2025 Gadget Genie. All rights reserved.</div>
+          <div className="text-sm text-gray-400">© 2025 GadgetGenie. All rights reserved.</div>
         </div>
       </div>
     </footer>

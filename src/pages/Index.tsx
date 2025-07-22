@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
+import MobileHeader from '../components/MobileHeader';
 import Sidebar from '../components/Sidebar';
 import HeroBanner from '../components/HeroBanner';
 import FeaturedBrands from '../components/FeaturedBrands';
@@ -84,9 +85,9 @@ const Index = () => {
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Gadget Genie - Home",
-          "description": "Shop the latest electronics, smartphones, and gadgets at Gadget Genie. Flash sales, new arrivals, and best sellers available now.",
-          "url": "https://gadget-genie.com/",
+          "name": "GadgetGenie - Home",
+          "description": "Shop the latest electronics, smartphones, and gadgets at GadgetGenie. Flash sales, new arrivals, and best sellers available now.",
+          "url": "https://gadgetgenie.com/",
           "mainEntity": {
             "@type": "ItemList",
             "itemListElement": transformedFlashSale.map((product, index) => ({
@@ -104,7 +105,8 @@ const Index = () => {
       </script>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative">
-        <Header />
+        {/* Conditional Header */}
+        {isMobile ? <MobileHeader /> : <Header />}
         <CartSidebar />
         
         <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 py-3 sm:py-6 pb-20 md:pb-6">

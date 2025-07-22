@@ -132,7 +132,7 @@ const Header = () => {
       <div className="bg-blue-600 text-white py-2 px-4 text-xs sm:text-sm text-center">
         <span className="block sm:inline">Free delivery on orders over $50</span>
         <div className="hidden lg:float-right lg:block">
-          <Link to="/help-centre" className="mr-4 hover:text-blue-200 transition-colors cursor-pointer">
+          <Link to="/help" className="mr-4 hover:text-blue-200 transition-colors cursor-pointer">
             Help Centre
           </Link>
           <Link to="/track-order" className="hover:text-blue-200 transition-colors cursor-pointer">
