@@ -433,7 +433,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   setProductImages(images);
                 }}
                 featuredImageIndex={featuredImageIndex}
-                onFeaturedImageChange={setFeaturedImageIndex}
+                onFeaturedImageChange={(index: number) => setFeaturedImageIndex(index)}
                 maxImages={15}
                 productId={product.id}
               />
