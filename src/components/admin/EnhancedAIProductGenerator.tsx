@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, Loader2, Wand2, Zap, Brain, Target, Palette, Tag, Package } from 'lucide-react';
+import { Sparkles, Loader2, Wand2, Zap, Brain, Target, Palette, Tag, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EnhancedAIProductGeneratorProps {
   onGenerate: (data: any) => void;
@@ -23,6 +24,7 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStage, setGenerationStage] = useState('');
+  const [error, setError] = useState('');
   const { toast } = useToast();
 
   const detectBrand = (productName: string, description: string): string => {
@@ -124,37 +126,52 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
     }
 
     setIsGenerating(true);
+    setError('');
     setGenerationStage('Initializing AI generation...');
     
     const stageInterval = simulateGenerationStages();
 
     try {
-      const response = await fetch('/api/generate-product-details', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
+      console.log('Calling generate-product-details function with prompt:', prompt);
+      
+      const { data, error: functionError } = await supabase.functions.invoke('generate-product-details', {
+        body: { prompt }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate product details');
+      if (functionError) {
+        console.error('Supabase function error:', functionError);
+        throw new Error(functionError.message || 'Failed to generate product details');
       }
 
-      const data = await response.json();
+      if (!data || !data.generatedData) {
+        throw new Error('No data received from AI generation');
+      }
+
+      console.log('Generated data received:', data.generatedData);
+      
+      // Parse the generated data
+      let parsedData;
+      try {
+        parsedData = typeof data.generatedData === 'string' 
+          ? JSON.parse(data.generatedData) 
+          : data.generatedData;
+      } catch (parseError) {
+        console.error('Error parsing generated data:', parseError);
+        throw new Error('Invalid response format from AI');
+      }
       
       // Enhanced brand detection
-      const detectedBrand = detectBrand(data.name, data.description);
-      const generatedColors = generateColors(data.name, data.category);
+      const detectedBrand = detectBrand(parsedData.name || '', parsedData.description || '');
+      const generatedColors = generateColors(parsedData.name || '', parsedData.category || '');
       
       const enhancedData = {
-        ...data,
+        ...parsedData,
         brand: detectedBrand,
         colors: generatedColors,
-        price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
-        tags: [...(data.tags || []), detectedBrand.toLowerCase(), data.category.toLowerCase()],
-        whats_in_box: data.whats_in_box || [
-          `${data.name}`,
+        price: typeof parsedData.price === 'string' ? parseFloat(parsedData.price) : parsedData.price,
+        tags: [...(parsedData.tags || []), detectedBrand.toLowerCase(), (parsedData.category || '').toLowerCase()],
+        whats_in_box: parsedData.whats_in_box || [
+          `${parsedData.name}`,
           'USB Cable',
           'User Manual',
           'Warranty Card'
@@ -171,23 +188,26 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
         
         toast({
           title: "✨ AI Generation Complete!",
-          description: `Successfully generated "${data.name}" with brand: ${detectedBrand}`,
+          description: `Successfully generated "${parsedData.name}" with brand: ${detectedBrand}`,
         });
       }, 1000);
       
     } catch (error) {
       clearInterval(stageInterval);
       console.error('Error generating product:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setError(errorMessage);
       setGenerationStage('');
       toast({
         title: "Generation failed",
-        description: "Please try again with a different prompt",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setTimeout(() => {
         setIsGenerating(false);
         setGenerationStage('');
+        setError('');
       }, 1000);
     }
   };
@@ -217,6 +237,22 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
         </p>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
+        {/* Error Display */}
+        {error && (
+          <div className="bg-gradient-to-r from-red-900/30 to-pink-900/30 rounded-lg p-4 border border-red-500/20">
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="text-red-200 font-medium">Generation Failed</div>
+                <div className="text-red-300 text-sm mt-1">{error}</div>
+                <div className="text-red-400 text-xs mt-2">
+                  Please try again with a different prompt or check your connection
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* AI Status Display */}
         {isGenerating && (
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-4 border border-blue-500/20">
@@ -231,35 +267,48 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
               </div>
               <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
             </div>
-            <div className="mt-3 bg-blue-900/20 rounded-full h-1 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-full animate-pulse"></div>
+            <div className="mt-3 bg-blue-900/20 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-full animate-pulse rounded-full"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Success State */}
+        {!isGenerating && !error && generationStage === 'Generation complete!' && (
+          <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg p-4 border border-green-500/20">
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <div className="text-green-200 font-medium">Generation Successful!</div>
             </div>
           </div>
         )}
 
         {/* Main Input */}
         <div className="space-y-3">
-          <Label htmlFor="ai-prompt" className="text-gray-300 flex items-center">
+          <Label htmlFor="ai-prompt" className="text-gray-300 flex items-center text-base font-medium">
             <Target className="w-4 h-4 mr-2" />
-            Product Description
+            Product Description *
           </Label>
           <Textarea
             id="ai-prompt"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe the product you want to create in detail..."
-            className="bg-gray-800/50 border-gray-600 text-white min-h-[120px] focus:border-blue-400 focus:ring-blue-400/20"
+            placeholder="Describe the product you want to create in detail... (e.g., 'Latest iPhone with advanced camera features and titanium design')"
+            className="bg-gray-800/50 border-gray-600 text-white min-h-[120px] focus:border-blue-400 focus:ring-blue-400/20 resize-none"
             disabled={isGenerating}
           />
+          <p className="text-gray-400 text-xs">
+            Be specific about features, specifications, and brand to get better results
+          </p>
         </div>
 
         {/* Quick Prompts */}
         <div className="space-y-3">
-          <Label className="text-gray-300 flex items-center">
+          <Label className="text-gray-300 flex items-center text-base font-medium">
             <Zap className="w-4 h-4 mr-2" />
             Quick Examples
           </Label>
-          <div className="grid grid-cols-1 gap-2">
+          <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
             {quickPrompts.map((quickPrompt, index) => (
               <Button
                 key={index}
@@ -267,35 +316,35 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
                 size="sm"
                 onClick={() => setPrompt(quickPrompt)}
                 disabled={isGenerating}
-                className="bg-gray-800/30 border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white text-left justify-start h-auto py-2 px-3"
+                className="bg-gray-800/30 border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white text-left justify-start h-auto py-3 px-4 font-normal"
               >
-                <span className="text-xs truncate">{quickPrompt}</span>
+                <span className="text-sm text-left leading-relaxed">{quickPrompt}</span>
               </Button>
             ))}
           </div>
         </div>
 
         {/* Enhanced Features Grid */}
-        <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50">
-          <h3 className="text-white font-medium mb-3 flex items-center">
+        <div className="bg-gray-800/30 rounded-lg p-5 border border-gray-700/50">
+          <h3 className="text-white font-medium mb-4 flex items-center text-base">
             <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
             AI-Powered Features
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex items-center space-x-2">
-              <Brain className="w-4 h-4 text-blue-400 flex-shrink-0" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3">
+              <Brain className="w-5 h-5 text-blue-400 flex-shrink-0" />
               <span className="text-gray-300 text-sm">Smart brand detection</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Palette className="w-4 h-4 text-purple-400 flex-shrink-0" />
-              <span className="text-gray-300 text-sm">Color generation</span>
+            <div className="flex items-center space-x-3">
+              <Palette className="w-5 h-5 text-purple-400 flex-shrink-0" />
+              <span className="text-gray-300 text-sm">Automatic color generation</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Tag className="w-4 h-4 text-green-400 flex-shrink-0" />
+            <div className="flex items-center space-x-3">
+              <Tag className="w-5 h-5 text-green-400 flex-shrink-0" />
               <span className="text-gray-300 text-sm">Intelligent tagging</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Package className="w-4 h-4 text-orange-400 flex-shrink-0" />
+            <div className="flex items-center space-x-3">
+              <Package className="w-5 h-5 text-orange-400 flex-shrink-0" />
               <span className="text-gray-300 text-sm">Box contents generation</span>
             </div>
           </div>
@@ -305,7 +354,7 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
         <Button 
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim()}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-medium py-3 text-base shadow-lg hover:shadow-xl transition-all duration-200"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-medium py-4 text-base shadow-lg hover:shadow-xl transition-all duration-200 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
