@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Bell, Mail, Smartphone, ShoppingCart, Star, Zap } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -13,7 +12,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { useToast } from '@/hooks/use-toast';
-import EmailPreferencesSection from '@/components/EmailPreferencesSection';
 
 const Notifications = () => {
   const { user } = useAuthContext();
@@ -128,7 +126,7 @@ const Notifications = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className={`max-w-4xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+      <div className={`max-w-2xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         {/* Header */}
         <div className="flex items-center space-x-4 mb-6">
           <Button
@@ -144,96 +142,84 @@ const Notifications = () => {
           </div>
         </div>
 
-        {/* Tabs for different notification types */}
-        <Tabs defaultValue="push" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="push">Push Notifications</TabsTrigger>
-            <TabsTrigger value="email">Email Notifications</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="push" className="space-y-6">
-            {/* Push Notification Categories */}
-            {notificationCategories.map((category) => (
-              <Card key={category.title}>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    {category.icon}
-                    <span>{category.title}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {category.settings.map((setting) => (
-                    <div key={setting.key} className="flex items-center justify-between py-2">
-                      <div className="flex items-start space-x-3">
-                        <div className="text-gray-500 mt-1">
-                          {setting.icon}
-                        </div>
-                        <div className="flex-1">
-                          <Label htmlFor={setting.key} className="text-sm font-medium text-gray-900">
-                            {setting.label}
-                          </Label>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {setting.description}
-                          </p>
-                        </div>
+        {/* Notification Categories */}
+        <div className="space-y-6">
+          {notificationCategories.map((category) => (
+            <Card key={category.title}>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  {category.icon}
+                  <span>{category.title}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {category.settings.map((setting) => (
+                  <div key={setting.key} className="flex items-center justify-between py-2">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-gray-500 mt-1">
+                        {setting.icon}
                       </div>
-                      <Switch
-                        id={setting.key}
-                        checked={settings[setting.key as keyof typeof settings]}
-                        onCheckedChange={(checked) => handleSettingChange(setting.key, checked)}
-                      />
+                      <div className="flex-1">
+                        <Label htmlFor={setting.key} className="text-sm font-medium text-gray-900">
+                          {setting.label}
+                        </Label>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {setting.description}
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
-
-            {/* Quick Actions */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex space-x-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      const newSettings = { ...settings };
-                      Object.keys(newSettings).forEach(key => {
-                        newSettings[key as keyof typeof settings] = false;
-                      });
-                      setSettings(newSettings);
-                      toast({
-                        title: "All Notifications Disabled",
-                        description: "You can re-enable them individually anytime."
-                      });
-                    }}
-                  >
-                    Disable All
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => {
-                      const newSettings = { ...settings };
-                      Object.keys(newSettings).forEach(key => {
-                        newSettings[key as keyof typeof settings] = true;
-                      });
-                      setSettings(newSettings);
-                      toast({
-                        title: "All Notifications Enabled",
-                        description: "You'll receive all types of notifications."
-                      });
-                    }}
-                  >
-                    Enable All
-                  </Button>
-                </div>
+                    <Switch
+                      id={setting.key}
+                      checked={settings[setting.key as keyof typeof settings]}
+                      onCheckedChange={(checked) => handleSettingChange(setting.key, checked)}
+                    />
+                  </div>
+                ))}
               </CardContent>
             </Card>
-          </TabsContent>
-          
-          <TabsContent value="email" className="space-y-6">
-            <EmailPreferencesSection />
-          </TabsContent>
-        </Tabs>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  const newSettings = { ...settings };
+                  Object.keys(newSettings).forEach(key => {
+                    newSettings[key as keyof typeof settings] = false;
+                  });
+                  setSettings(newSettings);
+                  toast({
+                    title: "All Notifications Disabled",
+                    description: "You can re-enable them individually anytime."
+                  });
+                }}
+              >
+                Disable All
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  const newSettings = { ...settings };
+                  Object.keys(newSettings).forEach(key => {
+                    newSettings[key as keyof typeof settings] = true;
+                  });
+                  setSettings(newSettings);
+                  toast({
+                    title: "All Notifications Enabled",
+                    description: "You'll receive all types of notifications."
+                  });
+                }}
+              >
+                Enable All
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {!isMobile && <Footer />}
