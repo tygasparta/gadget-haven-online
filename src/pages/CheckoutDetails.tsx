@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
 import usePaynow from '@/hooks/usePaynow';
+import useDischub from '@/hooks/useDischub';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ContactInformationSection from '@/components/checkout/ContactInformationSection';
@@ -25,10 +26,12 @@ const CheckoutDetails = () => {
   const { toast } = useToast();
   const { data: cartItems = [], isLoading } = useCartItems();
   const { initiateWebPayment, initiateMobilePayment, isProcessing } = usePaynow();
+  const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   
   const [paymentMethod, setPaymentMethod] = useState('web');
   const [mobileMethod, setMobileMethod] = useState('ecocash');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [dischubCurrency, setDischubCurrency] = useState<'USD' | 'ZWG'>('USD');
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: '',
@@ -76,6 +79,85 @@ const CheckoutDetails = () => {
   const tax = totalPrice * 0.08;
   const finalTotal = totalPrice + shipping + tax;
 
+  const handleDischubPayment = async (currency: 'USD' | 'ZWG') => {
+    if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Create order in database first
+      const orderData = {
+        user_id: user.id,
+        total_amount: finalTotal,
+        status: 'pending',
+        payment_method: 'dischub',
+        shipping_address: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          address: formData.address,
+          city: formData.city,
+          zipCode: formData.zipCode,
+          country: formData.country
+        },
+        billing_address: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          address: formData.address,
+          city: formData.city,
+          zipCode: formData.zipCode,
+          country: formData.country
+        }
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData)
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cartItems.map(item => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.products.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      console.log('Order created successfully:', order.id);
+
+      // Prepare payment data for Dischub
+      const paymentData = {
+        order_id: `ORDER-${order.id}`,
+        amount: finalTotal,
+        currency: currency,
+        additionalInfo: `Order for ${cartItems.length} items`
+      };
+
+      await initiateDischubPayment(paymentData, order.id);
+
+    } catch (error: any) {
+      console.error('Dischub checkout error:', error);
+      toast({
+        title: "Checkout Failed",
+        description: error.message || "Failed to process checkout",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -85,6 +167,11 @@ const CheckoutDetails = () => {
         description: "Please fill in all required fields",
         variant: "destructive"
       });
+      return;
+    }
+
+    if (paymentMethod === 'dischub') {
+      await handleDischubPayment(dischubCurrency);
       return;
     }
 
@@ -273,6 +360,11 @@ const CheckoutDetails = () => {
               setMobileMethod={setMobileMethod}
               phoneNumber={phoneNumber}
               setPhoneNumber={setPhoneNumber}
+              dischubCurrency={dischubCurrency}
+              setDischubCurrency={setDischubCurrency}
+              totalAmount={finalTotal}
+              onInitiateDischubPayment={handleDischubPayment}
+              isDischubProcessing={isDischubProcessing}
             />
           </div>
 
@@ -286,7 +378,7 @@ const CheckoutDetails = () => {
               finalTotal={finalTotal}
               paymentMethod={paymentMethod}
               mobileMethod={mobileMethod}
-              isProcessing={isProcessing}
+              isProcessing={isProcessing || isDischubProcessing}
               onSubmit={handleSubmit}
             />
           </div>

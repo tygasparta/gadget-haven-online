@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CreditCard, Smartphone, Package, Shield } from 'lucide-react';
+import { CreditCard, Smartphone, Package, Shield, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
+import DischubPaymentSection from './DischubPaymentSection';
 
 interface PaymentMethodSectionProps {
   paymentMethod: string;
@@ -14,6 +15,12 @@ interface PaymentMethodSectionProps {
   setMobileMethod: (method: string) => void;
   phoneNumber: string;
   setPhoneNumber: (number: string) => void;
+  // Dischub props
+  dischubCurrency: 'USD' | 'ZWG';
+  setDischubCurrency: (currency: 'USD' | 'ZWG') => void;
+  totalAmount: number;
+  onInitiateDischubPayment: (currency: 'USD' | 'ZWG') => void;
+  isDischubProcessing: boolean;
 }
 
 const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
@@ -22,7 +29,12 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
   mobileMethod,
   setMobileMethod,
   phoneNumber,
-  setPhoneNumber
+  setPhoneNumber,
+  dischubCurrency,
+  setDischubCurrency,
+  totalAmount,
+  onInitiateDischubPayment,
+  isDischubProcessing
 }) => {
   const getPlaceholder = () => {
     if (mobileMethod === 'ecocash') return '0771234567 or 0781234567';
@@ -83,6 +95,21 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               </div>
             </div>
 
+            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-pointer">
+              <RadioGroupItem value="dischub" id="dischub" className="text-blue-600" />
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Wallet className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <label htmlFor="dischub" className="font-semibold text-gray-800 cursor-pointer">
+                    Dischub Payment
+                  </label>
+                  <p className="text-sm text-gray-500">Pay with Dischub - USD or ZWG</p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer">
               <RadioGroupItem value="cod" id="cod" className="text-orange-600" />
               <div className="flex items-center space-x-3 flex-1">
@@ -134,6 +161,15 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               </div>
             </motion.div>
           )}
+
+          <DischubPaymentSection
+            isVisible={paymentMethod === 'dischub'}
+            selectedCurrency={dischubCurrency}
+            onCurrencyChange={setDischubCurrency}
+            amount={totalAmount}
+            onInitiatePayment={onInitiateDischubPayment}
+            isProcessing={isDischubProcessing}
+          />
 
           {paymentMethod === 'cod' && (
             <motion.div
