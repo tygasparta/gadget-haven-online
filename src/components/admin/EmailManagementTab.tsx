@@ -20,7 +20,10 @@ const EmailManagementTab = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('email_queue')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(email, full_name)
+        `)
         .order('created_at', { ascending: false })
         .limit(50);
       
@@ -189,7 +192,7 @@ const EmailManagementTab = () => {
                       <TableRow key={email.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">User</p>
+                            <p className="font-medium">{email.profiles?.full_name || 'Unknown'}</p>
                             <p className="text-sm text-gray-500">{email.recipient_email}</p>
                           </div>
                         </TableCell>

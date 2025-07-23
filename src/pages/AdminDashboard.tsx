@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   const { user, signOut } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { data: userRole, isLoading: isLoadingRole, isAdmin } = useUserRole();
+  const { data: userRole, isLoading: isLoadingRole } = useUserRole();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   React.useEffect(() => {
@@ -42,11 +42,11 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (!isLoadingRole && !isAdmin) {
+    if (!isLoadingRole && userRole !== 'admin') {
       navigate('/dashboard');
       return;
     }
-  }, [user, isAdmin, navigate, isLoadingRole]);
+  }, [user, userRole, navigate, isLoadingRole]);
 
   const handleLogout = async () => {
     await signOut();
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user || userRole !== 'admin') {
     return null;
   }
 
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="products" className="mt-8">
-            <ProductsTab onAddProduct={() => {}} onEditProduct={() => {}} />
+            <ProductsTab />
           </TabsContent>
 
           <TabsContent value="orders" className="mt-8">

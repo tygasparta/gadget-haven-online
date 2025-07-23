@@ -59,16 +59,9 @@ export const useUserRole = () => {
     };
 
     checkUserRole();
-  }, [user?.id]);
+  }, [user?.id]); // Depend on user.id specifically
 
   console.log('useUserRole: Current state - isAdmin:', isAdmin, 'isModerator:', isModerator, 'loading:', loading);
 
-  // Return the interface that AdminDashboard expects
-  return { 
-    data: isAdmin ? 'admin' : (isModerator ? 'moderator' : 'user'),
-    isLoading: loading,
-    isAdmin, 
-    isModerator, 
-    loading 
-  };
+  return { isAdmin, isModerator, loading };
 };
