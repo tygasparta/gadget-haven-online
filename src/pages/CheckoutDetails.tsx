@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ const CheckoutDetails = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { data: cartItems = [], isLoading } = useCartItems();
+  const { data: cartItems = [], isLoading, error } = useCartItems();
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
@@ -37,17 +38,35 @@ const CheckoutDetails = () => {
     country: 'Zimbabwe'
   });
 
+  // Update form data when user changes
   useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    console.log('CheckoutDetails - User:', user);
+    console.log('CheckoutDetails - Cart items:', cartItems);
+    console.log('CheckoutDetails - Loading:', isLoading);
+    console.log('CheckoutDetails - Error:', error);
+    
     if (!user) {
+      console.log('No user, redirecting to auth');
       navigate('/auth');
       return;
     }
     
+    // Only redirect if we're not loading and there are no items
     if (!isLoading && cartItems.length === 0) {
+      console.log('No cart items, redirecting to checkout');
       navigate('/checkout');
       return;
     }
-  }, [user, cartItems, navigate, isLoading]);
+  }, [user, cartItems, navigate, isLoading, error]);
 
   // Show loading while cart is being fetched
   if (isLoading) {
@@ -61,7 +80,33 @@ const CheckoutDetails = () => {
     );
   }
 
-  if (!user || cartItems.length === 0) return null;
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading checkout: {error.message}</p>
+          <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
+            Back to Cart
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty cart state
+  if (!user || cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Your cart is empty</p>
+          <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+            Continue Shopping
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => {
@@ -85,6 +130,8 @@ const CheckoutDetails = () => {
     }
 
     try {
+      console.log('Starting Dischub payment process...');
+      
       // Create order in database first
       const orderData = {
         user_id: user.id,
@@ -115,7 +162,12 @@ const CheckoutDetails = () => {
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw orderError;
+      }
+
+      console.log('Order created successfully:', order);
 
       // Create order items
       const orderItems = cartItems.map(item => ({
@@ -129,9 +181,12 @@ const CheckoutDetails = () => {
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Order items creation error:', itemsError);
+        throw itemsError;
+      }
 
-      console.log('Order created successfully:', order.id);
+      console.log('Order items created successfully');
 
       // Prepare payment data for Dischub
       const paymentData = {
@@ -141,6 +196,7 @@ const CheckoutDetails = () => {
         additionalInfo: `Order for ${cartItems.length} items`
       };
 
+      console.log('Initiating Dischub payment with data:', paymentData);
       await initiateDischubPayment(paymentData, order.id);
 
     } catch (error: any) {
@@ -164,6 +220,8 @@ const CheckoutDetails = () => {
     }
 
     try {
+      console.log('Starting cash on delivery process...');
+      
       // Create order in database
       const orderData = {
         user_id: user.id,
@@ -194,7 +252,12 @@ const CheckoutDetails = () => {
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('COD order creation error:', orderError);
+        throw orderError;
+      }
+
+      console.log('COD order created successfully:', order);
 
       // Create order items
       const orderItems = cartItems.map(item => ({
@@ -208,9 +271,12 @@ const CheckoutDetails = () => {
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('COD order items creation error:', itemsError);
+        throw itemsError;
+      }
 
-      console.log('COD Order created successfully:', order.id);
+      console.log('COD order items created successfully');
 
       toast({
         title: "Order Confirmed",
@@ -231,6 +297,8 @@ const CheckoutDetails = () => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    
+    console.log('Form submitted with payment method:', paymentMethod);
     
     if (paymentMethod === 'dischub') {
       await handleDischubPayment(dischubCurrency);
