@@ -60,13 +60,17 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
     });
   };
 
+  const handleProductClick = () => {
+    navigate(`/product/${id}`);
+  };
+
   return (
-    <div 
-      className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer relative"
-      onClick={() => navigate(`/product/${id}`)}
-    >
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative">
       {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      <div 
+        className="relative aspect-square overflow-hidden bg-gray-50 cursor-pointer"
+        onClick={handleProductClick}
+      >
         <img
           src={image}
           alt={name}
@@ -111,7 +115,10 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
 
       {/* Product Info */}
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm leading-tight">
+        <h3 
+          className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm leading-tight cursor-pointer hover:text-blue-600 transition-colors"
+          onClick={handleProductClick}
+        >
           {name}
         </h3>
         
