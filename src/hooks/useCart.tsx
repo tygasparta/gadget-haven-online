@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -27,7 +26,12 @@ export const useCartItems = () => {
   return useQuery({
     queryKey: ['cartItems', user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) {
+        console.log('No user found for cart items');
+        return [];
+      }
+      
+      console.log('Fetching cart items for user:', user.id);
       
       const { data, error } = await supabase
         .from('cart_items')
@@ -44,10 +48,18 @@ export const useCartItems = () => {
         `)
         .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Cart items fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Cart items fetched:', data);
       return data as CartItem[];
     },
     enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 

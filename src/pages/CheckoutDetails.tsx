@@ -48,7 +48,15 @@ const CheckoutDetails = () => {
     }
   }, [user]);
 
-  // Check authentication and redirect if needed
+  // Debug logs
+  useEffect(() => {
+    console.log('CheckoutDetails - User:', user?.email);
+    console.log('CheckoutDetails - Cart loading:', cartLoading);
+    console.log('CheckoutDetails - Cart items:', cartItems);
+    console.log('CheckoutDetails - Cart error:', cartError);
+  }, [user, cartLoading, cartItems, cartError]);
+
+  // Check authentication
   useEffect(() => {
     if (!cartLoading && !user) {
       console.log('No user found, redirecting to auth');
@@ -56,13 +64,13 @@ const CheckoutDetails = () => {
     }
   }, [user, cartLoading, navigate]);
 
-  // Check cart items and redirect if empty
+  // Check cart items
   useEffect(() => {
-    if (!cartLoading && cartItems.length === 0) {
-      console.log('No cart items, redirecting to checkout');
+    if (!cartLoading && user && cartItems.length === 0) {
+      console.log('No cart items found, redirecting to checkout');
       navigate('/checkout');
     }
-  }, [cartLoading, cartItems, navigate]);
+  }, [cartLoading, user, cartItems, navigate]);
 
   // Calculate totals
   const getTotalPrice = () => {
