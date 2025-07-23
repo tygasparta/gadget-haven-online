@@ -13,7 +13,7 @@ const HeroBanner = () => {
     subtitle: "PREMIUM AUDIO",
     description: "Save up to 40%",
     details: "Crystal-clear sound with advanced noise cancellation",
-    price: "$299",
+    price: "$100",
     originalPrice: "$499",
     discount: "40% OFF",
     buttonText: "Shop Now",
