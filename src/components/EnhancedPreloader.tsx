@@ -16,22 +16,31 @@ const EnhancedPreloader = () => {
   ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    console.log('EnhancedPreloader mounted');
+    
+    const progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
+        const newProgress = prev + Math.random() * 4 + 1;
+        if (newProgress >= 100) {
+          clearInterval(progressInterval);
+          console.log('Progress completed at 100%');
           return 100;
         }
-        return prev + 2;
+        console.log('Progress updated to:', newProgress);
+        return newProgress;
       });
-    }, 50);
+    }, 150);
 
     const stepInterval = setInterval(() => {
-      setCurrentStep(prev => (prev + 1) % steps.length);
-    }, 1000);
+      setCurrentStep(prev => {
+        const nextStep = (prev + 1) % steps.length;
+        console.log('Step updated to:', nextStep, steps[nextStep]);
+        return nextStep;
+      });
+    }, 800);
 
     return () => {
-      clearInterval(interval);
+      clearInterval(progressInterval);
       clearInterval(stepInterval);
     };
   }, []);
@@ -88,18 +97,18 @@ const EnhancedPreloader = () => {
       <div className={`${isMobile ? 'mb-8' : 'mb-16'} relative z-10`}>
         <div className="relative">
           {/* Static rings - Mobile optimized */}
-          <div className={`absolute ${isMobile ? '-inset-6' : '-inset-12'} border-2 border-cyan-400/50 rounded-full`}></div>
-          <div className={`absolute ${isMobile ? '-inset-4' : '-inset-8'} border-2 border-purple-400/40 rounded-full`}></div>
-          <div className={`absolute ${isMobile ? '-inset-2' : '-inset-4'} border border-pink-400/30 rounded-full`}></div>
+          <div className={`absolute ${isMobile ? '-inset-6' : '-inset-12'} border-2 border-cyan-400/50 rounded-full animate-spin`} style={{ animationDuration: '8s' }}></div>
+          <div className={`absolute ${isMobile ? '-inset-4' : '-inset-8'} border-2 border-purple-400/40 rounded-full animate-spin`} style={{ animationDuration: '6s', animationDirection: 'reverse' }}></div>
+          <div className={`absolute ${isMobile ? '-inset-2' : '-inset-4'} border border-pink-400/30 rounded-full animate-spin`} style={{ animationDuration: '4s' }}></div>
           
           {/* Static background layers - Mobile optimized */}
-          <div className={`absolute inset-0 ${isMobile ? 'w-24 h-24' : 'w-40 h-40'} bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl`}></div>
-          <div className={`absolute ${isMobile ? 'inset-1' : 'inset-2'} ${isMobile ? 'w-22 h-22' : 'w-36 h-36'} bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl`}></div>
+          <div className={`absolute inset-0 ${isMobile ? 'w-24 h-24' : 'w-40 h-40'} bg-gradient-to-br from-cyan-400/60 via-blue-500/60 to-purple-600/60 rounded-3xl blur-3xl animate-pulse`}></div>
+          <div className={`absolute ${isMobile ? 'inset-1' : 'inset-2'} ${isMobile ? 'w-22 h-22' : 'w-36 h-36'} bg-gradient-to-br from-purple-400/40 via-pink-500/40 to-cyan-500/40 rounded-3xl blur-xl animate-pulse`} style={{ animationDelay: '0.5s' }}></div>
           
           {/* Main logo container - Mobile responsive */}
-          <div className={`relative ${isMobile ? 'w-24 h-24' : 'w-40 h-40'} bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/30 backdrop-blur-sm`}>
+          <div className={`relative ${isMobile ? 'w-24 h-24' : 'w-40 h-40'} bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/30 backdrop-blur-sm animate-bounce`}>
             <span 
-              className={`text-white font-bold ${isMobile ? 'text-4xl' : 'text-7xl'} drop-shadow-2xl`} 
+              className={`text-white font-bold ${isMobile ? 'text-4xl' : 'text-7xl'} drop-shadow-2xl animate-pulse`} 
               style={{ textShadow: '0 0 20px rgba(255,255,255,0.8)' }}
             >
               G
@@ -114,7 +123,7 @@ const EnhancedPreloader = () => {
 
       {/* Enhanced Brand Section - Mobile Responsive */}
       <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'} relative z-10`}>
-        <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl sm:text-5xl md:text-6xl'} font-bold mb-4 sm:mb-6 relative`}>
+        <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl sm:text-5xl md:text-6xl'} font-bold mb-4 sm:mb-6 relative animate-pulse`}>
           <span 
             className="bg-gradient-to-r from-cyan-200 via-blue-300 to-purple-400 bg-clip-text text-transparent"
             style={{ 
@@ -138,9 +147,9 @@ const EnhancedPreloader = () => {
         <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
           <div className={`w-full bg-white/20 rounded-full ${isMobile ? 'h-3' : 'h-4'} overflow-hidden backdrop-blur-md border-2 border-white/30 shadow-inner`}>
             <div 
-              className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full relative overflow-hidden transition-all duration-300 ease-out"
+              className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full relative overflow-hidden transition-all duration-500 ease-out"
               style={{ 
-                width: `${progress}%`,
+                width: `${Math.min(progress, 100)}%`,
                 boxShadow: 'inset 0 0 20px rgba(255,255,255,0.3)'
               }}
             >
@@ -149,8 +158,8 @@ const EnhancedPreloader = () => {
             </div>
           </div>
           <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-cyan-200 mt-2 font-medium`}>
-            <span className="truncate pr-2">{steps[currentStep]}</span>
-            <span className="animate-pulse flex-shrink-0">{progress}%</span>
+            <span className="truncate pr-2 animate-pulse">{steps[currentStep]}</span>
+            <span className="animate-pulse flex-shrink-0">{Math.round(progress)}%</span>
           </div>
         </div>
         

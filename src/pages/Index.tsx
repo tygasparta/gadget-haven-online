@@ -19,6 +19,7 @@ import MobileNavigation from '../components/MobileNavigation';
 import MobileQuickCategories from '../components/MobileQuickCategories';
 import MobileTopDeals from '../components/MobileTopDeals';
 import MobileLoadingScreen from '../components/MobileLoadingScreen';
+import EnhancedPreloader from '../components/EnhancedPreloader';
 import TabletOptimizedBanners from '../components/TabletOptimizedBanners';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,27 +30,42 @@ const Index = () => {
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: flashSaleProducts = [], isLoading: flashLoading } = useFlashSaleProducts();
   const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts();
-  const [showMobileLoading, setShowMobileLoading] = useState(true);
+  const [showPreloader, setShowPreloader] = useState(true);
+  const [preloaderProgress, setPreloaderProgress] = useState(0);
 
-  // Show loading screen on mobile for a short duration
+  // Enhanced preloader logic
   useEffect(() => {
-    if (isMobile) {
-      const timer = setTimeout(() => {
-        setShowMobileLoading(false);
-      }, 1500); // Show loading for 1.5 seconds
+    let progressInterval: NodeJS.Timeout;
+    let hideTimeout: NodeJS.Timeout;
 
-      return () => clearTimeout(timer);
-    } else {
-      setShowMobileLoading(false);
-    }
+    // Start progress animation
+    progressInterval = setInterval(() => {
+      setPreloaderProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + Math.random() * 3 + 1; // Variable speed progress
+      });
+    }, 100);
+
+    // Hide preloader after progress completes
+    hideTimeout = setTimeout(() => {
+      setShowPreloader(false);
+    }, isMobile ? 3000 : 3500); // Slightly longer on mobile
+
+    return () => {
+      clearInterval(progressInterval);
+      clearTimeout(hideTimeout);
+    };
   }, [isMobile]);
 
-  // Show loading if data is still loading or mobile loading screen is active
-  const isLoading = productsLoading || flashLoading || featuredLoading;
+  // Show loading if data is still loading
+  const isDataLoading = productsLoading || flashLoading || featuredLoading;
 
-  // Show mobile loading screen only on mobile
-  if (isMobile && showMobileLoading) {
-    return <MobileLoadingScreen />;
+  // Show preloader while loading or during initial display
+  if (showPreloader || (isDataLoading && preloaderProgress < 100)) {
+    return isMobile ? <MobileLoadingScreen /> : <EnhancedPreloader />;
   }
 
   // Transform products to match the expected format
@@ -104,7 +120,7 @@ const Index = () => {
         })}
       </script>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative animate-fade-in">
         {/* Conditional Header */}
         {isMobile ? <MobileHeader /> : <Header />}
         <CartSidebar />
