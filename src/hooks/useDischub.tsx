@@ -17,6 +17,14 @@ const useDischub = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Generate numeric order ID for Dischub
+  const generateNumericOrderId = (orderDbId: string) => {
+    // Convert UUID to numeric by taking timestamp + random numbers
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `${timestamp}${random}`;
+  };
+
   const initiateDischubPayment = async (paymentData: DischubPaymentData, orderDbId?: string) => {
     setIsProcessing(true);
     
@@ -33,11 +41,15 @@ const useDischub = () => {
         throw new Error(validation.error);
       }
 
-      // Save initial payment record
+      // Generate numeric order ID for Dischub
+      const numericOrderId = generateNumericOrderId(orderDbId || '');
+      console.log('Generated numeric order ID:', numericOrderId);
+
+      // Save initial payment record with both IDs
       if (orderDbId) {
         const paymentRecord = {
           order_id: orderDbId,
-          payment_reference: paymentData.order_id,
+          payment_reference: numericOrderId, // Use numeric ID as payment reference
           amount: paymentData.amount,
           status: 'pending' as const,
           payment_method: 'dischub'
@@ -46,9 +58,9 @@ const useDischub = () => {
         await supabase.from('payment_records').insert([paymentRecord]);
       }
 
-      // Create payment order
+      // Create payment order with numeric ID
       const response = await dischubService.createPaymentOrder({
-        order_id: paymentData.order_id,
+        order_id: numericOrderId, // Use numeric ID
         amount: paymentData.amount,
         currency: paymentData.currency,
         notify_url: `${window.location.origin}/api/dischub/webhook`

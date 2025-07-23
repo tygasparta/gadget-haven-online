@@ -138,9 +138,9 @@ const CheckoutDetails = () => {
 
       console.log('Order created successfully:', order.id);
 
-      // Prepare payment data for Dischub
+      // Prepare payment data for Dischub (will generate numeric ID internally)
       const paymentData = {
-        order_id: `ORDER-${order.id}`,
+        order_id: `ORDER-${order.id}`, // This is just for reference, numeric ID will be generated
         amount: finalTotal,
         currency: currency,
         additionalInfo: `Order for ${cartItems.length} items`

@@ -35,7 +35,7 @@ serve(async (req) => {
         timestamp 
       } = webhookData
 
-      // Update payment record
+      // Update payment record using the numeric order_id as payment_reference
       const paymentStatus = status === 'success' ? 'paid' : 'failed'
       
       const { error: updateError } = await supabase
@@ -44,7 +44,7 @@ serve(async (req) => {
           status: paymentStatus,
           updated_at: new Date().toISOString()
         })
-        .eq('payment_reference', order_id)
+        .eq('payment_reference', order_id) // Use numeric order_id to find payment record
 
       if (updateError) {
         console.error('Error updating payment record:', updateError)
@@ -54,12 +54,17 @@ serve(async (req) => {
 
       // If payment is successful, update the associated order
       if (status === 'success') {
-        // Try to extract order DB ID from payment reference
-        const orderIdMatch = order_id.match(/ORDER-(.+)/)
-        if (orderIdMatch) {
-          const orderDbId = orderIdMatch[1]
-          
-          console.log('Updating order status for successful payment:', orderDbId)
+        // Find the order using the payment_reference
+        const { data: paymentRecord, error: paymentError } = await supabase
+          .from('payment_records')
+          .select('order_id')
+          .eq('payment_reference', order_id)
+          .single()
+
+        if (paymentError) {
+          console.error('Error finding payment record:', paymentError)
+        } else if (paymentRecord) {
+          console.log('Updating order status for successful payment:', paymentRecord.order_id)
           
           const { error: orderError } = await supabase
             .from('orders')
@@ -68,7 +73,7 @@ serve(async (req) => {
               payment_reference: order_id,
               updated_at: new Date().toISOString()
             })
-            .eq('id', orderDbId)
+            .eq('id', paymentRecord.order_id)
 
           if (orderError) {
             console.error('Error updating order status:', orderError)
