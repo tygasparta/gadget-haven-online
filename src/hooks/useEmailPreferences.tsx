@@ -27,8 +27,9 @@ export const useEmailPreferences = () => {
       if (!user) return null;
       
       try {
-        const { data, error } = await supabase
-          .rpc('get_email_preferences', { user_id: user.id });
+        const { data, error } = await supabase.functions.invoke('get-email-preferences', {
+          body: { user_id: user.id },
+        });
 
         if (error) {
           console.error('Error fetching email preferences:', error);
@@ -48,8 +49,8 @@ export const useEmailPreferences = () => {
 
         return data as EmailPreferences;
       } catch (err) {
-        console.error('RPC call failed:', err);
-        // Return default preferences if RPC fails
+        console.error('Edge function call failed:', err);
+        // Return default preferences if function fails
         return {
           id: 'default',
           user_id: user.id,
@@ -71,11 +72,12 @@ export const useEmailPreferences = () => {
       if (!user) throw new Error('User not authenticated');
 
       try {
-        const { data, error } = await supabase
-          .rpc('update_email_preferences', {
+        const { data, error } = await supabase.functions.invoke('update-email-preferences', {
+          body: {
             user_id: user.id,
             preferences: updates,
-          });
+          },
+        });
 
         if (error) {
           console.error('Error updating email preferences:', error);
@@ -123,8 +125,9 @@ export const useEmailQueue = () => {
       if (!user) return [];
       
       try {
-        const { data, error } = await supabase
-          .rpc('get_email_queue', { user_id: user.id });
+        const { data, error } = await supabase.functions.invoke('get-email-queue', {
+          body: { user_id: user.id },
+        });
 
         if (error) {
           console.error('Error fetching email queue:', error);
@@ -133,7 +136,7 @@ export const useEmailQueue = () => {
 
         return data || [];
       } catch (err) {
-        console.error('RPC call failed:', err);
+        console.error('Edge function call failed:', err);
         return [];
       }
     },
