@@ -19,6 +19,7 @@ import Phones from '@/pages/Phones';
 import Dashboard from '@/pages/Dashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import Checkout from '@/pages/Checkout';
+import CheckoutDetails from '@/pages/CheckoutDetails';
 import OrderSuccess from '@/pages/OrderSuccess';
 import Wishlist from '@/pages/Wishlist';
 import ProductDetail from '@/pages/ProductDetail';
@@ -59,6 +60,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/details" element={<CheckoutDetails />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
