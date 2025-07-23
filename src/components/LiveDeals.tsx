@@ -2,9 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, ShoppingCart, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useAddToCart } from '@/hooks/useCart';
 
 const LiveDeals = () => {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const { mutate: addToCart } = useAddToCart();
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 42,
@@ -53,7 +57,14 @@ const LiveDeals = () => {
 
   const handleAddToCart = (dealId: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Add to cart logic here
+    e.preventDefault();
+    
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    addToCart({ productId: dealId });
     console.log('Added deal to cart:', dealId);
   };
 

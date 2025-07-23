@@ -19,12 +19,27 @@ const MobileTopDeals = () => {
     .filter(product => product.is_flash_sale || product.discount_percentage > 0)
     .slice(0, 4);
 
-  const handleAddToCart = (productId: number) => {
+  const handleAddToCart = (productId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (!user) {
       navigate('/auth');
       return;
     }
     addToCart({ productId });
+  };
+
+  const handleProductClick = (productId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Navigating to product:', productId);
+    navigate(`/product/${productId}`);
+  };
+
+  const handleSeeAll = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate('/deals');
   };
 
   if (topDeals.length === 0) return null;
@@ -33,14 +48,23 @@ const MobileTopDeals = () => {
     <div className="md:hidden bg-white rounded-2xl shadow-lg p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-800">Top Deals</h3>
-        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-blue-600 hover:text-blue-700"
+          onClick={handleSeeAll}
+        >
           See all
         </Button>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         {topDeals.map((product) => (
-          <div key={product.id} className="bg-gray-50 rounded-xl p-3 relative">
+          <div 
+            key={product.id} 
+            className="bg-gray-50 rounded-xl p-3 relative cursor-pointer hover:shadow-md transition-shadow"
+            onClick={(e) => handleProductClick(product.id, e)}
+          >
             {product.discount_percentage > 0 && (
               <Badge className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
                 {product.discount_percentage}% OFF
@@ -59,7 +83,10 @@ const MobileTopDeals = () => {
             </div>
             
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-800 line-clamp-2">
+              <h4 
+                className="text-sm font-medium text-gray-800 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={(e) => handleProductClick(product.id, e)}
+              >
                 {product.name}
               </h4>
               
@@ -91,7 +118,7 @@ const MobileTopDeals = () => {
                 
                 <Button
                   size="sm"
-                  onClick={() => handleAddToCart(product.id)}
+                  onClick={(e) => handleAddToCart(product.id, e)}
                   className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg"
                 >
                   <ShoppingCart className="w-4 h-4" />
