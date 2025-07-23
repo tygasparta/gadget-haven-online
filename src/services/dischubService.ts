@@ -1,4 +1,6 @@
 
+import { supabase } from '@/integrations/supabase/client';
+
 interface DischubPaymentData {
   order_id: string;
   amount: number;
