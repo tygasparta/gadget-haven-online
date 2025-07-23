@@ -23,13 +23,14 @@ const CheckoutDetails = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { data: cartItems = [], isLoading, error } = useCartItems();
+  const { data: cartItems = [], isLoading: cartLoading, error: cartError } = useCartItems();
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   
+  const [pageLoading, setPageLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
   const [formData, setFormData] = useState({
-    email: user?.email || '',
+    email: '',
     firstName: '',
     lastName: '',
     address: '',
@@ -38,76 +39,94 @@ const CheckoutDetails = () => {
     country: 'Zimbabwe'
   });
 
-  // Update form data when user changes
+  // Initialize page and check auth
   useEffect(() => {
+    console.log('CheckoutDetails - Initializing...');
+    console.log('User:', user);
+    console.log('Cart loading:', cartLoading);
+    console.log('Cart items:', cartItems);
+    
+    // Set initial form data
     if (user?.email) {
       setFormData(prev => ({
         ...prev,
         email: user.email
       }));
     }
-  }, [user]);
 
-  useEffect(() => {
-    console.log('CheckoutDetails - User:', user);
-    console.log('CheckoutDetails - Cart items:', cartItems);
-    console.log('CheckoutDetails - Loading:', isLoading);
-    console.log('CheckoutDetails - Error:', error);
-    
-    if (!user) {
-      console.log('No user, redirecting to auth');
+    // Handle loading state
+    if (!cartLoading) {
+      setPageLoading(false);
+    }
+
+    // Check authentication
+    if (!user && !cartLoading) {
+      console.log('No user found, redirecting to auth');
       navigate('/auth');
       return;
     }
-    
-    // Only redirect if we're not loading and there are no items
-    if (!isLoading && cartItems.length === 0) {
+
+    // Check cart items
+    if (!cartLoading && cartItems.length === 0) {
       console.log('No cart items, redirecting to checkout');
       navigate('/checkout');
       return;
     }
-  }, [user, cartItems, navigate, isLoading, error]);
+  }, [user, cartLoading, cartItems, navigate]);
 
-  // Show loading while cart is being fetched
-  if (isLoading) {
+  // Show loading screen
+  if (pageLoading || cartLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading checkout...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading checkout details...</p>
+          </div>
         </div>
+        <MobileNavigation />
       </div>
     );
   }
 
   // Show error state
-  if (error) {
+  if (cartError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Error loading checkout: {error.message}</p>
-          <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
-            Back to Cart
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error loading checkout: {cartError.message}</p>
+            <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
+              Back to Cart
+            </Button>
+          </div>
         </div>
+        <MobileNavigation />
       </div>
     );
   }
 
   // Show empty cart state
-  if (!user || cartItems.length === 0) {
+  if (!cartItems || cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Your cart is empty</p>
-          <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
-            Continue Shopping
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Your cart is empty</p>
+            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+              Continue Shopping
+            </Button>
+          </div>
         </div>
+        <MobileNavigation />
       </div>
     );
   }
 
+  // Calculate totals
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => {
       return total + (item.products.price * item.quantity);
