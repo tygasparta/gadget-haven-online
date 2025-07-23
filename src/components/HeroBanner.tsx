@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Zap, Shield, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,13 +27,13 @@ const HeroBanner = () => {
     subtitle: "SMARTPHONES",
     description: "Save up to 35%",
     details: "Latest 5G technology with AI-powered cameras",
-    price: "$899",
-    originalPrice: "$1399",
+    price: "$1400",
+    originalPrice: "$1899",
     discount: "35% OFF",
     buttonText: "Shop Now",
     validUntil: "Valid Today Only",
     bgGradient: "from-blue-600 via-cyan-600 to-teal-700",
-    image: "/lovable-uploads/b38403c0-7408-4a79-bc6c-e23ef6f347bb.png",
+    image: "/lovable-uploads/bae4b565-9009-41ae-a0c1-684ecd3ec585.png",
     category: "phones"
   }, {
     id: 3,
