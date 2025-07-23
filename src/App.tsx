@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -16,7 +17,7 @@ import Deals from '@/pages/Deals';
 import Audio from '@/pages/Audio';
 import Phones from '@/pages/Phones';
 import Dashboard from '@/pages/Dashboard';
-import Admin from '@/pages/Admin';
+import AdminDashboard from '@/pages/AdminDashboard';
 import Checkout from '@/pages/Checkout';
 import OrderSuccess from '@/pages/OrderSuccess';
 import Wishlist from '@/pages/Wishlist';
@@ -55,7 +56,7 @@ function App() {
                 <Route path="/audio" element={<Audio />} />
                 <Route path="/phones" element={<Phones />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/wishlist" element={<Wishlist />} />
