@@ -60,7 +60,9 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
     });
   };
 
-  const handleProductClick = () => {
+  const handleProductClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log('Navigating to product:', id);
     navigate(`/product/${id}`);
   };
 

@@ -21,6 +21,7 @@ import AdminDashboard from '@/pages/AdminDashboard';
 import Checkout from '@/pages/Checkout';
 import OrderSuccess from '@/pages/OrderSuccess';
 import Wishlist from '@/pages/Wishlist';
+import ProductDetail from '@/pages/ProductDetail';
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ function App() {
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
               </Routes>
               <PWAInstallPrompt />
               <Toaster />
