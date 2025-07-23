@@ -26,7 +26,6 @@ const CheckoutDetails = () => {
   const { data: cartItems = [], isLoading: cartLoading, error: cartError } = useCartItems();
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   
-  const [pageLoading, setPageLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
   const [formData, setFormData] = useState({
@@ -39,92 +38,31 @@ const CheckoutDetails = () => {
     country: 'Zimbabwe'
   });
 
-  // Initialize page and check auth
+  // Initialize form data when user is available
   useEffect(() => {
-    console.log('CheckoutDetails - Initializing...');
-    console.log('User:', user);
-    console.log('Cart loading:', cartLoading);
-    console.log('Cart items:', cartItems);
-    
-    // Set initial form data
     if (user?.email) {
       setFormData(prev => ({
         ...prev,
         email: user.email
       }));
     }
+  }, [user]);
 
-    // Handle loading state
-    if (!cartLoading) {
-      setPageLoading(false);
-    }
-
-    // Check authentication
-    if (!user && !cartLoading) {
+  // Check authentication and redirect if needed
+  useEffect(() => {
+    if (!cartLoading && !user) {
       console.log('No user found, redirecting to auth');
       navigate('/auth');
-      return;
     }
+  }, [user, cartLoading, navigate]);
 
-    // Check cart items
+  // Check cart items and redirect if empty
+  useEffect(() => {
     if (!cartLoading && cartItems.length === 0) {
       console.log('No cart items, redirecting to checkout');
       navigate('/checkout');
-      return;
     }
-  }, [user, cartLoading, cartItems, navigate]);
-
-  // Show loading screen
-  if (pageLoading || cartLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading checkout details...</p>
-          </div>
-        </div>
-        <MobileNavigation />
-      </div>
-    );
-  }
-
-  // Show error state
-  if (cartError) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Error loading checkout: {cartError.message}</p>
-            <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
-              Back to Cart
-            </Button>
-          </div>
-        </div>
-        <MobileNavigation />
-      </div>
-    );
-  }
-
-  // Show empty cart state
-  if (!cartItems || cartItems.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Your cart is empty</p>
-            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
-              Continue Shopping
-            </Button>
-          </div>
-        </div>
-        <MobileNavigation />
-      </div>
-    );
-  }
+  }, [cartLoading, cartItems, navigate]);
 
   // Calculate totals
   const getTotalPrice = () => {
@@ -325,6 +263,63 @@ const CheckoutDetails = () => {
       await handleCashOnDelivery();
     }
   };
+
+  // Show loading screen
+  if (cartLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading checkout details...</p>
+          </div>
+        </div>
+        <MobileNavigation />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (cartError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error loading checkout: {cartError.message}</p>
+            <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
+              Back to Cart
+            </Button>
+          </div>
+        </div>
+        <MobileNavigation />
+      </div>
+    );
+  }
+
+  // Show empty cart state
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Your cart is empty</p>
+            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+              Continue Shopping
+            </Button>
+          </div>
+        </div>
+        <MobileNavigation />
+      </div>
+    );
+  }
+
+  // Don't render if user is not available
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
