@@ -41,13 +41,13 @@ const HeroBanner = () => {
     subtitle: "GAMING GEAR",
     description: "Save up to 50%",
     details: "Professional gaming equipment for ultimate performance",
-    price: "$499",
-    originalPrice: "$999",
+    price: "$500",
+    originalPrice: "$1000",
     discount: "50% OFF",
     buttonText: "Shop Now",
     validUntil: "Limited Time Only",
     bgGradient: "from-red-600 via-pink-600 to-purple-700",
-    image: "/lovable-uploads/ec24a873-3717-4a20-b741-b2588778cbd8.png",
+    image: "/lovable-uploads/d6dc68dd-5909-4e9d-b3a5-eb760a7d932b.png",
     category: "gaming"
   }];
 
