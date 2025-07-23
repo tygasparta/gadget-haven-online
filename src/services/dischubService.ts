@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface DischubPaymentData {
   order_id: string;
   amount: number;
-  currency: 'USD' | 'ZWG';
+  currency: 'USD';
   recipient: string;
   api_key: string;
   notify_url: string;
@@ -83,13 +83,9 @@ class DischubService {
   }
 
   // Validate currency and amount limits
-  validatePayment(amount: number, currency: 'USD' | 'ZWG'): { valid: boolean; error?: string } {
-    if (currency === 'USD' && amount > 480) {
-      return { valid: false, error: 'USD amount exceeds maximum limit of $480.00' };
-    }
-    
-    if (currency === 'ZWG' && amount > 7000) {
-      return { valid: false, error: 'ZWG amount exceeds maximum limit of ZWG 7,000.00' };
+  validatePayment(amount: number, currency: 'USD'): { valid: boolean; error?: string } {
+    if (currency === 'USD' && amount > 10000) {
+      return { valid: false, error: 'USD amount exceeds maximum limit of $10,000.00' };
     }
     
     if (amount <= 0) {
@@ -100,19 +96,14 @@ class DischubService {
   }
 
   // Format currency for display
-  formatCurrency(amount: number, currency: 'USD' | 'ZWG'): string {
-    if (currency === 'USD') {
-      return `$${amount.toFixed(2)}`;
-    } else {
-      return `ZWG ${amount.toFixed(2)}`;
-    }
+  formatCurrency(amount: number, currency: 'USD'): string {
+    return `$${amount.toFixed(2)}`;
   }
 
   // Get supported currencies
-  getSupportedCurrencies(): Array<{ code: 'USD' | 'ZWG'; name: string; symbol: string }> {
+  getSupportedCurrencies(): Array<{ code: 'USD'; name: string; symbol: string }> {
     return [
-      { code: 'USD', name: 'US Dollar', symbol: '$' },
-      { code: 'ZWG', name: 'Zimbabwe Gold', symbol: 'ZWG' }
+      { code: 'USD', name: 'US Dollar', symbol: '$' }
     ];
   }
 }

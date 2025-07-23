@@ -14,10 +14,10 @@ interface PaymentMethodSectionProps {
   phoneNumber: string;
   setPhoneNumber: (number: string) => void;
   // Dischub props
-  dischubCurrency: 'USD' | 'ZWG';
-  setDischubCurrency: (currency: 'USD' | 'ZWG') => void;
+  dischubCurrency: 'USD';
+  setDischubCurrency: (currency: 'USD') => void;
   totalAmount: number;
-  onInitiateDischubPayment: (currency: 'USD' | 'ZWG') => void;
+  onInitiateDischubPayment: (currency: 'USD') => void;
   isDischubProcessing: boolean;
 }
 
@@ -57,7 +57,7 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
                   <label htmlFor="dischub" className="font-semibold text-gray-800 cursor-pointer">
                     Dischub Payment
                   </label>
-                  <p className="text-sm text-gray-500">Pay with Dischub - USD or ZWG</p>
+                  <p className="text-sm text-gray-500">Pay with Dischub - USD only</p>
                 </div>
               </div>
             </div>

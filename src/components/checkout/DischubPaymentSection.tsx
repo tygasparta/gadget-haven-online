@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Wallet, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -10,10 +9,10 @@ import DischubService from '@/services/dischubService';
 
 interface DischubPaymentSectionProps {
   isVisible: boolean;
-  selectedCurrency: 'USD' | 'ZWG';
-  onCurrencyChange: (currency: 'USD' | 'ZWG') => void;
+  selectedCurrency: 'USD';
+  onCurrencyChange: (currency: 'USD') => void;
   amount: number;
-  onInitiatePayment: (currency: 'USD' | 'ZWG') => void;
+  onInitiatePayment: (currency: 'USD') => void;
   isProcessing: boolean;
 }
 
@@ -26,7 +25,6 @@ const DischubPaymentSection: React.FC<DischubPaymentSectionProps> = ({
   isProcessing
 }) => {
   const dischubService = new DischubService();
-  const currencies = dischubService.getSupportedCurrencies();
   
   const validation = dischubService.validatePayment(amount, selectedCurrency);
   
@@ -50,27 +48,6 @@ const DischubPaymentSection: React.FC<DischubPaymentSectionProps> = ({
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
-            Select Currency *
-          </Label>
-          <Select value={selectedCurrency} onValueChange={onCurrencyChange}>
-            <SelectTrigger className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-white">
-              <SelectValue placeholder="Select currency" />
-            </SelectTrigger>
-            <SelectContent>
-              {currencies.map((currency) => (
-                <SelectItem key={currency.code} value={currency.code}>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium">{currency.symbol}</span>
-                    <span>{currency.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-600">Amount to Pay:</span>
@@ -80,7 +57,7 @@ const DischubPaymentSection: React.FC<DischubPaymentSectionProps> = ({
           </div>
           
           <div className="text-xs text-gray-500">
-            Maximum limits: USD $480.00 • ZWG 7,000.00
+            Maximum limit: USD $10,000.00
           </div>
         </div>
 

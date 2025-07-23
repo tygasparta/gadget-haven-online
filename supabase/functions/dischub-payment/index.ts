@@ -34,32 +34,22 @@ serve(async (req) => {
       if (type === 'create_order') {
         console.log('Creating Dischub payment order:', { order_id, amount, currency });
         
-        // Validate currency
-        if (currency !== 'USD' && currency !== 'ZWG') {
+        // Validate currency - only USD allowed
+        if (currency !== 'USD') {
           return new Response(JSON.stringify({
             success: false,
-            error: 'Invalid currency. Only USD and ZWG are supported.'
+            error: 'Invalid currency. Only USD is supported.'
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400
           });
         }
 
-        // Validate amount limits
-        if (currency === 'USD' && amount > 480) {
+        // Validate amount limits - USD max $10,000
+        if (currency === 'USD' && amount > 10000) {
           return new Response(JSON.stringify({
             success: false,
-            error: 'USD amount exceeds maximum limit of $480.00'
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400
-          });
-        }
-
-        if (currency === 'ZWG' && amount > 7000) {
-          return new Response(JSON.stringify({
-            success: false,
-            error: 'ZWG amount exceeds maximum limit of ZWG 7,000.00'
+            error: 'USD amount exceeds maximum limit of $10,000.00'
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400

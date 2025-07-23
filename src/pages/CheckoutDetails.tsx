@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ const CheckoutDetails = () => {
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
-  const [dischubCurrency, setDischubCurrency] = useState<'USD' | 'ZWG'>('USD');
+  const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: '',
@@ -75,7 +74,7 @@ const CheckoutDetails = () => {
   const tax = totalPrice * 0.08;
   const finalTotal = totalPrice + shipping + tax;
 
-  const handleDischubPayment = async (currency: 'USD' | 'ZWG') => {
+  const handleDischubPayment = async (currency: 'USD') => {
     if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
       toast({
         title: "Missing Information",
