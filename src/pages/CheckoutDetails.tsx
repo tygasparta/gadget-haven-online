@@ -10,7 +10,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
-import usePaynow from '@/hooks/usePaynow';
 import useDischub from '@/hooks/useDischub';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -25,12 +24,9 @@ const CheckoutDetails = () => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const { data: cartItems = [], isLoading } = useCartItems();
-  const { initiateWebPayment, initiateMobilePayment, isProcessing } = usePaynow();
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   
-  const [paymentMethod, setPaymentMethod] = useState('web');
-  const [mobileMethod, setMobileMethod] = useState('ecocash');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD' | 'ZWG'>('USD');
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -138,9 +134,9 @@ const CheckoutDetails = () => {
 
       console.log('Order created successfully:', order.id);
 
-      // Prepare payment data for Dischub (will generate numeric ID internally)
+      // Prepare payment data for Dischub
       const paymentData = {
-        order_id: `ORDER-${order.id}`, // This is just for reference, numeric ID will be generated
+        order_id: `ORDER-${order.id}`,
         amount: finalTotal,
         currency: currency,
         additionalInfo: `Order for ${cartItems.length} items`
@@ -158,9 +154,7 @@ const CheckoutDetails = () => {
     }
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    
+  const handleCashOnDelivery = async () => {
     if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
       toast({
         title: "Missing Information",
@@ -170,27 +164,13 @@ const CheckoutDetails = () => {
       return;
     }
 
-    if (paymentMethod === 'dischub') {
-      await handleDischubPayment(dischubCurrency);
-      return;
-    }
-
-    if (paymentMethod === 'mobile' && !phoneNumber) {
-      toast({
-        title: "Missing Phone Number",
-        description: "Please enter your mobile number for mobile payment",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      // Create order in database first
+      // Create order in database
       const orderData = {
         user_id: user.id,
         total_amount: finalTotal,
-        status: paymentMethod === 'cod' ? 'confirmed' : 'pending',
-        payment_method: paymentMethod === 'web' ? 'paynow_web' : paymentMethod === 'mobile' ? `paynow_${mobileMethod}` : 'cash_on_delivery',
+        status: 'confirmed',
+        payment_method: 'cash_on_delivery',
         shipping_address: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -231,80 +211,32 @@ const CheckoutDetails = () => {
 
       if (itemsError) throw itemsError;
 
-      console.log('Order created successfully:', order.id);
+      console.log('COD Order created successfully:', order.id);
 
-      // Handle different payment methods
-      if (paymentMethod === 'cod') {
-        toast({
-          title: "Order Confirmed",
-          description: "Your order has been confirmed for cash on delivery",
-        });
-        navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
-        return;
-      }
-
-      // Prepare payment data for Paynow
-      const paymentData = {
-        reference: `ORDER-${order.id}`,
-        amount: finalTotal,
-        email: formData.email,
-        additionalInfo: `Order for ${cartItems.length} items`
-      };
-
-      if (paymentMethod === 'web') {
-        console.log('Initiating web payment with order ID:', order.id);
-        const response = await initiateWebPayment(paymentData, order.id);
-        if (!response.success) {
-          navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
-        }
-      } else if (paymentMethod === 'mobile') {
-        const cleanPhone = phoneNumber.replace(/\s+/g, '').replace(/^\+263/, '0');
-        
-        // Updated validation for all Zimbabwe mobile numbers
-        const isValidZimbabweNumber = /^07[1378]\d{7}$/.test(cleanPhone);
-        
-        if (!isValidZimbabweNumber) {
-          toast({
-            title: "Invalid Phone Number",
-            description: "Please enter a valid Zimbabwe mobile number (071, 073, 077, or 078)",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        // Check specific provider requirements
-        if (mobileMethod === 'ecocash' && !cleanPhone.match(/^07[78]/)) {
-          toast({
-            title: "Invalid Phone Number",
-            description: "EcoCash requires an Econet number starting with 077 or 078",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        if (mobileMethod === 'onemoney' && !cleanPhone.match(/^07[13]/)) {
-          toast({
-            title: "Invalid Phone Number", 
-            description: "OneMoney requires a NetOne number starting with 071 or 073",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        console.log('Initiating mobile payment with order ID:', order.id);
-        const response = await initiateMobilePayment(paymentData, phoneNumber, mobileMethod as 'ecocash' | 'onemoney', order.id);
-        setTimeout(() => {
-          navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
-        }, 3000);
-      }
+      toast({
+        title: "Order Confirmed",
+        description: "Your order has been confirmed for cash on delivery",
+      });
+      
+      navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
 
     } catch (error: any) {
-      console.error('Checkout error:', error);
+      console.error('COD checkout error:', error);
       toast({
         title: "Checkout Failed",
         description: error.message || "Failed to process checkout",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (paymentMethod === 'dischub') {
+      await handleDischubPayment(dischubCurrency);
+    } else if (paymentMethod === 'cod') {
+      await handleCashOnDelivery();
     }
   };
 
@@ -356,10 +288,10 @@ const CheckoutDetails = () => {
             <PaymentMethodSection 
               paymentMethod={paymentMethod}
               setPaymentMethod={setPaymentMethod}
-              mobileMethod={mobileMethod}
-              setMobileMethod={setMobileMethod}
-              phoneNumber={phoneNumber}
-              setPhoneNumber={setPhoneNumber}
+              mobileMethod=""
+              setMobileMethod={() => {}}
+              phoneNumber=""
+              setPhoneNumber={() => {}}
               dischubCurrency={dischubCurrency}
               setDischubCurrency={setDischubCurrency}
               totalAmount={finalTotal}
@@ -377,8 +309,8 @@ const CheckoutDetails = () => {
               tax={tax}
               finalTotal={finalTotal}
               paymentMethod={paymentMethod}
-              mobileMethod={mobileMethod}
-              isProcessing={isProcessing || isDischubProcessing}
+              mobileMethod=""
+              isProcessing={isDischubProcessing}
               onSubmit={handleSubmit}
             />
           </div>
