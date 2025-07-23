@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Zap, Shield, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ const HeroBanner = () => {
     buttonText: "Shop Now",
     validUntil: "Valid 27 June Only",
     bgGradient: "from-purple-600 via-blue-600 to-indigo-700",
-    image: "/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png",
+    image: "/lovable-uploads/52c3999f-568f-4f5e-a01d-1fcc63b47bbc.png",
     category: "audio"
   }, {
     id: 2,
