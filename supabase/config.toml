@@ -3,135 +3,14 @@ project_id = "ktpxqjyfguxckdzlqwai"
 
 [auth]
 enabled = true
-additional_redirect_urls = ["https://localhost:3000"]
-external_email_enabled = true
-external_phone_enabled = true
-email_double_confirm_changes_enabled = true
-enable_signup = true
-enable_manual_linking = false
-min_password_length = 8
-password_requirements = "letters_digits"
-session_timeout_hours = 72
-refresh_token_rotation_enabled = true
-security_update_password_require_reauthentication = true
+schema = "auth"
+secret = "your-secret-key"
 
-[auth.email]
-enable_signup = true
-double_confirm_changes_enabled = true
-enable_confirmations = true
-template = {}
+[db]
+password = "your-password"
+port = 5432
+host = "localhost"
+user = "postgres"
 
-[auth.sms]
-enable_signup = true
-enable_confirmations = true
-template = "Your code is {{ .Code }}"
-
-[auth.external.apple]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.azure]
-enabled = false
-client_id = ""
-secret = ""
-url = ""
-
-[auth.external.bitbucket]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.discord]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.facebook]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.github]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.gitlab]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.google]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.keycloak]
-enabled = false
-client_id = ""
-secret = ""
-url = ""
-
-[auth.external.linkedin]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.notion]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.twitch]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.twitter]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.slack]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.spotify]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.workos]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.zoom]
-enabled = false
-client_id = ""
-secret = ""
-
-[auth.external.figma]
-enabled = false
-client_id = ""
-secret = ""
-
-[functions.dischub-payment]
-verify_jwt = true
-
-[functions.dischub-webhook]
+[functions.send-email]
 verify_jwt = false
-
-[functions.paynow-payment]
-verify_jwt = true
-
-[functions.paynow-webhook]
-verify_jwt = false
-
-[functions.get-paynow-credentials]
-verify_jwt = true
-
-[functions.generate-product-details]
-verify_jwt = true
