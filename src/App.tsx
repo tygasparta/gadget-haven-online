@@ -23,7 +23,6 @@ import OrderSuccess from './pages/OrderSuccess';
 import Orders from './pages/Orders';
 import TrackOrder from './pages/TrackOrder';
 import Profile from './pages/Profile';
-import PaymentTest from './pages/PaymentTest';
 
 const queryClient = new QueryClient();
 
@@ -51,7 +50,6 @@ function App() {
                 <Route path="/order/success" element={<OrderSuccess />} />
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/track-order" element={<TrackOrder />} />
-                <Route path="/payment-test" element={<PaymentTest />} />
                 {/* Add a catch-all route for unmatched paths */}
                 <Route path="*" element={<Index />} />
               </Routes>
