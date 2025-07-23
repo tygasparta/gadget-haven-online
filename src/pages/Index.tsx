@@ -18,8 +18,6 @@ import SpecialOffers from '../components/SpecialOffers';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileQuickCategories from '../components/MobileQuickCategories';
 import MobileTopDeals from '../components/MobileTopDeals';
-import MobileLoadingScreen from '../components/MobileLoadingScreen';
-import EnhancedPreloader from '../components/EnhancedPreloader';
 import TabletOptimizedBanners from '../components/TabletOptimizedBanners';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -30,43 +28,6 @@ const Index = () => {
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: flashSaleProducts = [], isLoading: flashLoading } = useFlashSaleProducts();
   const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts();
-  const [showPreloader, setShowPreloader] = useState(true);
-  const [preloaderProgress, setPreloaderProgress] = useState(0);
-
-  // Enhanced preloader logic
-  useEffect(() => {
-    let progressInterval: NodeJS.Timeout;
-    let hideTimeout: NodeJS.Timeout;
-
-    // Start progress animation
-    progressInterval = setInterval(() => {
-      setPreloaderProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + Math.random() * 3 + 1; // Variable speed progress
-      });
-    }, 100);
-
-    // Hide preloader after progress completes
-    hideTimeout = setTimeout(() => {
-      setShowPreloader(false);
-    }, isMobile ? 3000 : 3500); // Slightly longer on mobile
-
-    return () => {
-      clearInterval(progressInterval);
-      clearTimeout(hideTimeout);
-    };
-  }, [isMobile]);
-
-  // Show loading if data is still loading
-  const isDataLoading = productsLoading || flashLoading || featuredLoading;
-
-  // Show preloader while loading or during initial display
-  if (showPreloader || (isDataLoading && preloaderProgress < 100)) {
-    return isMobile ? <MobileLoadingScreen /> : <EnhancedPreloader />;
-  }
 
   // Transform products to match the expected format
   const transformProduct = (product: any) => ({
