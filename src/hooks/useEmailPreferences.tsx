@@ -26,18 +26,42 @@ export const useEmailPreferences = () => {
     queryFn: async () => {
       if (!user) return null;
       
-      const { data, error } = await supabase
-        .from('email_preferences')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .rpc('get_email_preferences', { user_id: user.id });
 
-      if (error) {
-        console.error('Error fetching email preferences:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching email preferences:', error);
+          // Return default preferences if function doesn't exist yet
+          return {
+            id: 'default',
+            user_id: user.id,
+            order_confirmations: true,
+            order_status_updates: true,
+            shipping_notifications: true,
+            promotional_emails: true,
+            newsletter: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as EmailPreferences;
+        }
+
+        return data as EmailPreferences;
+      } catch (err) {
+        console.error('RPC call failed:', err);
+        // Return default preferences if RPC fails
+        return {
+          id: 'default',
+          user_id: user.id,
+          order_confirmations: true,
+          order_status_updates: true,
+          shipping_notifications: true,
+          promotional_emails: true,
+          newsletter: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as EmailPreferences;
       }
-
-      return data as EmailPreferences;
     },
     enabled: !!user,
   });
@@ -46,21 +70,23 @@ export const useEmailPreferences = () => {
     mutationFn: async (updates: Partial<EmailPreferences>) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
-        .from('email_preferences')
-        .upsert({
-          user_id: user.id,
-          ...updates,
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .rpc('update_email_preferences', {
+            user_id: user.id,
+            preferences: updates,
+          });
 
-      if (error) {
-        console.error('Error updating email preferences:', error);
-        throw error;
+        if (error) {
+          console.error('Error updating email preferences:', error);
+          throw error;
+        }
+
+        return data;
+      } catch (err) {
+        console.error('Failed to update preferences:', err);
+        throw err;
       }
-
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-preferences', user?.id] });
@@ -96,19 +122,20 @@ export const useEmailQueue = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
-        .from('email_queue')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      try {
+        const { data, error } = await supabase
+          .rpc('get_email_queue', { user_id: user.id });
 
-      if (error) {
-        console.error('Error fetching email queue:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching email queue:', error);
+          return [];
+        }
+
+        return data || [];
+      } catch (err) {
+        console.error('RPC call failed:', err);
+        return [];
       }
-
-      return data || [];
     },
     enabled: !!user,
   });

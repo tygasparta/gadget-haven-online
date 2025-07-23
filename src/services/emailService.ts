@@ -21,19 +21,26 @@ export interface QueueEmailParams {
 
 export const emailService = {
   async queueEmail(params: QueueEmailParams) {
-    const { data, error } = await supabase.rpc('queue_email_notification', {
-      p_user_id: params.userId,
-      p_template_key: params.templateKey,
-      p_recipient_email: params.recipientEmail,
-      p_variables: params.variables || {},
-    });
+    try {
+      const { data, error } = await supabase.functions.invoke('queue-email', {
+        body: {
+          user_id: params.userId,
+          template_key: params.templateKey,
+          recipient_email: params.recipientEmail,
+          variables: params.variables || {},
+        },
+      });
 
-    if (error) {
-      console.error('Error queueing email:', error);
-      throw error;
+      if (error) {
+        console.error('Error queueing email:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Failed to queue email:', err);
+      throw err;
     }
-
-    return data;
   },
 
   async processEmailQueue() {
@@ -50,48 +57,59 @@ export const emailService = {
   },
 
   async getEmailTemplates() {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .select('*')
-      .eq('is_active', true)
-      .order('template_key');
+    try {
+      const { data, error } = await supabase.functions.invoke('get-email-templates', {
+        body: {},
+      });
 
-    if (error) {
-      console.error('Error fetching email templates:', error);
-      throw error;
+      if (error) {
+        console.error('Error fetching email templates:', error);
+        throw error;
+      }
+
+      return data as EmailTemplate[];
+    } catch (err) {
+      console.error('Failed to fetch templates:', err);
+      throw err;
     }
-
-    return data as EmailTemplate[];
   },
 
   async updateEmailTemplate(id: string, updates: Partial<EmailTemplate>) {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase.functions.invoke('update-email-template', {
+        body: {
+          id,
+          updates,
+        },
+      });
 
-    if (error) {
-      console.error('Error updating email template:', error);
-      throw error;
+      if (error) {
+        console.error('Error updating email template:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Failed to update template:', err);
+      throw err;
     }
-
-    return data;
   },
 
   async createEmailTemplate(template: Omit<EmailTemplate, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .insert(template)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase.functions.invoke('create-email-template', {
+        body: template,
+      });
 
-    if (error) {
-      console.error('Error creating email template:', error);
-      throw error;
+      if (error) {
+        console.error('Error creating email template:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Failed to create template:', err);
+      throw err;
     }
-
-    return data;
   },
 };
