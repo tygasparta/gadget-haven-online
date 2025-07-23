@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Zap, Shield, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -178,25 +179,25 @@ const HeroBanner = () => {
                       </div>
                     </div>
 
-                    {/* Image Section - Better Mobile Layout */}
+                    {/* Image Section - Enlarged Images */}
                     <div className="hidden lg:flex justify-center items-center relative">
-                      <div className="relative w-full max-w-sm">
+                      <div className="relative w-full max-w-lg">
                         <div className="relative transform hover:scale-105 transition-transform duration-500">
                           <img 
                             src={slide.image} 
                             alt={slide.subtitle} 
-                            className="w-full h-60 object-contain drop-shadow-2xl" 
+                            className="w-full h-80 object-contain drop-shadow-2xl" 
                             onError={(e) => {
-                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&h=400&fit=crop";
+                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=500&fit=crop";
                             }} 
                           />
                           
                           {/* Floating badges */}
-                          <div className="absolute -top-3 -right-3 bg-green-500/90 backdrop-blur-sm text-white rounded-full p-2 shadow-lg animate-bounce">
-                            <Shield className="w-4 h-4" />
+                          <div className="absolute -top-4 -right-4 bg-green-500/90 backdrop-blur-sm text-white rounded-full p-3 shadow-lg animate-bounce">
+                            <Shield className="w-5 h-5" />
                           </div>
-                          <div className="absolute -bottom-3 -left-3 bg-blue-500/90 backdrop-blur-sm text-white rounded-full p-2 shadow-lg animate-pulse">
-                            <Truck className="w-4 h-4" />
+                          <div className="absolute -bottom-4 -left-4 bg-blue-500/90 backdrop-blur-sm text-white rounded-full p-3 shadow-lg animate-pulse">
+                            <Truck className="w-5 h-5" />
                           </div>
                         </div>
                       </div>
