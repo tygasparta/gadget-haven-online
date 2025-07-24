@@ -49,6 +49,126 @@ export type Database = {
           },
         ]
       }
+      email_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          newsletter: boolean
+          order_confirmations: boolean
+          order_status_updates: boolean
+          promotional_emails: boolean
+          shipping_notifications: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          newsletter?: boolean
+          order_confirmations?: boolean
+          order_status_updates?: boolean
+          promotional_emails?: boolean
+          shipping_notifications?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          newsletter?: boolean
+          order_confirmations?: boolean
+          order_status_updates?: boolean
+          promotional_emails?: boolean
+          shipping_notifications?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_queue: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          html_content: string
+          id: string
+          recipient_email: string
+          retry_count: number | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_key: string
+          text_content: string | null
+          updated_at: string
+          user_id: string
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          html_content: string
+          id?: string
+          recipient_email: string
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_key: string
+          text_content?: string | null
+          updated_at?: string
+          user_id: string
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          html_content?: string
+          id?: string
+          recipient_email?: string
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_key?: string
+          text_content?: string | null
+          updated_at?: string
+          user_id?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          is_active: boolean
+          subject: string
+          template_key: string
+          text_content: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          html_content: string
+          id?: string
+          is_active?: boolean
+          subject: string
+          template_key: string
+          text_content?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          subject?: string
+          template_key?: string
+          text_content?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -432,6 +552,15 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      queue_email_notification: {
+        Args: {
+          p_user_id: string
+          p_template_key: string
+          p_recipient_email: string
+          p_variables?: Json
+        }
+        Returns: string
       }
     }
     Enums: {
