@@ -12,82 +12,82 @@ const Sidebar = () => {
       name: 'Smartphones', 
       icon: '📱', 
       items: [
-        { name: 'iPhone', path: '/products?category=smartphones&brand=apple' },
-        { name: 'Samsung', path: '/products?category=smartphones&brand=samsung' },
-        { name: 'Huawei', path: '/products?category=smartphones&brand=huawei' },
-        { name: 'Xiaomi', path: '/products?category=smartphones&brand=xiaomi' }
+        { name: 'iPhone', path: '/phones?brand=apple' },
+        { name: 'Samsung', path: '/phones?brand=samsung' },
+        { name: 'Huawei', path: '/phones?brand=huawei' },
+        { name: 'Xiaomi', path: '/phones?brand=xiaomi' }
       ],
-      path: '/products?category=smartphones'
+      path: '/phones'
     },
     { 
       name: 'Laptops & Computers', 
       icon: '💻', 
       items: [
-        { name: 'MacBooks', path: '/products?category=laptops&brand=apple' },
-        { name: 'Gaming Laptops', path: '/products?category=laptops&type=gaming' },
-        { name: 'Desktops', path: '/products?category=computers' }
+        { name: 'MacBooks', path: '/categories?category=laptops&brand=apple' },
+        { name: 'Gaming Laptops', path: '/categories?category=laptops&type=gaming' },
+        { name: 'Desktops', path: '/categories?category=computers' }
       ],
-      path: '/products?category=laptops'
+      path: '/categories?category=laptops'
     },
     { 
       name: 'Audio & Headphones', 
       icon: '🎧', 
       items: [
-        { name: 'Wireless', path: '/products?category=audio&type=wireless' },
-        { name: 'Gaming', path: '/products?category=audio&type=gaming' },
-        { name: 'Studio', path: '/products?category=audio&type=studio' }
+        { name: 'Wireless', path: '/audio?type=wireless' },
+        { name: 'Gaming', path: '/audio?type=gaming' },
+        { name: 'Studio', path: '/audio?type=studio' }
       ],
-      path: '/products?category=audio'
+      path: '/audio'
     },
     { 
       name: 'Gaming', 
       icon: '🎮', 
       items: [
-        { name: 'Consoles', path: '/products?category=gaming&type=consoles' },
-        { name: 'Games', path: '/products?category=gaming&type=games' },
-        { name: 'Accessories', path: '/products?category=gaming&type=accessories' }
+        { name: 'Consoles', path: '/categories?category=gaming&type=consoles' },
+        { name: 'Games', path: '/categories?category=gaming&type=games' },
+        { name: 'Accessories', path: '/categories?category=gaming&type=accessories' }
       ],
-      path: '/products?category=gaming'
+      path: '/categories?category=gaming'
     },
     { 
       name: 'Electronics', 
       icon: '⚡', 
       items: [
-        { name: 'TVs', path: '/products?category=electronics&type=tv' },
-        { name: 'Cameras', path: '/products?category=electronics&type=cameras' },
-        { name: 'Tablets', path: '/products?category=electronics&type=tablets' }
+        { name: 'TVs', path: '/categories?category=electronics&type=tv' },
+        { name: 'Cameras', path: '/categories?category=electronics&type=cameras' },
+        { name: 'Tablets', path: '/categories?category=electronics&type=tablets' }
       ],
-      path: '/products?category=electronics'
+      path: '/categories?category=electronics'
     },
     { 
       name: 'Power & Cables', 
       icon: '🔌', 
       items: [
-        { name: 'Power Banks', path: '/products?category=accessories&type=power-banks' },
-        { name: 'Chargers', path: '/products?category=accessories&type=chargers' },
-        { name: 'Cables', path: '/products?category=accessories&type=cables' }
+        { name: 'Power Banks', path: '/categories?category=accessories&type=power-banks' },
+        { name: 'Chargers', path: '/categories?category=accessories&type=chargers' },
+        { name: 'Cables', path: '/categories?category=accessories&type=cables' }
       ],
-      path: '/products?category=accessories'
+      path: '/categories?category=accessories'
     },
     { 
       name: 'Smart Home', 
       icon: '🏠', 
       items: [
-        { name: 'Security', path: '/products?category=smart-home&type=security' },
-        { name: 'Lighting', path: '/products?category=smart-home&type=lighting' },
-        { name: 'Appliances', path: '/products?category=smart-home&type=appliances' }
+        { name: 'Security', path: '/categories?category=smart-home&type=security' },
+        { name: 'Lighting', path: '/categories?category=smart-home&type=lighting' },
+        { name: 'Appliances', path: '/categories?category=smart-home&type=appliances' }
       ],
-      path: '/products?category=smart-home'
+      path: '/categories?category=smart-home'
     },
     { 
       name: 'Cameras', 
       icon: '📷', 
       items: [
-        { name: 'DSLR', path: '/products?category=cameras&type=dslr' },
-        { name: 'Action Cams', path: '/products?category=cameras&type=action' },
-        { name: 'Lenses', path: '/products?category=cameras&type=lenses' }
+        { name: 'DSLR', path: '/categories?category=cameras&type=dslr' },
+        { name: 'Action Cams', path: '/categories?category=cameras&type=action' },
+        { name: 'Lenses', path: '/categories?category=cameras&type=lenses' }
       ],
-      path: '/products?category=cameras'
+      path: '/categories?category=cameras'
     }
   ];
 
@@ -100,10 +100,12 @@ const Sidebar = () => {
   };
 
   const handleCategoryClick = (path: string) => {
+    console.log('Navigating to:', path);
     navigate(path);
   };
 
   const handleSubItemClick = (path: string) => {
+    console.log('Navigating to sub-item:', path);
     navigate(path);
   };
 
@@ -119,14 +121,14 @@ const Sidebar = () => {
                 onClick={() => toggleCategory(index)}
               >
                 <div 
-                  className="flex items-center flex-1"
+                  className="flex items-center flex-1 hover:text-blue-600 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCategoryClick(category.path);
                   }}
                 >
                   <span className="text-lg mr-3">{category.icon}</span>
-                  <span className="text-sm font-medium text-gray-700">{category.name}</span>
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600">{category.name}</span>
                 </div>
                 {expandedCategories.includes(index) ? (
                   <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
@@ -172,7 +174,7 @@ const Sidebar = () => {
         <p className="text-sm mb-3 opacity-90">Latest tech products</p>
         <button 
           className="bg-white text-blue-500 px-4 py-2 rounded font-semibold text-sm hover:bg-gray-100 transition-colors w-full"
-          onClick={() => navigate('/products?featured=new')}
+          onClick={() => navigate('/categories?featured=new')}
         >
           Explore Now
         </button>
