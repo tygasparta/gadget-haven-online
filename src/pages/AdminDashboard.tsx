@@ -87,42 +87,46 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col space-y-4 mb-6 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:mb-8">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <Button
               onClick={() => navigate('/')}
               variant="outline"
-              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center space-x-2"
+              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Store</span>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-gray-300 mt-1">Manage your Gadget Genie store</p>
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Admin Dashboard</h1>
+              <p className="text-gray-300 mt-1 text-sm sm:text-base">Manage your Gadget Genie store</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center space-x-2"
-            >
-              <Bell className="w-4 h-4" />
-              <span>Notifications</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="bg-green-500 hover:bg-green-600 text-white border-green-400 flex items-center space-x-2"
-            >
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </Button>
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
+            {!isMobile && (
+              <>
+                <Button
+                  variant="outline"
+                  className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center justify-center space-x-2 text-sm"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span>Notifications</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="bg-green-500 hover:bg-green-600 text-white border-green-400 flex items-center justify-center space-x-2 text-sm"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Settings</span>
+                </Button>
+              </>
+            )}
             <Button
               onClick={() => navigate('/auth')}
               variant="outline"
-              className="bg-red-500 hover:bg-red-600 text-white border-red-400 flex items-center space-x-2"
+              className="bg-red-500 hover:bg-red-600 text-white border-red-400 flex items-center justify-center space-x-2 text-sm w-full sm:w-auto"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
@@ -131,90 +135,90 @@ const AdminDashboard = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex space-x-4 mb-6 overflow-x-auto pb-2">
+        <div className="flex space-x-2 sm:space-x-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
           <Button
             onClick={() => setActiveTab('overview')}
             variant={activeTab === 'overview' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'overview' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
-            <span>Overview</span>
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Overview</span>
           </Button>
           <Button
             onClick={() => setActiveTab('products')}
             variant={activeTab === 'products' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'products' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <Package className="w-4 h-4" />
-            <span>Products</span>
+            <Package className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Products</span>
           </Button>
           <Button
             onClick={() => setActiveTab('orders')}
             variant={activeTab === 'orders' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'orders' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <ShoppingCart className="w-4 h-4" />
-            <span>Orders</span>
+            <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Orders</span>
           </Button>
           <Button
             onClick={() => setActiveTab('users')}
             variant={activeTab === 'users' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'users' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Users</span>
+            <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Users</span>
           </Button>
           <Button
             onClick={() => setActiveTab('analytics')}
             variant={activeTab === 'analytics' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'analytics' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <TrendingUp className="w-4 h-4" />
-            <span>Analytics</span>
+            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Analytics</span>
           </Button>
           <Button
             onClick={() => setActiveTab('bulk-upload')}
             variant={activeTab === 'bulk-upload' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'bulk-upload' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <Upload className="w-4 h-4" />
-            <span>Bulk Upload</span>
+            <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Upload</span>
           </Button>
           <Button
             onClick={() => setActiveTab('stock')}
             variant={activeTab === 'stock' ? 'default' : 'outline'}
-            className={`flex items-center space-x-2 whitespace-nowrap ${
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
               activeTab === 'stock' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <AlertTriangle className="w-4 h-4" />
-            <span>Stock</span>
+            <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Stock</span>
           </Button>
         </div>
 
