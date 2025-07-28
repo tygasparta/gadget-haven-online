@@ -28,6 +28,8 @@ import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import ProductColorSelector from '@/components/ProductColorSelector';
 import TabletOptimizedBanners from '@/components/TabletOptimizedBanners';
+import OneClickCheckout from '@/components/OneClickCheckout';
+import ProductComparison from '@/components/ProductComparison';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Checkout = () => {
@@ -40,17 +42,7 @@ const Checkout = () => {
   const removeFromCart = useRemoveFromCart();
   
   const [selectedColors, setSelectedColors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState({
-    email: user?.email || '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    zipCode: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
-  });
+  const [showComparison, setShowComparison] = useState(false);
 
   React.useEffect(() => {
     if (!user) {
@@ -166,15 +158,29 @@ const Checkout = () => {
                 <p className="text-gray-600">{totalItems} items in your cart</p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Continue Shopping
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowComparison(!showComparison)}
+              >
+                Compare Products
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate('/')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Continue Shopping
+              </Button>
+            </div>
           </div>
         )}
+
+        {/* Product Comparison */}
+        {showComparison && <ProductComparison />}
+
+        {/* One-Click Checkout */}
+        <OneClickCheckout />
 
         <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3'}`}>
           {/* Cart Items */}
