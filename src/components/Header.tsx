@@ -163,7 +163,7 @@ const Header = () => {
     <>
       {/* Top banner */}
       <div className="bg-blue-600 text-white py-2 px-4 text-xs sm:text-sm text-center">
-        <span className="block sm:inline">Free delivery on orders over $50</span>
+        <span className="block sm:inline">🚚 Free shipping on orders above $50</span>
         <div className="hidden lg:float-right lg:block">
           <Link to="/help" className="mr-4 hover:text-blue-200 transition-colors cursor-pointer">
             Help Centre

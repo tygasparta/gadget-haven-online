@@ -62,11 +62,6 @@ const FeaturedBrands = () => {
       brandKey: 'hp'
     },
     {
-      name: 'Hi',
-      logo: '/lovable-uploads/fbe0a02b-d58e-4d8f-95c7-7dfbff98c3db.png',
-      brandKey: 'hi'
-    },
-    {
       name: 'LG',
       logo: '/lovable-uploads/96072f96-33db-4a2a-854f-ad95d2f76406.png',
       brandKey: 'lg'
