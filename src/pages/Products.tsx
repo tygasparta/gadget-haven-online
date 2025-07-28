@@ -106,23 +106,6 @@ const Products = () => {
     return `${filteredProducts.length} products found`;
   };
 
-  // Debug info section (always visible for now to help debug)
-  const DebugInfo = () => {
-    return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold text-yellow-800 mb-2">Debug Info:</h3>
-        <p className="text-sm text-yellow-700">Total products: {allProducts.length}</p>
-        <p className="text-sm text-yellow-700">Brand filter: {brandFilter || 'None'}</p>
-        <p className="text-sm text-yellow-700">Search query: {searchQuery || 'None'}</p>
-        <p className="text-sm text-yellow-700">Filtered products: {filteredProducts.length}</p>
-        <p className="text-sm text-yellow-700">Available brands: {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).join(', ')}</p>
-        <p className="text-sm text-yellow-700">Loading: {isLoading ? 'Yes' : 'No'}</p>
-        <p className="text-sm text-yellow-700">Error: {error ? 'Yes' : 'No'}</p>
-        {error && <p className="text-sm text-red-700">Error message: {error.message}</p>}
-      </div>
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -155,9 +138,6 @@ const Products = () => {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Debug Info - always visible for debugging */}
-        <DebugInfo />
-
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
