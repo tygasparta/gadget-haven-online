@@ -140,6 +140,7 @@ const ProductDetail = () => {
   const handleShare = async (platform: string) => {
     const url = getProductUrl();
     const text = getShareText();
+    const imageUrl = product?.image || galleryImages[0];
     
     switch (platform) {
       case 'native':
@@ -149,6 +150,7 @@ const ProductDetail = () => {
               title: product?.name,
               text: text,
               url: url,
+              files: imageUrl ? [await fetch(imageUrl).then(r => r.blob()).then(blob => new File([blob], "product.jpg", { type: "image/jpeg" }))].filter(Boolean) : undefined
             });
             toast.success('Shared successfully!');
           } catch (error) {
