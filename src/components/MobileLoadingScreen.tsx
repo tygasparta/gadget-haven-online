@@ -97,7 +97,7 @@ const MobileLoadingScreen = () => {
               filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.3))'
             }}
           >
-            Gadget Genie
+            GadgetGenie
           </span>
           <div className="absolute -inset-4 bg-gradient-to-r from-cyan-300/30 via-blue-400/30 to-purple-500/30 blur-3xl animate-pulse"></div>
           

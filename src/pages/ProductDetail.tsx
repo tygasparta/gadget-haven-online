@@ -216,23 +216,23 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
-        <title>{product.name} - Gadget Genie</title>
+        <title>{product.name} - GadgetGenie</title>
         <meta name="description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="product" />
-        <meta property="og:title" content={`${product.name} - Gadget Genie`} />
+        <meta property="og:title" content={`${product.name} - GadgetGenie`} />
         <meta property="og:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         <meta property="og:image" content={product.image} />
         <meta property="og:url" content={window.location.href} />
-        <meta property="og:site_name" content="Gadget Genie" />
+        <meta property="og:site_name" content="GadgetGenie" />
         <meta property="product:price:amount" content={product.price.toString()} />
         <meta property="product:price:currency" content="USD" />
         {product.brand && <meta property="product:brand" content={product.brand} />}
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product.name} - Gadget Genie`} />
+        <meta name="twitter:title" content={`${product.name} - GadgetGenie`} />
         <meta name="twitter:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         <meta name="twitter:image" content={product.image} />
         
