@@ -19,13 +19,22 @@ const Products = () => {
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
 
   useEffect(() => {
+    console.log('All products:', allProducts);
+    console.log('Brand filter:', brandFilter);
+    console.log('Search query:', searchQuery);
+    
     let filtered = allProducts;
 
-    // Apply brand filter
+    // Apply brand filter with case-insensitive comparison
     if (brandFilter) {
-      filtered = filtered.filter(product => 
-        product.brand?.toLowerCase() === brandFilter.toLowerCase()
-      );
+      console.log('Filtering by brand:', brandFilter);
+      filtered = filtered.filter(product => {
+        const productBrand = product.brand?.toLowerCase();
+        const filterBrand = brandFilter.toLowerCase();
+        console.log('Product brand:', productBrand, 'Filter brand:', filterBrand);
+        return productBrand === filterBrand;
+      });
+      console.log('Filtered products by brand:', filtered);
     }
 
     // Apply search filter if there's a search term from URL
@@ -55,6 +64,7 @@ const Products = () => {
       }
     });
 
+    console.log('Final filtered products:', filtered);
     setFilteredProducts(filtered);
   }, [allProducts, searchParams, sortBy, brandFilter, searchQuery]);
 
@@ -78,6 +88,21 @@ const Products = () => {
     return `${filteredProducts.length} products found`;
   };
 
+  // Debug info section (only shown in development)
+  const DebugInfo = () => {
+    if (process.env.NODE_ENV !== 'development') return null;
+    
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <h3 className="font-semibold text-yellow-800 mb-2">Debug Info:</h3>
+        <p className="text-sm text-yellow-700">Total products: {allProducts.length}</p>
+        <p className="text-sm text-yellow-700">Brand filter: {brandFilter || 'None'}</p>
+        <p className="text-sm text-yellow-700">Filtered products: {filteredProducts.length}</p>
+        <p className="text-sm text-yellow-700">Available brands: {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).join(', ')}</p>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -94,6 +119,9 @@ const Products = () => {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Debug Info - only in development */}
+        <DebugInfo />
+
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -166,11 +194,16 @@ const Products = () => {
         ) : (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-            <p className="text-gray-500">
-              {brandFilter ? `No products found for ${brandFilter}` : 
+            <p className="text-gray-500 mb-4">
+              {brandFilter ? `No products found for "${brandFilter}"` : 
                searchQuery ? `No products match "${searchQuery}"` : 
                "No products match your criteria"}
             </p>
+            {brandFilter && (
+              <div className="text-sm text-gray-400">
+                <p>Available brands: {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).join(', ')}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
