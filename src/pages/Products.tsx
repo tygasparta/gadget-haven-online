@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 const Products = () => {
   const [searchParams] = useSearchParams();
   const brandFilter = searchParams.get('brand');
+  const categoryFilter = searchParams.get('category');
   const searchQuery = searchParams.get('q');
   const { data: allProducts = [], isLoading, error } = useProducts();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -21,6 +22,7 @@ const Products = () => {
     console.log('=== Products Page Debug Info ===');
     console.log('All products loaded:', allProducts.length);
     console.log('Brand filter from URL:', brandFilter);
+    console.log('Category filter from URL:', categoryFilter);
     console.log('Search query from URL:', searchQuery);
     console.log('Loading state:', isLoading);
     console.log('Error state:', error);
@@ -54,6 +56,21 @@ const Products = () => {
       console.log('Products after brand filter:', filtered.length);
     }
 
+    // Apply category filter with case-insensitive comparison
+    if (categoryFilter) {
+      console.log('Filtering by category:', categoryFilter);
+      const categoryLower = categoryFilter.toLowerCase();
+      filtered = filtered.filter(product => {
+        const productCategory = product.category?.toLowerCase();
+        const matches = productCategory === categoryLower;
+        if (matches) {
+          console.log('Product matches category filter:', product.name, 'category:', product.category);
+        }
+        return matches;
+      });
+      console.log('Products after category filter:', filtered.length);
+    }
+
     // Apply search filter if there's a search term from URL
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
@@ -84,9 +101,12 @@ const Products = () => {
 
     console.log('Final filtered products:', filtered.length);
     setFilteredProducts(filtered);
-  }, [allProducts, brandFilter, searchQuery, sortBy]);
+  }, [allProducts, brandFilter, categoryFilter, searchQuery, sortBy]);
 
   const getPageTitle = () => {
+    if (categoryFilter) {
+      return `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Products`;
+    }
     if (brandFilter) {
       return `${brandFilter.charAt(0).toUpperCase() + brandFilter.slice(1)} Products`;
     }
@@ -97,6 +117,9 @@ const Products = () => {
   };
 
   const getPageDescription = () => {
+    if (categoryFilter) {
+      return `Discover ${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} products and accessories`;
+    }
     if (brandFilter) {
       return `Discover ${brandFilter.charAt(0).toUpperCase() + brandFilter.slice(1)} products and accessories`;
     }

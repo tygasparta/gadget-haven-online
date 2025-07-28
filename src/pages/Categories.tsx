@@ -19,7 +19,7 @@ const Categories = () => {
       count: 45,
       description: 'Latest smartphones and accessories',
       color: 'bg-blue-500',
-      path: '/phones'
+      category: 'phones'
     },
     {
       id: 2,
@@ -28,7 +28,7 @@ const Categories = () => {
       count: 32,
       description: 'Headphones, speakers, and audio gear',
       color: 'bg-green-500',
-      path: '/audio'
+      category: 'audio'
     },
     {
       id: 3,
@@ -37,7 +37,7 @@ const Categories = () => {
       count: 28,
       description: 'Laptops and computing devices',
       color: 'bg-purple-500',
-      path: '/laptops'
+      category: 'laptops'
     },
     {
       id: 4,
@@ -46,7 +46,7 @@ const Categories = () => {
       count: 18,
       description: 'Smartwatches and fitness trackers',
       color: 'bg-red-500',
-      path: '/wearables'
+      category: 'wearables'
     },
     {
       id: 5,
@@ -55,7 +55,7 @@ const Categories = () => {
       count: 25,
       description: 'Digital cameras and photography gear',
       color: 'bg-yellow-500',
-      path: '/cameras'
+      category: 'cameras'
     },
     {
       id: 6,
@@ -64,7 +64,7 @@ const Categories = () => {
       count: 35,
       description: 'Gaming consoles and accessories',
       color: 'bg-indigo-500',
-      path: '/gaming'
+      category: 'gaming'
     },
     {
       id: 7,
@@ -73,7 +73,7 @@ const Categories = () => {
       count: 22,
       description: 'Smart TVs and home entertainment',
       color: 'bg-pink-500',
-      path: '/tv-home'
+      category: 'tv-home'
     },
     {
       id: 8,
@@ -82,12 +82,12 @@ const Categories = () => {
       count: 40,
       description: 'Power banks, cables, and accessories',
       color: 'bg-orange-500',
-      path: '/electronics'
+      category: 'electronics'
     }
   ];
 
   const handleCategoryClick = (category: any) => {
-    navigate(category.path);
+    navigate(`/products?category=${category.category}`);
   };
 
   return (
