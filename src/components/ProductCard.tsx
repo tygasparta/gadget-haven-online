@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '@/hooks/us
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ShareButton from './ShareButton';
 
 interface ProductCardProps {
   product: {
@@ -180,6 +180,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         >
           <Eye className="w-4 h-4 text-gray-600 hover:text-blue-500" />
         </button>
+        <ShareButton
+          productId={product.id}
+          productName={product.name}
+          productPrice={product.price}
+          productImage={productImage}
+          className="rounded-full p-2 shadow-lg hover:scale-110 transition-all duration-200"
+        />
       </div>
 
       {/* Product image with enhanced styling - clickable */}
