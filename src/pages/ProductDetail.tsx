@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAddToCart } from '@/hooks/useCart';
@@ -10,7 +10,6 @@ import { useProduct } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ShareButton from '@/components/ShareButton';
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
@@ -229,24 +228,16 @@ const ProductDetail = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleAddToWishlist}
-                    className={`p-2 rounded-full border-2 transition-colors ${
-                      isInWishlist 
-                        ? 'border-red-500 bg-red-50 text-red-500' 
-                        : 'border-gray-300 hover:border-red-300 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart className={`w-6 h-6 ${isInWishlist ? 'fill-current' : ''}`} />
-                  </button>
-                  <ShareButton
-                    productId={product.id}
-                    productName={product.name}
-                    productPrice={product.price}
-                    productImage={galleryImages[currentImageIndex]}
-                  />
-                </div>
+                <button
+                  onClick={handleAddToWishlist}
+                  className={`p-2 rounded-full border-2 transition-colors ${
+                    isInWishlist 
+                      ? 'border-red-500 bg-red-50 text-red-500' 
+                      : 'border-gray-300 hover:border-red-300 hover:text-red-500'
+                  }`}
+                >
+                  <Heart className={`w-6 h-6 ${isInWishlist ? 'fill-current' : ''}`} />
+                </button>
               </div>
               
               {product.brand && (
