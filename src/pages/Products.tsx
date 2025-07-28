@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 const Products = () => {
   const [searchParams] = useSearchParams();
   const brandFilter = searchParams.get('brand');
+  const searchQuery = searchParams.get('q');
   const { data: allProducts = [], isLoading } = useProducts();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('name');
@@ -19,8 +21,14 @@ const Products = () => {
   useEffect(() => {
     let filtered = allProducts;
 
+    // Apply brand filter
+    if (brandFilter) {
+      filtered = filtered.filter(product => 
+        product.brand?.toLowerCase() === brandFilter.toLowerCase()
+      );
+    }
+
     // Apply search filter if there's a search term from URL
-    const searchQuery = searchParams.get('q');
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       filtered = filtered.filter(product => 
@@ -48,7 +56,27 @@ const Products = () => {
     });
 
     setFilteredProducts(filtered);
-  }, [allProducts, searchParams, sortBy]);
+  }, [allProducts, searchParams, sortBy, brandFilter, searchQuery]);
+
+  const getPageTitle = () => {
+    if (brandFilter) {
+      return `${brandFilter.charAt(0).toUpperCase() + brandFilter.slice(1)} Products`;
+    }
+    if (searchQuery) {
+      return `Search Results for "${searchQuery}"`;
+    }
+    return 'All Products';
+  };
+
+  const getPageDescription = () => {
+    if (brandFilter) {
+      return `Discover ${brandFilter.charAt(0).toUpperCase() + brandFilter.slice(1)} products and accessories`;
+    }
+    if (searchQuery) {
+      return `${filteredProducts.length} products found`;
+    }
+    return `${filteredProducts.length} products found`;
+  };
 
   if (isLoading) {
     return (
@@ -69,10 +97,10 @@ const Products = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {searchParams.get('q') ? `Search Results for "${searchParams.get('q')}"` : 'All Products'}
+            {getPageTitle()}
           </h1>
           <p className="text-gray-600">
-            {filteredProducts.length} products found
+            {getPageDescription()}
           </p>
         </div>
 
@@ -139,7 +167,9 @@ const Products = () => {
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
             <p className="text-gray-500">
-              No products match your criteria
+              {brandFilter ? `No products found for ${brandFilter}` : 
+               searchQuery ? `No products match "${searchQuery}"` : 
+               "No products match your criteria"}
             </p>
           </div>
         )}
