@@ -71,8 +71,11 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900">Address</h3>
                     <p className="text-gray-600">
-                      Gadget Genie Headquarters<br />
-                      Harare, Zimbabwe
+                      66 CAMP STREET<br />
+                      SALDANHA BAY<br />
+                      SALDANHA BAY<br />
+                      WESTERN CAPE<br />
+                      7395
                     </p>
                   </div>
                 </div>
