@@ -22,6 +22,8 @@ const Products = () => {
     console.log('All products loaded:', allProducts.length);
     console.log('Brand filter from URL:', brandFilter);
     console.log('Search query from URL:', searchQuery);
+    console.log('Loading state:', isLoading);
+    console.log('Error state:', error);
     
     if (allProducts.length > 0) {
       console.log('Sample products:', allProducts.slice(0, 3).map(p => ({ 
@@ -104,19 +106,19 @@ const Products = () => {
     return `${filteredProducts.length} products found`;
   };
 
-  // Debug info section (only shown in development)
+  // Debug info section (always visible for now to help debug)
   const DebugInfo = () => {
-    if (process.env.NODE_ENV !== 'development') return null;
-    
     return (
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
         <h3 className="font-semibold text-yellow-800 mb-2">Debug Info:</h3>
         <p className="text-sm text-yellow-700">Total products: {allProducts.length}</p>
         <p className="text-sm text-yellow-700">Brand filter: {brandFilter || 'None'}</p>
+        <p className="text-sm text-yellow-700">Search query: {searchQuery || 'None'}</p>
         <p className="text-sm text-yellow-700">Filtered products: {filteredProducts.length}</p>
         <p className="text-sm text-yellow-700">Available brands: {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).join(', ')}</p>
         <p className="text-sm text-yellow-700">Loading: {isLoading ? 'Yes' : 'No'}</p>
         <p className="text-sm text-yellow-700">Error: {error ? 'Yes' : 'No'}</p>
+        {error && <p className="text-sm text-red-700">Error message: {error.message}</p>}
       </div>
     );
   };
@@ -128,6 +130,7 @@ const Products = () => {
         <div className="flex items-center justify-center h-96">
           <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -142,6 +145,7 @@ const Products = () => {
             <p className="text-gray-500">{error.message}</p>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -151,7 +155,7 @@ const Products = () => {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Debug Info - only in development */}
+        {/* Debug Info - always visible for debugging */}
         <DebugInfo />
 
         {/* Page Header */}

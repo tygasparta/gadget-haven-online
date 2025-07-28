@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -31,34 +30,51 @@ export const useProducts = (includeDeleted = false) => {
   return useQuery({
     queryKey: ['products', includeDeleted],
     queryFn: async () => {
-      console.log('Fetching products..., includeDeleted:', includeDeleted);
-      let query = supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+      console.log('=== useProducts hook - Fetching products ===');
+      console.log('includeDeleted:', includeDeleted);
       
-      // If not including deleted, filter them out
-      if (!includeDeleted) {
-        query = query.is('deleted_at', null);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching products:', error);
+      try {
+        let query = supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        // If not including deleted, filter them out
+        if (!includeDeleted) {
+          query = query.is('deleted_at', null);
+        }
+        
+        console.log('Executing query...');
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error('Error fetching products:', error);
+          throw error;
+        }
+        
+        console.log('Raw products data received:', data?.length || 0);
+        if (data && data.length > 0) {
+          console.log('Sample raw product:', data[0]);
+        }
+        
+        // Process specifications to ensure they're properly typed
+        const processedProducts = data?.map(product => ({
+          ...product,
+          specifications: product.specifications as Array<{key: string, value: string}> | null,
+          colors: product.colors as Array<{name: string, hex_code: string}> | null,
+        })) || [];
+        
+        console.log('Processed products:', processedProducts.length);
+        console.log('Brands found:', Array.from(new Set(processedProducts.map(p => p.brand).filter(Boolean))));
+        
+        return processedProducts as Product[];
+      } catch (error) {
+        console.error('Exception in useProducts:', error);
         throw error;
       }
-      
-      // Process specifications to ensure they're properly typed
-      const processedProducts = data?.map(product => ({
-        ...product,
-        specifications: product.specifications as Array<{key: string, value: string}> | null,
-        colors: product.colors as Array<{name: string, hex_code: string}> | null,
-      })) || [];
-      
-      console.log('Products fetched:', processedProducts.length);
-      return processedProducts as Product[];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };
 
