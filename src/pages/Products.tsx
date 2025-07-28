@@ -15,7 +15,6 @@ const Products = () => {
   const { data: allProducts = [], isLoading, error } = useProducts();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('name');
-
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
 
   useEffect(() => {
@@ -23,24 +22,34 @@ const Products = () => {
     console.log('All products loaded:', allProducts.length);
     console.log('Brand filter from URL:', brandFilter);
     console.log('Search query from URL:', searchQuery);
-    console.log('Products data:', allProducts);
+    
+    if (allProducts.length > 0) {
+      console.log('Sample products:', allProducts.slice(0, 3).map(p => ({ 
+        id: p.id, 
+        name: p.name, 
+        brand: p.brand 
+      })));
+    }
     
     // Get all unique brands from products
     const availableBrands = Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean)));
     console.log('Available brands in database:', availableBrands);
     
-    let filtered = allProducts;
+    let filtered = [...allProducts];
 
     // Apply brand filter with case-insensitive comparison
     if (brandFilter) {
       console.log('Filtering by brand:', brandFilter);
+      const brandLower = brandFilter.toLowerCase();
       filtered = filtered.filter(product => {
         const productBrand = product.brand?.toLowerCase();
-        const filterBrand = brandFilter.toLowerCase();
-        console.log(`Checking product: ${product.name}, brand: ${productBrand}, filter: ${filterBrand}`);
-        return productBrand === filterBrand;
+        const matches = productBrand === brandLower;
+        if (matches) {
+          console.log('Product matches brand filter:', product.name, 'brand:', product.brand);
+        }
+        return matches;
       });
-      console.log('Filtered products by brand:', filtered.length);
+      console.log('Products after brand filter:', filtered.length);
     }
 
     // Apply search filter if there's a search term from URL
@@ -53,6 +62,7 @@ const Products = () => {
         product.brand?.toLowerCase().includes(searchLower) ||
         product.tags?.some(tag => tag.toLowerCase().includes(searchLower))
       );
+      console.log('Products after search filter:', filtered.length);
     }
 
     // Sort products
@@ -72,7 +82,7 @@ const Products = () => {
 
     console.log('Final filtered products:', filtered.length);
     setFilteredProducts(filtered);
-  }, [allProducts, searchParams, sortBy, brandFilter, searchQuery]);
+  }, [allProducts, brandFilter, searchQuery, sortBy]);
 
   const getPageTitle = () => {
     if (brandFilter) {
@@ -231,9 +241,15 @@ const Products = () => {
                   <>No products match your criteria</>
                 )}
               </p>
+              {brandFilter && (
+                <p className="text-sm text-gray-400 mb-4">
+                  This could mean there are no products with the brand "{brandFilter}" in our database.
+                </p>
+              )}
             </div>
             
-            {brandFilter && (
+            {/* Show available brands when filtering by brand */}
+            {brandFilter && allProducts.length > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
                 <h4 className="font-semibold text-blue-800 mb-2">Available Brands:</h4>
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -249,6 +265,7 @@ const Products = () => {
               </div>
             )}
             
+            {/* Show message when no products exist in database */}
             {allProducts.length === 0 && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto mt-4">
                 <h4 className="font-semibold text-red-800 mb-2">No products in database</h4>
