@@ -5,20 +5,35 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, MapPin, Plus, Edit, Trash2, Home, Building } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
-import { useToast } from '@/hooks/use-toast';
+import { useAddresses, useAddAddress, useDeleteAddress } from '@/hooks/useAddresses';
 
 const Addresses = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'United States',
+    type: 'home' as 'home' | 'work' | 'other',
+    isDefault: false
+  });
+
+  const { data: addresses = [], isLoading } = useAddresses();
+  const { mutate: addAddress, isPending: isAdding } = useAddAddress();
+  const { mutate: deleteAddress } = useDeleteAddress();
 
   React.useEffect(() => {
     if (!user) {
@@ -28,52 +43,43 @@ const Addresses = () => {
 
   if (!user) return null;
 
-  // Mock addresses - in a real app, this would come from your API
-  const addresses = [
-    {
-      id: '1',
-      type: 'home',
-      name: 'Home Address',
-      line1: '123 Main Street',
-      line2: 'Apt 4B',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'United States',
-      isDefault: true
-    },
-    {
-      id: '2',
-      type: 'work',
-      name: 'Work Address',
-      line1: '456 Business Ave',
-      line2: 'Suite 200',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10002',
-      country: 'United States',
-      isDefault: false
-    }
-  ];
-
   const getAddressIcon = (type: string) => {
     return type === 'home' ? <Home className="w-5 h-5" /> : <Building className="w-5 h-5" />;
   };
 
   const handleAddAddress = () => {
-    toast({
-      title: "Address Added",
-      description: "Your address has been saved successfully."
+    addAddress(formData, {
+      onSuccess: () => {
+        setShowAddAddress(false);
+        setFormData({
+          name: '',
+          line1: '',
+          line2: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'United States',
+          type: 'home',
+          isDefault: false
+        });
+      }
     });
-    setShowAddAddress(false);
   };
 
   const handleDeleteAddress = (id: string) => {
-    toast({
-      title: "Address Removed",
-      description: "Address has been removed from your account."
-    });
+    deleteAddress(id);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -134,9 +140,6 @@ const Addresses = () => {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="icon">
-                      <Edit className="w-4 h-4" />
-                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -165,7 +168,23 @@ const Addresses = () => {
                   <Input
                     id="addressName"
                     placeholder="e.g., Home, Work, etc."
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="type">Address Type</Label>
+                  <Select value={formData.type} onValueChange={(value: 'home' | 'work' | 'other') => setFormData({...formData, type: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="home">Home</SelectItem>
+                      <SelectItem value="work">Work</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>
@@ -173,6 +192,8 @@ const Addresses = () => {
                   <Input
                     id="line1"
                     placeholder="Street address"
+                    value={formData.line1}
+                    onChange={(e) => setFormData({...formData, line1: e.target.value})}
                   />
                 </div>
                 
@@ -181,6 +202,8 @@ const Addresses = () => {
                   <Input
                     id="line2"
                     placeholder="Apartment, suite, unit, etc."
+                    value={formData.line2}
+                    onChange={(e) => setFormData({...formData, line2: e.target.value})}
                   />
                 </div>
                 
@@ -190,6 +213,8 @@ const Addresses = () => {
                     <Input
                       id="city"
                       placeholder="City"
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
                     />
                   </div>
                   <div>
@@ -197,6 +222,8 @@ const Addresses = () => {
                     <Input
                       id="state"
                       placeholder="State"
+                      value={formData.state}
+                      onChange={(e) => setFormData({...formData, state: e.target.value})}
                     />
                   </div>
                 </div>
@@ -207,6 +234,8 @@ const Addresses = () => {
                     <Input
                       id="zipCode"
                       placeholder="12345"
+                      value={formData.zipCode}
+                      onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
                     />
                   </div>
                   <div>
@@ -214,15 +243,20 @@ const Addresses = () => {
                     <Input
                       id="country"
                       placeholder="Country"
-                      defaultValue="United States"
+                      value={formData.country}
+                      onChange={(e) => setFormData({...formData, country: e.target.value})}
                     />
                   </div>
                 </div>
               </div>
               
               <div className="flex space-x-3">
-                <Button onClick={handleAddAddress} className="flex-1">
-                  Add Address
+                <Button 
+                  onClick={handleAddAddress} 
+                  className="flex-1"
+                  disabled={isAdding || !formData.name || !formData.line1 || !formData.city}
+                >
+                  {isAdding ? 'Adding...' : 'Add Address'}
                 </Button>
                 <Button
                   variant="outline"

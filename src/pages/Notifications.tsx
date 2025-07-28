@@ -12,12 +12,15 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { useToast } from '@/hooks/use-toast';
+import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
 
 const Notifications = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { data: notifications = [] } = useNotifications();
+  const { mutate: markAsRead } = useMarkNotificationAsRead();
 
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -45,6 +48,10 @@ const Notifications = () => {
       title: "Settings Updated",
       description: "Your notification preferences have been saved."
     });
+  };
+
+  const handleMarkAsRead = (notificationId: string) => {
+    markAsRead(notificationId);
   };
 
   const notificationCategories = [
@@ -137,10 +144,52 @@ const Notifications = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notification Settings</h1>
-            <p className="text-gray-600">Manage how you receive notifications</p>
+            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+            <p className="text-gray-600">Manage your notifications and preferences</p>
           </div>
         </div>
+
+        {/* Recent Notifications */}
+        {notifications.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Recent Notifications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {notifications.slice(0, 5).map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`flex items-start space-x-3 p-3 rounded-lg ${
+                      notification.is_read ? 'bg-gray-50' : 'bg-blue-50'
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      notification.is_read ? 'bg-gray-400' : 'bg-blue-500'
+                    }`} />
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                      <p className="text-sm text-gray-600">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(notification.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {!notification.is_read && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        className="text-xs"
+                      >
+                        Mark as read
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Notification Categories */}
         <div className="space-y-6">

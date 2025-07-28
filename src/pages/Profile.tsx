@@ -12,12 +12,15 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const Profile = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     fullName: user?.user_metadata?.full_name || '',
@@ -31,15 +34,55 @@ const Profile = () => {
     }
   }, [user, navigate]);
 
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { fullName: string; phone: string }) => {
+      // Update auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          full_name: data.fullName,
+          phone: data.phone
+        }
+      });
+      
+      if (authError) throw authError;
+
+      // Update profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: data.fullName,
+          phone: data.phone
+        })
+        .eq('id', user?.id);
+
+      if (profileError) throw profileError;
+
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully."
+      });
+      setIsEditing(false);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive"
+      });
+    }
+  });
+
   if (!user) return null;
 
   const handleSave = () => {
-    // In a real app, this would update the user profile
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully."
+    updateProfileMutation.mutate({
+      fullName: formData.fullName,
+      phone: formData.phone
     });
-    setIsEditing(false);
   };
 
   return (
@@ -69,6 +112,7 @@ const Profile = () => {
               variant="outline"
               onClick={() => setIsEditing(!isEditing)}
               className="flex items-center space-x-2"
+              disabled={updateProfileMutation.isPending}
             >
               <Edit className="w-4 h-4" />
               <span>{isEditing ? 'Cancel' : 'Edit'}</span>
@@ -95,11 +139,11 @@ const Profile = () => {
                   <Input
                     id="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    disabled={!isEditing}
-                    className={`pl-10 ${!isEditing ? 'bg-gray-50' : ''}`}
+                    disabled={true}
+                    className="pl-10 bg-gray-50"
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
               </div>
               
               <div>
@@ -119,9 +163,13 @@ const Profile = () => {
             </div>
             
             {isEditing && (
-              <Button onClick={handleSave} className="w-full">
+              <Button 
+                onClick={handleSave} 
+                className="w-full"
+                disabled={updateProfileMutation.isPending}
+              >
                 <Save className="w-4 h-4 mr-2" />
-                Save Changes
+                {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             )}
           </CardContent>
