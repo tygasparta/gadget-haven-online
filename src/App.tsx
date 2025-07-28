@@ -75,7 +75,7 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <PWAInstallPrompt />
-                <Suspense fallback={<EnhancedPreloader />}>
+                <Suspense fallback={<div></div>}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/products" element={<Products />} />

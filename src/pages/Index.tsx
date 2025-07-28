@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import EnhancedPreloader from '../components/EnhancedPreloader';
 import Header from '../components/Header';
 import MobileHeader from '../components/MobileHeader';
 import Sidebar from '../components/Sidebar';
@@ -23,11 +24,19 @@ import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
+  const [showPreloader, setShowPreloader] = useState(true);
   const isMobile = useIsMobile();
   const isTablet = !isMobile && window.innerWidth < 1024;
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: flashSaleProducts = [], isLoading: flashLoading } = useFlashSaleProducts();
   const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPreloader(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Transform products to match the expected format
   const transformProduct = (product: any) => ({
@@ -54,6 +63,10 @@ const Index = () => {
       ...transformProduct(product),
       discount: "NEW"
     }));
+
+  if (showPreloader) {
+    return <EnhancedPreloader />;
+  }
 
   return (
     <>
