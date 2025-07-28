@@ -35,7 +35,7 @@ export const useAddresses = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Address[];
+      return data || [];
     },
     enabled: !!user,
   });

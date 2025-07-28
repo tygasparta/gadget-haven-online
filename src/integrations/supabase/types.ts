@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          id: string
+          isdefault: boolean
+          line1: string
+          line2: string | null
+          name: string
+          state: string
+          type: string
+          updated_at: string
+          user_id: string
+          zipcode: string
+        }
+        Insert: {
+          city: string
+          country?: string
+          created_at?: string
+          id?: string
+          isdefault?: boolean
+          line1: string
+          line2?: string | null
+          name: string
+          state: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          zipcode: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          isdefault?: boolean
+          line1?: string
+          line2?: string | null
+          name?: string
+          state?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          zipcode?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null
