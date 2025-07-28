@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -227,7 +228,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
 
       {/* Secondary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleViewAnalytics}>
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleViewAnalytics}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -241,7 +242,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleProcessPendingOrders}>
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleProcessPendingOrders}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -253,7 +254,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleReviewLowStock}>
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleReviewLowStock}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -265,7 +266,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white cursor-pointer hover:bg-black/30 transition-colors" onClick={handleViewUsers}>
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleViewUsers}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -281,7 +282,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
       {/* Detailed Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold">Recent Orders</h3>
@@ -327,7 +328,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
         </Card>
 
         {/* Quick Actions & Alerts */}
-        <Card className="bg-black/20 backdrop-blur-sm border-white/10 text-white">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
           <CardContent className="p-6">
             <h3 className="text-xl font-bold mb-4">Quick Actions & Alerts</h3>
             <div className="space-y-4">

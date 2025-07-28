@@ -195,7 +195,7 @@ const AdminDashboard = () => {
 
         {/* Tab Contents */}
         <div className="space-y-6">
-          {activeTab === 'overview' && <OverviewTab />}
+          {activeTab === 'overview' && <OverviewTab onTabChange={setActiveTab} />}
           {activeTab === 'products' && (
             <ProductsTab 
               onAddProduct={handleAddProduct}
