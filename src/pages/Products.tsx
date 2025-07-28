@@ -12,16 +12,22 @@ const Products = () => {
   const [searchParams] = useSearchParams();
   const brandFilter = searchParams.get('brand');
   const searchQuery = searchParams.get('q');
-  const { data: allProducts = [], isLoading } = useProducts();
+  const { data: allProducts = [], isLoading, error } = useProducts();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('name');
 
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
 
   useEffect(() => {
-    console.log('All products:', allProducts);
-    console.log('Brand filter:', brandFilter);
-    console.log('Search query:', searchQuery);
+    console.log('=== Products Page Debug Info ===');
+    console.log('All products loaded:', allProducts.length);
+    console.log('Brand filter from URL:', brandFilter);
+    console.log('Search query from URL:', searchQuery);
+    console.log('Products data:', allProducts);
+    
+    // Get all unique brands from products
+    const availableBrands = Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean)));
+    console.log('Available brands in database:', availableBrands);
     
     let filtered = allProducts;
 
@@ -31,10 +37,10 @@ const Products = () => {
       filtered = filtered.filter(product => {
         const productBrand = product.brand?.toLowerCase();
         const filterBrand = brandFilter.toLowerCase();
-        console.log('Product brand:', productBrand, 'Filter brand:', filterBrand);
+        console.log(`Checking product: ${product.name}, brand: ${productBrand}, filter: ${filterBrand}`);
         return productBrand === filterBrand;
       });
-      console.log('Filtered products by brand:', filtered);
+      console.log('Filtered products by brand:', filtered.length);
     }
 
     // Apply search filter if there's a search term from URL
@@ -64,7 +70,7 @@ const Products = () => {
       }
     });
 
-    console.log('Final filtered products:', filtered);
+    console.log('Final filtered products:', filtered.length);
     setFilteredProducts(filtered);
   }, [allProducts, searchParams, sortBy, brandFilter, searchQuery]);
 
@@ -99,6 +105,8 @@ const Products = () => {
         <p className="text-sm text-yellow-700">Brand filter: {brandFilter || 'None'}</p>
         <p className="text-sm text-yellow-700">Filtered products: {filteredProducts.length}</p>
         <p className="text-sm text-yellow-700">Available brands: {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).join(', ')}</p>
+        <p className="text-sm text-yellow-700">Loading: {isLoading ? 'Yes' : 'No'}</p>
+        <p className="text-sm text-yellow-700">Error: {error ? 'Yes' : 'No'}</p>
       </div>
     );
   };
@@ -109,6 +117,20 @@ const Products = () => {
         <Header />
         <div className="flex items-center justify-center h-96">
           <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-red-600 mb-2">Error loading products</h3>
+            <p className="text-gray-500">{error.message}</p>
+          </div>
         </div>
       </div>
     );
@@ -193,15 +215,46 @@ const Products = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-            <p className="text-gray-500 mb-4">
-              {brandFilter ? `No products found for "${brandFilter}"` : 
-               searchQuery ? `No products match "${searchQuery}"` : 
-               "No products match your criteria"}
-            </p>
+            <div className="mb-8">
+              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Filter className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                No products found
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {brandFilter ? (
+                  <>We couldn't find any products for the brand "{brandFilter}"</>
+                ) : searchQuery ? (
+                  <>No products match your search "{searchQuery}"</>
+                ) : (
+                  <>No products match your criteria</>
+                )}
+              </p>
+            </div>
+            
             {brandFilter && (
-              <div className="text-sm text-gray-400">
-                <p>Available brands: {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).join(', ')}</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
+                <h4 className="font-semibold text-blue-800 mb-2">Available Brands:</h4>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).map((brand) => (
+                    <span
+                      key={brand}
+                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                    >
+                      {brand}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {allProducts.length === 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto mt-4">
+                <h4 className="font-semibold text-red-800 mb-2">No products in database</h4>
+                <p className="text-red-600 text-sm">
+                  There are no products currently available in the database. Please contact support or check back later.
+                </p>
               </div>
             )}
           </div>
