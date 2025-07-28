@@ -32,12 +32,46 @@ const Header = () => {
   // Calculate total cart items
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  // Filter products based on search term
-  const searchResults = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    product.category?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(0, 5); // Limit to 5 results
+  // Enhanced search with better matching
+  const searchResults = products.filter(product => {
+    if (searchTerm.length < 2) return false;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const searchTerms = searchLower.split(' ').filter(term => term.length > 0);
+    
+    const productName = product.name.toLowerCase();
+    const productCategory = product.category?.toLowerCase() || '';
+    const productBrand = product.brand?.toLowerCase() || '';
+    const productDescription = product.description?.toLowerCase() || '';
+    const productTags = product.tags?.map(tag => tag.toLowerCase()) || [];
+    
+    // Exact matches get priority
+    if (productName.includes(searchLower) || 
+        productBrand.includes(searchLower) || 
+        productCategory.includes(searchLower)) {
+      return true;
+    }
+    
+    // Multi-term search (brand + category/type)
+    if (searchTerms.length >= 2) {
+      const brandMatch = searchTerms.some(term => productBrand.includes(term));
+      const categoryMatch = searchTerms.some(term => 
+        productCategory.includes(term) || 
+        productDescription.includes(term) ||
+        productTags.some(tag => tag.includes(term))
+      );
+      if (brandMatch && categoryMatch) return true;
+    }
+    
+    // All terms found somewhere in product
+    return searchTerms.every(term =>
+      productName.includes(term) || 
+      productBrand.includes(term) || 
+      productCategory.includes(term) ||
+      productDescription.includes(term) ||
+      productTags.some(tag => tag.includes(term))
+    );
+  }).slice(0, 8); // Increased to 8 results
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

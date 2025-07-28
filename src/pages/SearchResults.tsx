@@ -17,57 +17,116 @@ const SearchResults = () => {
   const [sortBy, setSortBy] = useState('relevance');
   const [searchTerm, setSearchTerm] = useState(query);
 
-  // Filter products based on search query
-  const filteredProducts = allProducts.filter(product => {
-    if (!query) return false;
+  // Enhanced search function with scoring
+  const searchProductsWithScore = (query: string) => {
+    if (!query) return [];
     
-    const searchLower = query.toLowerCase();
+    const searchLower = query.toLowerCase().trim();
+    const searchTerms = searchLower.split(' ').filter(term => term.length > 0);
     
-    // Search in product name
-    if (product.name.toLowerCase().includes(searchLower)) return true;
-    
-    // Search in description
-    if (product.description?.toLowerCase().includes(searchLower)) return true;
-    
-    // Search in category
-    if (product.category?.toLowerCase().includes(searchLower)) return true;
-    
-    // Search in brand
-    if (product.brand?.toLowerCase().includes(searchLower)) return true;
-    
-    // Search in tags
-    if (product.tags?.some(tag => tag.toLowerCase().includes(searchLower))) return true;
-    
-    return false;
-  });
+    return allProducts.map(product => {
+      let score = 0;
+      const productName = product.name.toLowerCase();
+      const productDescription = product.description?.toLowerCase() || '';
+      const productCategory = product.category?.toLowerCase() || '';
+      const productBrand = product.brand?.toLowerCase() || '';
+      const productTags = product.tags?.map(tag => tag.toLowerCase()) || [];
+      
+      // Exact product name match (highest score)
+      if (productName === searchLower) {
+        score += 100;
+      }
+      
+      // Exact brand + category/description keyword match
+      if (searchTerms.length >= 2) {
+        const brandMatch = searchTerms.some(term => productBrand.includes(term));
+        const categoryMatch = searchTerms.some(term => 
+          productCategory.includes(term) || 
+          productDescription.includes(term) ||
+          productTags.some(tag => tag.includes(term))
+        );
+        if (brandMatch && categoryMatch) {
+          score += 80;
+        }
+      }
+      
+      // Product name starts with search term
+      if (productName.startsWith(searchLower)) {
+        score += 70;
+      }
+      
+      // All search terms found in product name
+      if (searchTerms.every(term => productName.includes(term))) {
+        score += 60;
+      }
+      
+      // Brand exact match
+      if (productBrand === searchLower) {
+        score += 50;
+      }
+      
+      // Brand starts with search term
+      if (productBrand.startsWith(searchLower)) {
+        score += 45;
+      }
+      
+      // Category exact match
+      if (productCategory === searchLower) {
+        score += 40;
+      }
+      
+      // Multiple term matches across name, brand, category
+      searchTerms.forEach(term => {
+        if (productName.includes(term)) score += 15;
+        if (productBrand.includes(term)) score += 12;
+        if (productCategory.includes(term)) score += 10;
+        if (productDescription.includes(term)) score += 8;
+        if (productTags.some(tag => tag.includes(term))) score += 6;
+      });
+      
+      // Partial matches in name
+      if (productName.includes(searchLower)) {
+        score += 25;
+      }
+      
+      // Partial matches in description
+      if (productDescription.includes(searchLower)) {
+        score += 15;
+      }
+      
+      // Tag matches
+      if (productTags.some(tag => tag.includes(searchLower))) {
+        score += 20;
+      }
+      
+      return { product, score };
+    }).filter(item => item.score > 0);
+  };
 
-  // Sort filtered products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
+  // Get filtered and scored products
+  const scoredProducts = searchProductsWithScore(query);
+  
+  // Sort by score first, then by other criteria
+  const sortedProducts = [...scoredProducts].sort((a, b) => {
+    if (sortBy === 'relevance') {
+      if (a.score !== b.score) return b.score - a.score;
+      return a.product.name.localeCompare(b.product.name);
+    }
+    
+    // For other sort options, sort by the selected criteria
     switch (sortBy) {
       case 'price-low':
-        return a.price - b.price;
+        return a.product.price - b.product.price;
       case 'price-high':
-        return b.price - a.price;
+        return b.product.price - a.product.price;
       case 'rating':
-        return (b.rating || 0) - (a.rating || 0);
+        return (b.product.rating || 0) - (a.product.rating || 0);
       case 'name':
-        return a.name.localeCompare(b.name);
-      case 'relevance':
+        return a.product.name.localeCompare(b.product.name);
       default:
-        // Simple relevance scoring - exact matches first, then partial matches
-        const aExact = a.name.toLowerCase() === query.toLowerCase() ? 1 : 0;
-        const bExact = b.name.toLowerCase() === query.toLowerCase() ? 1 : 0;
-        if (aExact !== bExact) return bExact - aExact;
-        
-        // Then by name contains query at start
-        const aStartsWith = a.name.toLowerCase().startsWith(query.toLowerCase()) ? 1 : 0;
-        const bStartsWith = b.name.toLowerCase().startsWith(query.toLowerCase()) ? 1 : 0;
-        if (aStartsWith !== bStartsWith) return bStartsWith - aStartsWith;
-        
-        // Finally by alphabetical order
-        return a.name.localeCompare(b.name);
+        return b.score - a.score;
     }
-  });
+  }).map(item => item.product);
 
   const handleNewSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,8 +295,9 @@ const SearchResults = () => {
               <ul className="list-disc list-inside space-y-1">
                 <li>Checking your spelling</li>
                 <li>Using different keywords</li>
-                <li>Searching for product categories like "smartphone" or "headphones"</li>
-                <li>Searching by brand names</li>
+                <li>Searching for product categories like "smartphone", "headphones", or "tablet"</li>
+                <li>Searching by brand names like "Apple", "Samsung", or "Huawei"</li>
+                <li>Try combining brand and product type like "Samsung phone" or "Hisense TV"</li>
               </ul>
             </div>
           </div>
