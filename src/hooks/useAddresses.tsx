@@ -12,10 +12,10 @@ export interface Address {
   line2?: string;
   city: string;
   state: string;
-  zipCode: string;
+  zipcode: string;
   country: string;
   type: 'home' | 'work' | 'other';
-  isDefault: boolean;
+  isdefault: boolean;
   created_at: string;
   updated_at: string;
 }

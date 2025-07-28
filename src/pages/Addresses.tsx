@@ -25,10 +25,10 @@ const Addresses = () => {
     line2: '',
     city: '',
     state: '',
-    zipCode: '',
+    zipcode: '',
     country: 'United States',
     type: 'home' as 'home' | 'work' | 'other',
-    isDefault: false
+    isdefault: false
   });
 
   const { data: addresses = [], isLoading } = useAddresses();
@@ -57,10 +57,10 @@ const Addresses = () => {
           line2: '',
           city: '',
           state: '',
-          zipCode: '',
+          zipcode: '',
           country: 'United States',
           type: 'home',
-          isDefault: false
+          isdefault: false
         });
       }
     });
@@ -124,7 +124,7 @@ const Addresses = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <h3 className="font-medium text-gray-900">{address.name}</h3>
-                        {address.isDefault && (
+                        {address.isdefault && (
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                             Default
                           </span>
@@ -133,7 +133,7 @@ const Addresses = () => {
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>{address.line1}</p>
                         {address.line2 && <p>{address.line2}</p>}
-                        <p>{address.city}, {address.state} {address.zipCode}</p>
+                        <p>{address.city}, {address.state} {address.zipcode}</p>
                         <p>{address.country}</p>
                       </div>
                     </div>
@@ -230,12 +230,12 @@ const Addresses = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="zipCode">ZIP Code</Label>
+                    <Label htmlFor="zipcode">ZIP Code</Label>
                     <Input
-                      id="zipCode"
+                      id="zipcode"
                       placeholder="12345"
-                      value={formData.zipCode}
-                      onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+                      value={formData.zipcode}
+                      onChange={(e) => setFormData({...formData, zipcode: e.target.value})}
                     />
                   </div>
                   <div>
