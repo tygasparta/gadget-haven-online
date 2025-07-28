@@ -7,8 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "next-themes";
-import { EnhancedPreloader } from "@/components/EnhancedPreloader";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import EnhancedPreloader from "@/components/EnhancedPreloader";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { usePWA } from "@/hooks/usePWA";
 import { Suspense, lazy } from "react";
 
@@ -62,7 +62,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  const { isOnline } = usePWA();
+  usePWA();
 
   return (
     <QueryClientProvider client={queryClient}>
