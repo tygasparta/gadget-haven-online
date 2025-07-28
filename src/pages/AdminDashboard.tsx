@@ -19,6 +19,8 @@ import OrdersTab from '@/components/admin/OrdersTab';
 import UsersTab from '@/components/admin/UsersTab';
 import AnalyticsTab from '@/components/admin/AnalyticsTab';
 import NotificationDropdown from '@/components/admin/NotificationDropdown';
+import AddProductModal from '@/components/admin/AddProductModal';
+import EditProductModal from '@/components/admin/EditProductModal';
 
 // Import new components
 import BulkProductUpload from '@/components/admin/BulkProductUpload';
@@ -42,12 +44,33 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   React.useEffect(() => {
     if (!loading && !isAdmin) {
       navigate('/');
     }
   }, [isAdmin, loading, navigate]);
+
+  const handleAddProduct = () => {
+    setShowAddProductModal(true);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setShowEditProductModal(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setShowAddProductModal(false);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditProductModal(false);
+    setEditingProduct(null);
+  };
 
   if (loading) {
     return (
@@ -168,7 +191,10 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="products" className="space-y-6">
-            <ProductsTab />
+            <ProductsTab 
+              onAddProduct={handleAddProduct}
+              onEditProduct={handleEditProduct}
+            />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">
@@ -192,6 +218,18 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Product Modals */}
+      <AddProductModal 
+        isOpen={showAddProductModal}
+        onClose={handleCloseAddModal}
+      />
+      
+      <EditProductModal 
+        isOpen={showEditProductModal}
+        product={editingProduct}
+        onClose={handleCloseEditModal}
+      />
 
       {!isMobile && <Footer />}
       <MobileNavigation />
