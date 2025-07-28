@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, Copy, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAddToCart } from '@/hooks/useCart';
@@ -24,6 +24,7 @@ const ProductDetail = () => {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const productId = id ? parseInt(id, 10) : 0;
   const { data: product, isLoading, error } = useProduct(productId);
@@ -127,6 +128,59 @@ const ProductDetail = () => {
     return brandLogos[brandName] || null;
   };
 
+  // Share functionality
+  const getProductUrl = () => {
+    return window.location.href;
+  };
+
+  const getShareText = () => {
+    return `Check out this amazing product: ${product?.name} - Only $${product?.price}!`;
+  };
+
+  const handleShare = async (platform: string) => {
+    const url = getProductUrl();
+    const text = getShareText();
+    
+    switch (platform) {
+      case 'native':
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: product?.name,
+              text: text,
+              url: url,
+            });
+            toast.success('Shared successfully!');
+          } catch (error) {
+            console.log('Share cancelled');
+          }
+        } else {
+          handleShare('copy');
+        }
+        break;
+      case 'copy':
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success('Link copied to clipboard!');
+          setShowShareModal(false);
+        } catch (error) {
+          toast.error('Failed to copy link');
+        }
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+        break;
+      default:
+        break;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -228,16 +282,24 @@ const ProductDetail = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                <button
-                  onClick={handleAddToWishlist}
-                  className={`p-2 rounded-full border-2 transition-colors ${
-                    isInWishlist 
-                      ? 'border-red-500 bg-red-50 text-red-500' 
-                      : 'border-gray-300 hover:border-red-300 hover:text-red-500'
-                  }`}
-                >
-                  <Heart className={`w-6 h-6 ${isInWishlist ? 'fill-current' : ''}`} />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="p-2 rounded-full border-2 border-gray-300 hover:border-blue-300 hover:text-blue-500 transition-colors"
+                  >
+                    <Share2 className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={handleAddToWishlist}
+                    className={`p-2 rounded-full border-2 transition-colors ${
+                      isInWishlist 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 hover:border-red-300 hover:text-red-500'
+                    }`}
+                  >
+                    <Heart className={`w-6 h-6 ${isInWishlist ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
               </div>
               
               {product.brand && (
@@ -486,6 +548,77 @@ const ProductDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Share this product</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {/* Native Share (Mobile) */}
+              {navigator.share && (
+                <button
+                  onClick={() => handleShare('native')}
+                  className="w-full flex items-center justify-center space-x-3 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span>Share via device</span>
+                </button>
+              )}
+              
+              {/* Copy Link */}
+              <button
+                onClick={() => handleShare('copy')}
+                className="w-full flex items-center justify-center space-x-3 p-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              >
+                <Copy className="w-5 h-5" />
+                <span>Copy link</span>
+              </button>
+              
+              {/* Social Media Options */}
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => handleShare('facebook')}
+                  className="flex flex-col items-center justify-center p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  <Facebook className="w-6 h-6 mb-1" />
+                  <span className="text-xs">Facebook</span>
+                </button>
+                
+                <button
+                  onClick={() => handleShare('twitter')}
+                  className="flex flex-col items-center justify-center p-4 bg-blue-400 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                >
+                  <Twitter className="w-6 h-6 mb-1" />
+                  <span className="text-xs">Twitter</span>
+                </button>
+                
+                <button
+                  onClick={() => handleShare('whatsapp')}
+                  className="flex flex-col items-center justify-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                >
+                  <MessageCircle className="w-6 h-6 mb-1" />
+                  <span className="text-xs">WhatsApp</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Preview:</p>
+              <p className="text-sm font-medium">{getShareText()}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
