@@ -45,43 +45,66 @@ const OneClickCheckout: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Prepare cart data for Stripe
-      const stripeCartItems = cartItems.map(item => ({
+      // Create order in database with cash on delivery
+      const orderData = {
+        user_id: user.id,
+        total_amount: finalTotal,
+        status: 'confirmed',
+        payment_method: 'cash_on_delivery',
+        shipping_address: {
+          name: defaultAddress.name,
+          line1: defaultAddress.line1,
+          line2: defaultAddress.line2,
+          city: defaultAddress.city,
+          state: defaultAddress.state,
+          zipcode: defaultAddress.zipcode,
+          country: defaultAddress.country
+        },
+        billing_address: {
+          name: defaultAddress.name,
+          line1: defaultAddress.line1,
+          line2: defaultAddress.line2,
+          city: defaultAddress.city,
+          state: defaultAddress.state,
+          zipcode: defaultAddress.zipcode,
+          country: defaultAddress.country
+        }
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData)
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cartItems.map(item => ({
+        order_id: order.id,
         product_id: item.product_id,
         quantity: item.quantity,
-        products: {
-          name: item.products.name,
-          description: "", // Products table doesn't have description field
-          price: item.products.price,
-          image: item.products.image
-        }
+        price: item.products.price
       }));
 
-      // Call Stripe payment function
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          cartItems: stripeCartItems,
-          shippingAddress: {
-            name: defaultAddress.name,
-            line1: defaultAddress.line1,
-            line2: defaultAddress.line2,
-            city: defaultAddress.city,
-            state: defaultAddress.state,
-            zipcode: defaultAddress.zipcode,
-            country: defaultAddress.country
-          },
-          totalAmount: finalTotal
-        }
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // Clear cart
+      await supabase
+        .from('cart_items')
+        .delete()
+        .eq('user_id', user.id);
+
+      toast({
+        title: "Order Placed Successfully!",
+        description: "Your order has been confirmed. Pay cash on delivery.",
       });
-
-      if (error) throw error;
-
-      // Redirect to Stripe Checkout
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL received");
-      }
+      
+      navigate(`/order-success?reference=ORDER-${order.id}&order_id=${order.id}`);
 
     } catch (error: any) {
       console.error('One-click checkout error:', error);
@@ -90,6 +113,7 @@ const OneClickCheckout: React.FC = () => {
         description: error.message || "Failed to process one-click checkout",
         variant: "destructive"
       });
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -138,8 +162,8 @@ const OneClickCheckout: React.FC = () => {
         <div className="bg-white rounded-lg p-3 border border-blue-100">
           <div className="flex items-center space-x-2">
             <CreditCard className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium">Secure Card Payment</span>
-            <Badge variant="outline" className="text-xs">Stripe</Badge>
+            <span className="text-sm font-medium">Cash on Delivery</span>
+            <Badge variant="outline" className="text-xs">Default</Badge>
           </div>
         </div>
 
@@ -156,7 +180,7 @@ const OneClickCheckout: React.FC = () => {
           ) : (
             <div className="flex items-center space-x-2">
               <Zap className="w-5 h-5" />
-              <span>Order Now - One Click</span>
+              <span>Order Now - Cash on Delivery</span>
             </div>
           )}
         </Button>
