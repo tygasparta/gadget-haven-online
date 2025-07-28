@@ -45,66 +45,43 @@ const OneClickCheckout: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Create order in database
-      const orderData = {
-        user_id: user.id,
-        total_amount: finalTotal,
-        status: 'confirmed',
-        payment_method: 'one_click_checkout',
-        shipping_address: {
-          name: defaultAddress.name,
-          line1: defaultAddress.line1,
-          line2: defaultAddress.line2,
-          city: defaultAddress.city,
-          state: defaultAddress.state,
-          zipcode: defaultAddress.zipcode,
-          country: defaultAddress.country
-        },
-        billing_address: {
-          name: defaultAddress.name,
-          line1: defaultAddress.line1,
-          line2: defaultAddress.line2,
-          city: defaultAddress.city,
-          state: defaultAddress.state,
-          zipcode: defaultAddress.zipcode,
-          country: defaultAddress.country
-        }
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
+      // Prepare cart data for Stripe
+      const stripeCartItems = cartItems.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        price: item.products.price
+        products: {
+          name: item.products.name,
+          description: "", // Products table doesn't have description field
+          price: item.products.price,
+          image: item.products.image
+        }
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Clear cart
-      await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', user.id);
-
-      toast({
-        title: "Order Placed Successfully!",
-        description: "Your order has been confirmed with one-click checkout",
+      // Call Stripe payment function
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          cartItems: stripeCartItems,
+          shippingAddress: {
+            name: defaultAddress.name,
+            line1: defaultAddress.line1,
+            line2: defaultAddress.line2,
+            city: defaultAddress.city,
+            state: defaultAddress.state,
+            zipcode: defaultAddress.zipcode,
+            country: defaultAddress.country
+          },
+          totalAmount: finalTotal
+        }
       });
-      
-      navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
+
+      if (error) throw error;
+
+      // Redirect to Stripe Checkout
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
+      }
 
     } catch (error: any) {
       console.error('One-click checkout error:', error);
@@ -113,7 +90,6 @@ const OneClickCheckout: React.FC = () => {
         description: error.message || "Failed to process one-click checkout",
         variant: "destructive"
       });
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -162,8 +138,8 @@ const OneClickCheckout: React.FC = () => {
         <div className="bg-white rounded-lg p-3 border border-blue-100">
           <div className="flex items-center space-x-2">
             <CreditCard className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium">Cash on Delivery</span>
-            <Badge variant="outline" className="text-xs">Default</Badge>
+            <span className="text-sm font-medium">Secure Card Payment</span>
+            <Badge variant="outline" className="text-xs">Stripe</Badge>
           </div>
         </div>
 

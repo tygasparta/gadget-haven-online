@@ -1,278 +1,204 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, Clock, AlertCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Package, Truck, CreditCard, ArrowRight, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { useAuthContext } from '@/contexts/AuthContext';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import MobileNavigation from '@/components/MobileNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { user } = useAuthContext();
-  const [paymentStatus, setPaymentStatus] = useState<'loading' | 'success' | 'pending' | 'failed'>('loading');
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [orderDetails, setOrderDetails] = useState<any>(null);
   
+  const sessionId = searchParams.get('session_id');
   const reference = searchParams.get('reference');
-  const orderId = searchParams.get('order_id');
-  const error = searchParams.get('error');
-  const isTest = searchParams.get('test') === 'true';
-  const isMobile = searchParams.get('mobile') === 'true';
-  const method = searchParams.get('method');
 
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      console.log('PaymentSuccess: Starting payment status check', {
-        reference,
-        orderId,
-        error,
-        isTest,
-        isMobile,
-        method,
-        user: user?.id
-      });
-
-      // Handle error case first
-      if (error) {
-        console.log('PaymentSuccess: Error parameter found:', error);
-        setPaymentStatus('failed');
-        setPaymentDetails({ error: decodeURIComponent(error) });
-        return;
-      }
-
-      // Handle missing reference
-      if (!reference) {
-        console.log('PaymentSuccess: No payment reference found');
-        setPaymentStatus('failed');
-        setPaymentDetails({ error: 'No payment reference found' });
+    const verifyPayment = async () => {
+      if (!sessionId) {
+        setIsVerifying(false);
         return;
       }
 
       try {
-        // If this is a test payment, simulate success
-        if (isTest) {
-          console.log('PaymentSuccess: Processing test payment');
-          setPaymentStatus('success');
-          setPaymentDetails({ 
-            reference,
-            amount: 53.19,
-            message: 'Test payment completed successfully'
+        const { data, error } = await supabase.functions.invoke('verify-payment', {
+          body: { sessionId }
+        });
+
+        if (error) throw error;
+
+        if (data?.success) {
+          setOrderDetails(data.order);
+          toast({
+            title: "Payment Confirmed!",
+            description: "Your order has been processed successfully.",
           });
-          
-          // Clear cart if payment is successful and user exists
-          if (user) {
-            console.log('PaymentSuccess: Clearing cart for test payment');
-            await supabase.from('cart_items').delete().eq('user_id', user.id);
-          }
-          return;
-        }
-
-        // Try to get payment record from database
-        console.log('PaymentSuccess: Fetching payment record from database');
-        const { data: paymentRecord, error: dbError } = await supabase
-          .from('payment_records')
-          .select('*')
-          .eq('payment_reference', reference)
-          .maybeSingle();
-        
-        if (dbError) {
-          console.error('PaymentSuccess: Database error:', dbError);
-          setPaymentStatus('failed');
-          setPaymentDetails({ error: 'Failed to verify payment status' });
-          return;
-        }
-
-        console.log('PaymentSuccess: Payment record found:', paymentRecord);
-
-        if (paymentRecord) {
-          setPaymentDetails(paymentRecord);
-          
-          // Set status based on payment record
-          switch (paymentRecord.status) {
-            case 'paid':
-              setPaymentStatus('success');
-              // Clear cart if payment is successful
-              if (user) {
-                console.log('PaymentSuccess: Clearing cart for successful payment');
-                await supabase.from('cart_items').delete().eq('user_id', user.id);
-              }
-              break;
-            case 'failed':
-            case 'cancelled':
-              setPaymentStatus('failed');
-              break;
-            default:
-              setPaymentStatus('pending');
-          }
         } else {
-          // No payment record found - show pending status
-          console.log('PaymentSuccess: No payment record found, showing pending status');
-          setPaymentStatus('pending');
-          setPaymentDetails({ 
-            reference, 
-            message: 'Payment verification in progress. Please check back shortly.' 
+          toast({
+            title: "Payment Verification Failed",
+            description: "Please contact support if you were charged.",
+            variant: "destructive"
           });
         }
-      } catch (error) {
-        console.error('PaymentSuccess: Error checking payment status:', error);
-        setPaymentStatus('failed');
-        setPaymentDetails({ error: 'Failed to verify payment status' });
+      } catch (error: any) {
+        console.error('Payment verification error:', error);
+        toast({
+          title: "Verification Error",
+          description: "There was an issue verifying your payment.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsVerifying(false);
       }
     };
 
-    checkPaymentStatus();
-  }, [reference, error, user, isTest]);
+    verifyPayment();
+  }, [sessionId, toast]);
 
-  const getStatusIcon = () => {
-    switch (paymentStatus) {
-      case 'success':
-        return <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />;
-      case 'failed':
-        return <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />;
-      case 'pending':
-        return <Clock className="w-16 h-16 text-yellow-500 mx-auto mb-4" />;
-      default:
-        return <AlertCircle className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-pulse" />;
-    }
-  };
-
-  const getStatusTitle = () => {
-    switch (paymentStatus) {
-      case 'success':
-        return isTest ? 'Test Payment Successful!' : 'Payment Successful!';
-      case 'failed':
-        return 'Payment Failed';
-      case 'pending':
-        return isMobile ? 'Mobile Payment Initiated' : 'Payment Pending';
-      default:
-        return 'Checking Payment Status...';
-    }
-  };
-
-  const getStatusMessage = () => {
-    switch (paymentStatus) {
-      case 'success':
-        if (isTest) {
-          return 'This was a test payment and has been processed successfully. In production, this would be a real transaction.';
-        }
-        return 'Your payment has been processed successfully. Your order is confirmed!';
-      case 'failed':
-        return paymentDetails?.error || 'Your payment could not be processed. Please try again.';
-      case 'pending':
-        if (isMobile) {
-          return `Please check your ${method === 'ecocash' ? 'EcoCash' : 'OneMoney'} app to complete the payment.`;
-        }
-        return 'Your payment is being processed. Please wait for confirmation.';
-      default:
-        return 'Please wait while we verify your payment status...';
-    }
-  };
-
-  const handleReturnHome = () => {
-    navigate('/');
-  };
-
-  const handleViewOrders = () => {
-    navigate('/orders');
-  };
-
-  const handleRetryPayment = () => {
-    navigate('/checkout');
-  };
-
-  // Show loading state while checking payment status
-  if (paymentStatus === 'loading') {
+  if (isVerifying) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center p-8">
-            <AlertCircle className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-pulse" />
-            <h2 className="text-xl font-semibold mb-2">Checking Payment Status...</h2>
-            <p className="text-gray-600 text-center">Please wait while we verify your payment.</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-700">Verifying Payment...</h2>
+            <p className="text-gray-500 mt-2">Please wait while we confirm your order</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-2">
-          {getStatusIcon()}
-          <CardTitle className="text-2xl font-bold">
-            {getStatusTitle()}
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="text-center space-y-4">
-          <p className="text-gray-600 leading-relaxed">
-            {getStatusMessage()}
-          </p>
-          
-          {reference && (
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-500">Payment Reference</p>
-              <p className="font-mono text-sm font-medium">{reference}</p>
-            </div>
-          )}
-          
-          {paymentDetails?.amount && (
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-500">Amount</p>
-              <p className="font-medium">${paymentDetails.amount.toFixed(2)}</p>
-            </div>
-          )}
-
-          {isTest && (
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-700 font-medium">⚠️ Test Mode</p>
-              <p className="text-xs text-blue-600">This is a development environment. No real payment was processed.</p>
-            </div>
-          )}
-          
-          <div className="flex flex-col gap-3 pt-4">
-            {paymentStatus === 'success' && (
-              <>
-                <Button onClick={handleViewOrders} className="w-full">
-                  View My Orders
-                </Button>
-                <Button onClick={handleReturnHome} variant="outline" className="w-full">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Continue Shopping
-                </Button>
-              </>
-            )}
-            
-            {paymentStatus === 'failed' && (
-              <>
-                <Button onClick={handleRetryPayment} className="w-full">
-                  Try Again
-                </Button>
-                <Button onClick={handleReturnHome} variant="outline" className="w-full">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Return to Home
-                </Button>
-              </>
-            )}
-            
-            {paymentStatus === 'pending' && (
-              <>
-                <Button onClick={handleViewOrders} variant="outline" className="w-full">
-                  Check Order Status
-                </Button>
-                <Button onClick={handleReturnHome} variant="outline" className="w-full">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Return to Home
-                </Button>
-              </>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className={`max-w-4xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* Success Header */}
+          <div className="text-center mb-8">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <CheckCircle className="w-12 h-12 text-green-600" />
+            </motion.div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
+            <p className="text-gray-600">Thank you for your order. We're processing it now.</p>
+            {reference && (
+              <div className="mt-4 inline-block bg-blue-50 px-4 py-2 rounded-lg">
+                <span className="text-blue-700 font-medium">Order Reference: {reference}</span>
+              </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Order Details */}
+          {orderDetails && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Package className="w-5 h-5" />
+                  <span>Order Details</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Order Total</p>
+                    <p className="text-lg font-semibold">${orderDetails.total_amount?.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Payment Method</p>
+                    <p className="text-lg font-semibold flex items-center space-x-2">
+                      <CreditCard className="w-4 h-4" />
+                      <span>Card Payment</span>
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Next Steps */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Truck className="w-5 h-5" />
+                <span>What happens next?</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-sm font-medium">1</span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Order Confirmation</h3>
+                    <p className="text-gray-600 text-sm">You'll receive an email confirmation shortly with your order details.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-sm font-medium">2</span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Processing</h3>
+                    <p className="text-gray-600 text-sm">We'll prepare your items for shipment within 1-2 business days.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-sm font-medium">3</span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Shipping</h3>
+                    <p className="text-gray-600 text-sm">Your order will be shipped and you'll receive tracking information.</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              onClick={() => navigate('/orders')}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Package className="w-4 h-4 mr-2" />
+              View Order Status
+            </Button>
+            <Button 
+              onClick={() => navigate('/')}
+              variant="outline"
+              className="flex-1"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Continue Shopping
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+
+      {!isMobile && <Footer />}
+      <MobileNavigation />
     </div>
   );
 };
