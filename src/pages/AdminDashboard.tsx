@@ -7,9 +7,6 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 
 // Import existing components
 import OverviewTab from '@/components/admin/OverviewTab';
@@ -34,7 +31,9 @@ import {
   Upload,
   AlertTriangle,
   Settings,
-  Bell
+  Bell,
+  ArrowLeft,
+  LogOut
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -88,20 +87,46 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800">
-      <Header />
-      
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-purple-100 mt-1">Manage your store and monitor performance</p>
-          </div>
           <div className="flex items-center space-x-4">
-            <NotificationDropdown />
-            <Badge className="bg-purple-500/20 text-purple-100 border-purple-400/30">
-              Admin Panel
-            </Badge>
+            <Button
+              onClick={() => navigate('/')}
+              variant="outline"
+              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center space-x-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Store</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+              <p className="text-purple-100 mt-1">Manage your Gadget Genie store</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center space-x-2"
+            >
+              <Bell className="w-4 h-4" />
+              <span>Notifications</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-green-500 hover:bg-green-600 text-white border-green-400 flex items-center space-x-2"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </Button>
+            <Button
+              onClick={() => navigate('/auth')}
+              variant="outline"
+              className="bg-red-500 hover:bg-red-600 text-white border-red-400 flex items-center space-x-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </Button>
           </div>
         </div>
 
@@ -209,9 +234,6 @@ const AdminDashboard = () => {
           {activeTab === 'stock' && <StockManagement />}
         </div>
       </div>
-
-      {!isMobile && <Footer />}
-      <MobileNavigation />
 
       {/* Modals */}
       <AddProductModal 
