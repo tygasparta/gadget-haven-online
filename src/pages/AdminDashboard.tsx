@@ -21,8 +21,6 @@ import AnalyticsTab from '@/components/admin/AnalyticsTab';
 import NotificationDropdown from '@/components/admin/NotificationDropdown';
 import AddProductModal from '@/components/admin/AddProductModal';
 import EditProductModal from '@/components/admin/EditProductModal';
-
-// Import new components
 import BulkProductUpload from '@/components/admin/BulkProductUpload';
 import StockManagement from '@/components/admin/StockManagement';
 
@@ -35,11 +33,13 @@ import {
   Upload,
   AlertTriangle,
   Settings,
-  Bell
+  Bell,
+  LogOut,
+  Store
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { user } = useAuthContext();
+  const { user, signOut } = useAuthContext();
   const { isAdmin, loading } = useUserRole();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -72,12 +72,21 @@ const AdminDashboard = () => {
     setEditingProduct(null);
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Loading admin dashboard...</p>
         </div>
       </div>
     );
@@ -88,135 +97,128 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your store and monitor performance</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-800/50 to-blue-900/50 backdrop-blur-sm border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/')}
+                className="bg-blue-600 hover:bg-blue-700 border-blue-500 text-white"
+              >
+                <Store className="w-4 h-4 mr-2" />
+                Back to Store
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+                <p className="text-blue-100 text-sm">Manage your Gadget Genie store</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                className="bg-blue-600 hover:bg-blue-700 border-blue-500 text-white"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Notifications
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-green-600 hover:bg-green-700 border-green-500 text-white"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 border-red-500 text-white"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <NotificationDropdown />
-            <Badge className="bg-blue-100 text-blue-800">
-              Admin Panel
-            </Badge>
+        </div>
+      </div>
+
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+        {/* Navigation Tabs */}
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={activeTab === 'overview' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('overview')}
+              className={`${activeTab === 'overview' 
+                ? 'bg-white text-purple-700 hover:bg-gray-100' 
+                : 'bg-purple-800/50 text-white border-purple-400 hover:bg-purple-700/50'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Overview
+            </Button>
+            <Button
+              variant={activeTab === 'products' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('products')}
+              className={`${activeTab === 'products' 
+                ? 'bg-white text-purple-700 hover:bg-gray-100' 
+                : 'bg-purple-800/50 text-white border-purple-400 hover:bg-purple-700/50'
+              }`}
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Products
+            </Button>
+            <Button
+              variant={activeTab === 'orders' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('orders')}
+              className={`${activeTab === 'orders' 
+                ? 'bg-white text-purple-700 hover:bg-gray-100' 
+                : 'bg-purple-800/50 text-white border-purple-400 hover:bg-purple-700/50'
+              }`}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Orders
+            </Button>
+            <Button
+              variant={activeTab === 'users' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('users')}
+              className={`${activeTab === 'users' 
+                ? 'bg-white text-purple-700 hover:bg-gray-100' 
+                : 'bg-purple-800/50 text-white border-purple-400 hover:bg-purple-700/50'
+              }`}
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Users
+            </Button>
+            <Button
+              variant={activeTab === 'analytics' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('analytics')}
+              className={`${activeTab === 'analytics' 
+                ? 'bg-white text-purple-700 hover:bg-gray-100' 
+                : 'bg-purple-800/50 text-white border-purple-400 hover:bg-purple-700/50'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Analytics
+            </Button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-7'} bg-white rounded-lg shadow-sm`}>
-            <TabsTrigger value="overview" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              {!isMobile && <span>Overview</span>}
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center space-x-2">
-              <Package className="w-4 h-4" />
-              {!isMobile && <span>Products</span>}
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center space-x-2">
-              <ShoppingCart className="w-4 h-4" />
-              {!isMobile && <span>Orders</span>}
-            </TabsTrigger>
-            {!isMobile && (
-              <>
-                <TabsTrigger value="users" className="flex items-center space-x-2">
-                  <Users className="w-4 h-4" />
-                  <span>Users</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex items-center space-x-2">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>Analytics</span>
-                </TabsTrigger>
-                <TabsTrigger value="bulk-upload" className="flex items-center space-x-2">
-                  <Upload className="w-4 h-4" />
-                  <span>Bulk Upload</span>
-                </TabsTrigger>
-                <TabsTrigger value="stock" className="flex items-center space-x-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Stock</span>
-                </TabsTrigger>
-              </>
-            )}
-          </TabsList>
-
-          {/* Mobile additional tabs */}
-          {isMobile && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Button
-                variant={activeTab === 'users' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab('users')}
-                className="flex items-center space-x-2"
-              >
-                <Users className="w-4 h-4" />
-                <span>Users</span>
-              </Button>
-              <Button
-                variant={activeTab === 'analytics' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab('analytics')}
-                className="flex items-center space-x-2"
-              >
-                <TrendingUp className="w-4 h-4" />
-                <span>Analytics</span>
-              </Button>
-              <Button
-                variant={activeTab === 'bulk-upload' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab('bulk-upload')}
-                className="flex items-center space-x-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span>Bulk Upload</span>
-              </Button>
-              <Button
-                variant={activeTab === 'stock' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab('stock')}
-                className="flex items-center space-x-2"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                <span>Stock</span>
-              </Button>
-            </div>
-          )}
-
-          {/* Tab Contents */}
-          <TabsContent value="overview" className="space-y-6">
-            <OverviewTab />
-          </TabsContent>
-
-          <TabsContent value="products" className="space-y-6">
+        {/* Tab Contents */}
+        <div className="space-y-6">
+          {activeTab === 'overview' && <OverviewTab onTabChange={setActiveTab} />}
+          {activeTab === 'products' && (
             <ProductsTab 
               onAddProduct={handleAddProduct}
               onEditProduct={handleEditProduct}
             />
-          </TabsContent>
-
-          <TabsContent value="orders" className="space-y-6">
-            <OrdersTab />
-          </TabsContent>
-
-          <TabsContent value="users" className="space-y-6">
-            <UsersTab />
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <AnalyticsTab />
-          </TabsContent>
-
-          <TabsContent value="bulk-upload" className="space-y-6">
-            <BulkProductUpload />
-          </TabsContent>
-
-          <TabsContent value="stock" className="space-y-6">
-            <StockManagement />
-          </TabsContent>
-        </Tabs>
+          )}
+          {activeTab === 'orders' && <OrdersTab />}
+          {activeTab === 'users' && <UsersTab />}
+          {activeTab === 'analytics' && <AnalyticsTab />}
+        </div>
       </div>
 
       {/* Product Modals */}
