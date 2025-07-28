@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "next-themes";
 import EnhancedPreloader from "@/components/EnhancedPreloader";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import MobileNavigation from "@/components/MobileNavigation";
 import { usePWA } from "@/hooks/usePWA";
 import { Suspense, lazy } from "react";
 
@@ -115,6 +116,7 @@ const App = () => {
                     <Route path="/audio" element={<Audio />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  <MobileNavigation />
                 </Suspense>
               </BrowserRouter>
             </CartProvider>
