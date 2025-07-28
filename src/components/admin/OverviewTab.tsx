@@ -160,65 +160,77 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
     <div className="space-y-6">
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewAnalytics}>
+        <Card className="bg-gradient-to-br from-emerald-500 to-green-700 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25" onClick={handleViewAnalytics}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium">Total Revenue</p>
+                <p className="text-emerald-100 text-sm font-medium">Total Revenue</p>
                 <p className="text-3xl font-bold">${analytics.totalRevenue.toLocaleString()}</p>
-                <p className="text-green-100 text-sm mt-1">↗ +{analytics.revenueGrowth}%</p>
+                <p className="text-emerald-200 text-sm mt-1 flex items-center">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  +{analytics.revenueGrowth}%
+                </p>
               </div>
-              <DollarSign className="w-12 h-12 text-green-200" />
+              <DollarSign className="w-12 h-12 text-emerald-200" />
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewAllOrders}>
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-800 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25" onClick={handleViewAllOrders}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-sm font-medium">Total Orders</p>
                 <p className="text-3xl font-bold">{analytics.totalOrders}</p>
-                <p className="text-blue-100 text-sm mt-1">↗ +{analytics.orderGrowth}%</p>
+                <p className="text-blue-200 text-sm mt-1 flex items-center">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  +{analytics.orderGrowth}%
+                </p>
               </div>
               <ShoppingCart className="w-12 h-12 text-blue-200" />
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewUsers}>
+        <Card className="bg-gradient-to-br from-violet-500 to-purple-800 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-violet-500/25" onClick={handleViewUsers}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm font-medium">Total Users</p>
+                <p className="text-violet-100 text-sm font-medium">Total Users</p>
                 <p className="text-3xl font-bold">{analytics.totalUsers}</p>
-                <p className="text-purple-100 text-sm mt-1">↗ +{analytics.userGrowth}%</p>
+                <p className="text-violet-200 text-sm mt-1 flex items-center">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  +{analytics.userGrowth}%
+                </p>
               </div>
-              <Users className="w-12 h-12 text-purple-200" />
+              <Users className="w-12 h-12 text-violet-200" />
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewProducts}>
+        <Card className="bg-gradient-to-br from-orange-500 to-red-700 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-orange-500/25" onClick={handleViewProducts}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-orange-100 text-sm font-medium">Total Products</p>
                 <p className="text-3xl font-bold">{analytics.totalProducts}</p>
-                <p className="text-orange-100 text-sm mt-1">Active inventory</p>
+                <p className="text-orange-200 text-sm mt-1">Active inventory</p>
               </div>
               <Package className="w-12 h-12 text-orange-200" />
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-r from-pink-500 to-pink-600 border-none text-white cursor-pointer hover:scale-105 transition-transform" onClick={handleViewAnalytics}>
+        <Card className="bg-gradient-to-br from-pink-500 to-rose-700 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-pink-500/25" onClick={handleViewAnalytics}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-pink-100 text-sm font-medium">Conversion Rate</p>
                 <p className="text-3xl font-bold">{analytics.conversionRate.toFixed(1)}%</p>
-                <p className="text-pink-100 text-sm mt-1">Avg: $195</p>
+                <p className="text-pink-200 text-sm mt-1 flex items-center">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  Avg: $195
+                </p>
               </div>
               <TrendingUp className="w-12 h-12 text-pink-200" />
             </div>
