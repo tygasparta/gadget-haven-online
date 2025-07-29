@@ -12,7 +12,27 @@ interface ProductSpecsInputProps {
 
 const ProductSpecsInput: React.FC<ProductSpecsInputProps> = ({ specs, onSpecsChange }) => {
   const addSpec = () => {
-    onSpecsChange([...specs, { key: '', value: '' }]);
+    const nextIndex = specs.length;
+    const defaultSpecs = [
+      { key: 'Display', value: '' },
+      { key: 'Storage', value: '' },
+      { key: 'RAM', value: '' },
+      { key: 'Processor', value: '' },
+      { key: 'Battery', value: '' },
+      { key: 'Camera', value: '' },
+      { key: 'Connectivity', value: '' },
+      { key: 'Operating System', value: '' },
+      { key: 'Weight', value: '' },
+      { key: 'Dimensions', value: '' },
+      { key: 'Color Options', value: '' },
+      { key: 'Warranty', value: '' }
+    ];
+    
+    const newSpec = nextIndex < defaultSpecs.length 
+      ? defaultSpecs[nextIndex] 
+      : { key: '', value: '' };
+    
+    onSpecsChange([...specs, newSpec]);
   };
 
   const removeSpec = (index: number) => {
@@ -27,42 +47,30 @@ const ProductSpecsInput: React.FC<ProductSpecsInputProps> = ({ specs, onSpecsCha
     onSpecsChange(newSpecs);
   };
 
-  // Suggested specification names for better user experience
-  const getSpecPlaceholder = (index: number) => {
-    const suggestions = [
-      'Display',
-      'Storage',
-      'RAM',
-      'Processor',
-      'Battery',
-      'Camera',
-      'Connectivity',
-      'Operating System',
-      'Weight',
-      'Dimensions',
-      'Color Options',
-      'Warranty'
-    ];
-    return suggestions[index] || 'Specification name';
-  };
-
   const getValuePlaceholder = (specKey: string) => {
     const valuePlaceholders: { [key: string]: string } = {
-      'Display': '6.7-inch AMOLED',
+      'Display': '6.7-inch AMOLED, 2800x1260',
       'Storage': '256GB internal storage',
       'RAM': '8GB RAM',
-      'Processor': 'Snapdragon 888',
-      'Battery': '4000mAh',
-      'Camera': '108MP triple camera',
+      'Processor': 'Snapdragon 8 Gen 2',
+      'Battery': '4000mAh with 25W fast charging',
+      'Camera': '108MP triple camera system',
       'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.2',
-      'Operating System': 'Android 13',
+      'Operating System': 'Android 14',
       'Weight': '195g',
       'Dimensions': '158.2 x 73.8 x 8.2 mm',
-      'Color Options': 'Black, White, Blue',
+      'Color Options': 'Midnight Black, Ocean Blue, Rose Gold',
       'Warranty': '1 year manufacturer warranty'
     };
-    return valuePlaceholders[specKey] || 'Specification value';
+    return valuePlaceholders[specKey] || 'Enter specification value...';
   };
+
+  const specificationSuggestions = [
+    'Display', 'Storage', 'RAM', 'Processor', 'Battery', 'Camera',
+    'Connectivity', 'Operating System', 'Weight', 'Dimensions',
+    'Color Options', 'Warranty', 'Materials', 'Ports', 'Sensors',
+    'Audio', 'Video', 'Network', 'Security', 'Compatibility'
+  ];
 
   return (
     <div className="space-y-4">
@@ -87,12 +95,20 @@ const ProductSpecsInput: React.FC<ProductSpecsInputProps> = ({ specs, onSpecsCha
         {specs.map((spec, index) => (
           <div key={index} className="flex gap-2 items-center bg-gray-800/50 p-3 rounded-lg border border-gray-700">
             <div className="flex-1 space-y-2 sm:space-y-0 sm:flex sm:gap-2">
-              <Input
-                placeholder={getSpecPlaceholder(index)}
-                value={spec.key}
-                onChange={(e) => updateSpec(index, 'key', e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white flex-1"
-              />
+              <div className="flex-1 relative">
+                <Input
+                  list={`spec-suggestions-${index}`}
+                  placeholder="e.g., Display, Storage, RAM..."
+                  value={spec.key}
+                  onChange={(e) => updateSpec(index, 'key', e.target.value)}
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+                <datalist id={`spec-suggestions-${index}`}>
+                  {specificationSuggestions.map((suggestion) => (
+                    <option key={suggestion} value={suggestion} />
+                  ))}
+                </datalist>
+              </div>
               <Input
                 placeholder={getValuePlaceholder(spec.key)}
                 value={spec.value}

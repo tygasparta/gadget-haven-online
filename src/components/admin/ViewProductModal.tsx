@@ -266,7 +266,7 @@ const ViewProductModal: React.FC<ViewProductModalProps> = ({ product, isOpen, on
           </div>
         </div>
 
-        {/* Product Specifications Section - Enhanced with better responsive design */}
+        {/* Enhanced Product Specifications Section */}
         {product.specifications && product.specifications.length > 0 && (
           <div className="mt-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 sm:p-6 border border-blue-100">
             <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">

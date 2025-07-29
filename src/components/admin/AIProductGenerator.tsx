@@ -19,6 +19,7 @@ interface AIProductGeneratorProps {
     features: string[];
     whats_in_box: string[];
     tags: string[];
+    specifications: Array<{key: string, value: string}>;
   }) => void;
 }
 
@@ -56,8 +57,7 @@ The listing must be structured as **JSON** and include the following fields:
 - **tags**: A comma-separated list of search-friendly tags
 - **category**: Most appropriate category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics
 - **brand**: The brand name of the product
-- **stock_status**: Default to "In Stock"
-- **delivery_info**: Short shipping or delivery note
+- **specifications**: An array of key-value pairs with proper specification names like "Display", "Storage", "RAM", "Processor", "Battery", "Camera", "Operating System", "Weight", "Dimensions", "Connectivity", "Warranty" etc.
 
 Only return the JSON structure. Do not explain anything. Do not include image URLs.
 
@@ -66,7 +66,7 @@ Example format:
   "name": "Samsung Galaxy A55 5G – 256GB (Awesome Graphite)",
   "description": "The Samsung Galaxy A55 5G delivers flagship-level performance and a stunning Super AMOLED display at an affordable price. Perfect for users who want premium features without the premium price tag.",
   "features": [
-    "6.6" Super AMOLED Display",
+    "6.6\\" Super AMOLED Display",
     "Exynos 1480 Processor",
     "50MP Triple Camera System",
     "5000mAh Battery with 25W Fast Charging",
@@ -85,8 +85,19 @@ Example format:
   "tags": "Samsung, Galaxy A55, Smartphone, 5G, Android, 256GB",
   "category": "Smartphones",
   "brand": "Samsung",
-  "stock_status": "In Stock",
-  "delivery_info": "Free delivery within 1–3 working days"
+  "specifications": [
+    {"key": "Display", "value": "6.6-inch Super AMOLED, 2340x1080"},
+    {"key": "Storage", "value": "256GB internal storage"},
+    {"key": "RAM", "value": "8GB RAM"},
+    {"key": "Processor", "value": "Exynos 1480 chipset"},
+    {"key": "Battery", "value": "5000mAh with 25W fast charging"},
+    {"key": "Camera", "value": "50MP + 12MP + 5MP triple rear camera"},
+    {"key": "Operating System", "value": "Android 14 with One UI 6.1"},
+    {"key": "Weight", "value": "213g"},
+    {"key": "Dimensions", "value": "161.1 x 77.4 x 8.2 mm"},
+    {"key": "Connectivity", "value": "5G, Wi-Fi 6, Bluetooth 5.3"},
+    {"key": "Warranty", "value": "1 year manufacturer warranty"}
+  ]
 }`;
 
       console.log('Calling AI function with prompt:', prompt);
@@ -116,14 +127,15 @@ Example format:
             price: parsedData.price_usd || 0,
             features: parsedData.features || [],
             whats_in_box: parsedData.whats_in_the_box || [],
-            tags: parsedData.tags ? parsedData.tags.split(', ').map((tag: string) => tag.trim()) : []
+            tags: parsedData.tags ? parsedData.tags.split(', ').map((tag: string) => tag.trim()) : [],
+            specifications: parsedData.specifications || []
           };
           
           onGenerate(transformedData);
           
           toast({
             title: "Product details generated!",
-            description: "AI has generated detailed product information based on your input.",
+            description: "AI has generated detailed product information with proper specifications.",
           });
           
           // Reset form
@@ -156,7 +168,7 @@ Example format:
           <Zap className="w-4 h-4 ml-2 text-yellow-400" />
         </CardTitle>
         <p className="text-gray-300 text-sm mt-2">
-          Let AI create a complete product listing with features, pricing, and specifications
+          Let AI create a complete product listing with proper specifications and features
         </p>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
@@ -173,7 +185,7 @@ Example format:
               className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20 mt-2"
             />
             <p className="text-xs text-gray-400 mt-1">
-              Enter the product name and AI will generate complete specifications, features, and pricing
+              Enter the product name and AI will generate complete specifications with proper naming
             </p>
           </div>
 
@@ -185,6 +197,7 @@ Example format:
             <ul className="text-sm text-gray-300 space-y-1">
               <li>• Complete product description</li>
               <li>• Key features and specifications</li>
+              <li>• Proper spec names (Display, Storage, RAM, etc.)</li>
               <li>• Estimated pricing</li>
               <li>• What's included in the box</li>
               <li>• SEO-friendly tags</li>
@@ -215,7 +228,7 @@ Example format:
           <div className="bg-blue-600/10 border border-blue-600/30 rounded-lg p-4">
             <div className="flex items-center text-blue-400">
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              <span className="text-sm">AI is analyzing your product and generating comprehensive details...</span>
+              <span className="text-sm">AI is analyzing your product and generating proper specifications...</span>
             </div>
           </div>
         )}
