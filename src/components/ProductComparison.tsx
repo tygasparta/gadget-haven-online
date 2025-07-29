@@ -220,7 +220,7 @@ const ProductComparison: React.FC = () => {
                   ))}
                 </tr>
                 
-                {/* Specifications */}
+                {/* Dynamic Specifications - This is the key fix */}
                 {getAllSpecifications().map((specKey) => (
                   <tr key={specKey}>
                     <td className="border border-gray-200 p-3 font-medium bg-gray-50">
