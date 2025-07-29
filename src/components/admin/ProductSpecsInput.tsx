@@ -27,6 +27,43 @@ const ProductSpecsInput: React.FC<ProductSpecsInputProps> = ({ specs, onSpecsCha
     onSpecsChange(newSpecs);
   };
 
+  // Suggested specification names for better user experience
+  const getSpecPlaceholder = (index: number) => {
+    const suggestions = [
+      'Display',
+      'Storage',
+      'RAM',
+      'Processor',
+      'Battery',
+      'Camera',
+      'Connectivity',
+      'Operating System',
+      'Weight',
+      'Dimensions',
+      'Color Options',
+      'Warranty'
+    ];
+    return suggestions[index] || 'Specification name';
+  };
+
+  const getValuePlaceholder = (specKey: string) => {
+    const valuePlaceholders: { [key: string]: string } = {
+      'Display': '6.7-inch AMOLED',
+      'Storage': '256GB internal storage',
+      'RAM': '8GB RAM',
+      'Processor': 'Snapdragon 888',
+      'Battery': '4000mAh',
+      'Camera': '108MP triple camera',
+      'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.2',
+      'Operating System': 'Android 13',
+      'Weight': '195g',
+      'Dimensions': '158.2 x 73.8 x 8.2 mm',
+      'Color Options': 'Black, White, Blue',
+      'Warranty': '1 year manufacturer warranty'
+    };
+    return valuePlaceholders[specKey] || 'Specification value';
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -51,13 +88,13 @@ const ProductSpecsInput: React.FC<ProductSpecsInputProps> = ({ specs, onSpecsCha
           <div key={index} className="flex gap-2 items-center bg-gray-800/50 p-3 rounded-lg border border-gray-700">
             <div className="flex-1 space-y-2 sm:space-y-0 sm:flex sm:gap-2">
               <Input
-                placeholder="Specification name (e.g., Screen Size)"
+                placeholder={getSpecPlaceholder(index)}
                 value={spec.key}
                 onChange={(e) => updateSpec(index, 'key', e.target.value)}
                 className="bg-gray-800 border-gray-600 text-white flex-1"
               />
               <Input
-                placeholder="Value (e.g., 6.1 inches)"
+                placeholder={getValuePlaceholder(spec.key)}
                 value={spec.value}
                 onChange={(e) => updateSpec(index, 'value', e.target.value)}
                 className="bg-gray-800 border-gray-600 text-white flex-1"
