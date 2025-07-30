@@ -43,6 +43,13 @@ serve(async (req) => {
 
 IMPORTANT: You must respond with ONLY valid JSON. Do not include any markdown formatting, explanations, or additional text. The response should be a raw JSON object that can be parsed directly.
 
+CRITICAL: When generating specifications, use REAL specification names, NOT generic placeholders like "Feature 1", "Feature 2", etc. Use proper technical specification names based on the product type:
+
+For smartphones: "Display", "Storage", "RAM", "Processor", "Battery", "Camera", "Operating System", "Weight", "Dimensions", "Connectivity", "Color Options", "Warranty"
+For laptops: "Display", "Processor", "RAM", "Storage", "Graphics", "Operating System", "Battery Life", "Weight", "Dimensions", "Ports", "Wireless", "Warranty" 
+For headphones: "Driver Size", "Frequency Response", "Impedance", "Battery Life", "Connectivity", "Noise Cancellation", "Weight", "Warranty"
+For cameras: "Sensor", "Lens Mount", "ISO Range", "Video Recording", "Display", "Storage", "Battery Life", "Weight", "Dimensions", "Connectivity", "Warranty"
+
 The JSON structure should be:
 {
   "name": "Product name",
@@ -50,10 +57,24 @@ The JSON structure should be:
   "category": "Category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics",
   "brand": "Brand name",
   "price": 299.99,
-  "features": ["Feature 1", "Feature 2", "Feature 3"],
+  "features": ["Real feature 1", "Real feature 2", "Real feature 3"],
   "whats_in_box": ["Item 1", "Item 2", "Item 3"],
-  "tags": ["tag1", "tag2", "tag3"]
-}` 
+  "tags": ["tag1", "tag2", "tag3"],
+  "specifications": [
+    {"key": "Display", "value": "6.7-inch AMOLED, 2800x1260"},
+    {"key": "Storage", "value": "256GB internal storage"},
+    {"key": "RAM", "value": "8GB RAM"}
+  ]
+}
+
+Example of GOOD specifications:
+✅ {"key": "Display", "value": "6.1-inch Super Retina XDR OLED"}
+✅ {"key": "Processor", "value": "A17 Pro chip"}
+✅ {"key": "Storage", "value": "128GB internal storage"}
+
+Example of BAD specifications (DO NOT USE):
+❌ {"key": "Feature 1", "value": "Great display"}
+❌ {"key": "Feature 2", "value": "Fast processor"}` 
           },
           { role: 'user', content: prompt }
         ],

@@ -41,64 +41,18 @@ const AIProductGenerator: React.FC<AIProductGeneratorProps> = ({ onGenerate }) =
     setIsGenerating(true);
     
     try {
-      const prompt = `You are a product listing assistant for an electronics store called "Gadget Genie".
+      const prompt = `Generate a complete product listing for: ${productName}
 
-Generate a complete and SEO-optimized product listing for the following item:
+CRITICAL: Generate REAL technical specifications with proper names, NOT generic placeholders like "Feature 1", "Feature 2".
 
-Product: ${productName}
+For the product "${productName}", create specifications using actual technical terms based on the product category:
 
-The listing must be structured as **JSON** and include the following fields:
+- For smartphones: Display, Storage, RAM, Processor, Battery, Camera, Operating System, Weight, Dimensions, Connectivity, etc.
+- For laptops: Display, Processor, RAM, Storage, Graphics Card, Operating System, Battery Life, Weight, Ports, etc.
+- For headphones: Driver Size, Frequency Response, Impedance, Battery Life, Connectivity, Noise Cancellation, etc.
+- For cameras: Sensor Type, Lens Mount, ISO Range, Video Recording, Display Size, Storage Type, etc.
 
-- **name**: The official product name
-- **description**: A short, compelling product description (2–3 sentences)
-- **features**: A list of 5–10 bullet-point key features
-- **whats_in_the_box**: A list of items included with the product
-- **price_usd**: Estimated price in USD
-- **tags**: A comma-separated list of search-friendly tags
-- **category**: Most appropriate category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics
-- **brand**: The brand name of the product
-- **specifications**: An array of key-value pairs with proper specification names like "Display", "Storage", "RAM", "Processor", "Battery", "Camera", "Operating System", "Weight", "Dimensions", "Connectivity", "Warranty" etc.
-
-Only return the JSON structure. Do not explain anything. Do not include image URLs.
-
-Example format:
-{
-  "name": "Samsung Galaxy A55 5G – 256GB (Awesome Graphite)",
-  "description": "The Samsung Galaxy A55 5G delivers flagship-level performance and a stunning Super AMOLED display at an affordable price. Perfect for users who want premium features without the premium price tag.",
-  "features": [
-    "6.6\\" Super AMOLED Display",
-    "Exynos 1480 Processor",
-    "50MP Triple Camera System",
-    "5000mAh Battery with 25W Fast Charging",
-    "8GB RAM / 256GB Storage",
-    "5G Connectivity",
-    "Side Fingerprint Sensor",
-    "IP67 Dust & Water Resistance"
-  ],
-  "whats_in_the_box": [
-    "Samsung Galaxy A55 5G",
-    "USB-C Cable",
-    "Quick Start Guide",
-    "SIM Ejector Tool"
-  ],
-  "price_usd": 449,
-  "tags": "Samsung, Galaxy A55, Smartphone, 5G, Android, 256GB",
-  "category": "Smartphones",
-  "brand": "Samsung",
-  "specifications": [
-    {"key": "Display", "value": "6.6-inch Super AMOLED, 2340x1080"},
-    {"key": "Storage", "value": "256GB internal storage"},
-    {"key": "RAM", "value": "8GB RAM"},
-    {"key": "Processor", "value": "Exynos 1480 chipset"},
-    {"key": "Battery", "value": "5000mAh with 25W fast charging"},
-    {"key": "Camera", "value": "50MP + 12MP + 5MP triple rear camera"},
-    {"key": "Operating System", "value": "Android 14 with One UI 6.1"},
-    {"key": "Weight", "value": "213g"},
-    {"key": "Dimensions", "value": "161.1 x 77.4 x 8.2 mm"},
-    {"key": "Connectivity", "value": "5G, Wi-Fi 6, Bluetooth 5.3"},
-    {"key": "Warranty", "value": "1 year manufacturer warranty"}
-  ]
-}`;
+Return a JSON object with proper specifications array containing real spec names and values.`;
 
       console.log('Calling AI function with prompt:', prompt);
 
@@ -124,9 +78,9 @@ Example format:
             description: parsedData.description || '',
             category: parsedData.category || 'Electronics',
             brand: parsedData.brand || 'Generic',
-            price: parsedData.price_usd || 0,
+            price: parsedData.price || 0,
             features: parsedData.features || [],
-            whats_in_box: parsedData.whats_in_the_box || [],
+            whats_in_box: parsedData.whats_in_box || [],
             tags: parsedData.tags ? parsedData.tags.split(', ').map((tag: string) => tag.trim()) : [],
             specifications: parsedData.specifications || []
           };
@@ -196,8 +150,8 @@ Example format:
             </h4>
             <ul className="text-sm text-gray-300 space-y-1">
               <li>• Complete product description</li>
-              <li>• Key features and specifications</li>
-              <li>• Proper spec names (Display, Storage, RAM, etc.)</li>
+              <li>• Real technical specifications (Display, RAM, Storage, etc.)</li>
+              <li>• Proper spec names based on product category</li>
               <li>• Estimated pricing</li>
               <li>• What's included in the box</li>
               <li>• SEO-friendly tags</li>
