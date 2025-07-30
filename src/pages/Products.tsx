@@ -364,7 +364,6 @@ const Products = () => {
                   <ProductCard 
                     key={product.id} 
                     product={product}
-                    variant={viewMode === 'list' ? 'list' : 'grid'}
                   />
                 ))}
               </div>
