@@ -43,14 +43,42 @@ serve(async (req) => {
 
 IMPORTANT: You must respond with ONLY valid JSON. Do not include any markdown formatting, explanations, or additional text. The response should be a raw JSON object that can be parsed directly.
 
-CRITICAL: When generating specifications, use REAL specification names, NOT generic placeholders like "Feature 1", "Feature 2", etc. Use proper technical specification names based on the product type:
+CRITICAL: Always include a "specifications" array with REAL specification names based on the product type. NEVER use generic names like "Feature 1", "Feature 2", etc.
 
-For smartphones: "Display", "Storage", "RAM", "Processor", "Battery", "Camera", "Operating System", "Weight", "Dimensions", "Connectivity", "Color Options", "Warranty"
-For laptops: "Display", "Processor", "RAM", "Storage", "Graphics", "Operating System", "Battery Life", "Weight", "Dimensions", "Ports", "Wireless", "Warranty" 
-For headphones: "Driver Size", "Frequency Response", "Impedance", "Battery Life", "Connectivity", "Noise Cancellation", "Weight", "Warranty"
-For cameras: "Sensor", "Lens Mount", "ISO Range", "Video Recording", "Display", "Storage", "Battery Life", "Weight", "Dimensions", "Connectivity", "Warranty"
+Based on the product type, use these REAL specification names:
 
-The JSON structure should be:
+For tablets/iPads: 
+- "Display": "10.9-inch Liquid Retina display"
+- "Storage": "64GB/256GB/512GB"  
+- "Processor": "A14 Bionic chip"
+- "Connectivity": "Wi-Fi 6, Bluetooth 5.0"
+- "Battery Life": "Up to 10 hours"
+- "Operating System": "iPadOS 16"
+- "Weight": "461 grams"
+- "Dimensions": "247.6 x 178.5 x 6.1 mm"
+- "Camera": "12MP rear, 12MP front"
+
+For smartphones:
+- "Display": "6.7-inch AMOLED, 2800x1260"
+- "Storage": "128GB/256GB/512GB internal"
+- "RAM": "8GB/12GB RAM"
+- "Processor": "Snapdragon 8 Gen 2"
+- "Battery": "4500mAh with 25W fast charging"
+- "Camera": "108MP triple camera system"
+- "Operating System": "Android 14"
+- "Connectivity": "5G, Wi-Fi 6, Bluetooth 5.2"
+
+For laptops:
+- "Display": "13.3-inch Retina, 2560x1600"
+- "Processor": "Intel Core i5/i7 or Apple M1/M2"
+- "RAM": "8GB/16GB/32GB"
+- "Storage": "256GB/512GB/1TB SSD"
+- "Graphics": "Integrated Intel Iris Xe"
+- "Operating System": "Windows 11 or macOS"
+- "Battery Life": "Up to 12 hours"
+- "Weight": "1.4 kg"
+
+The JSON structure must be exactly:
 {
   "name": "Product name",
   "description": "Product description (2-3 sentences)",
@@ -61,25 +89,21 @@ The JSON structure should be:
   "whats_in_box": ["Item 1", "Item 2", "Item 3"],
   "tags": ["tag1", "tag2", "tag3"],
   "specifications": [
-    {"key": "Display", "value": "6.7-inch AMOLED, 2800x1260"},
+    {"key": "Display", "value": "10.9-inch Liquid Retina display"},
     {"key": "Storage", "value": "256GB internal storage"},
-    {"key": "RAM", "value": "8GB RAM"}
+    {"key": "Processor", "value": "A14 Bionic chip"},
+    {"key": "RAM", "value": "8GB RAM"},
+    {"key": "Battery Life", "value": "Up to 10 hours"},
+    {"key": "Operating System", "value": "iPadOS 16"}
   ]
 }
 
-Example of GOOD specifications:
-✅ {"key": "Display", "value": "6.1-inch Super Retina XDR OLED"}
-✅ {"key": "Processor", "value": "A17 Pro chip"}
-✅ {"key": "Storage", "value": "128GB internal storage"}
-
-Example of BAD specifications (DO NOT USE):
-❌ {"key": "Feature 1", "value": "Great display"}
-❌ {"key": "Feature 2", "value": "Fast processor"}` 
+MANDATORY: The specifications array MUST contain at least 5-8 real specifications with proper technical names, not generic placeholders.` 
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 1500,
+        max_tokens: 2000,
       }),
     });
 
@@ -100,11 +124,31 @@ Example of BAD specifications (DO NOT USE):
     console.log('Generated product details:', generatedData);
 
     // Validate that the response is valid JSON
+    let parsedData;
     try {
-      JSON.parse(generatedData);
+      parsedData = JSON.parse(generatedData);
     } catch (parseError) {
       console.error('Generated data is not valid JSON:', generatedData);
       throw new Error('AI generated invalid JSON format');
+    }
+
+    // Ensure specifications array exists and has proper format
+    if (!parsedData.specifications || !Array.isArray(parsedData.specifications) || parsedData.specifications.length === 0) {
+      console.error('Missing or invalid specifications array in generated data');
+      throw new Error('AI failed to generate proper specifications');
+    }
+
+    // Validate specifications have proper structure
+    const hasValidSpecs = parsedData.specifications.every(spec => 
+      spec.key && spec.value && 
+      typeof spec.key === 'string' && 
+      typeof spec.value === 'string' &&
+      !spec.key.toLowerCase().includes('feature')
+    );
+
+    if (!hasValidSpecs) {
+      console.error('Specifications contain invalid or generic names:', parsedData.specifications);
+      throw new Error('AI generated specifications with invalid names');
     }
 
     return new Response(JSON.stringify({ generatedData }), {
