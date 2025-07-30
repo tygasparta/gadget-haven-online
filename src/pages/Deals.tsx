@@ -5,10 +5,13 @@ import Footer from '../components/Footer';
 import ProductSection from '../components/ProductSection';
 import { useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { Tag, Clock, Zap } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileNavigation from '../components/MobileNavigation';
 
 const Deals = () => {
   const { data: flashSaleProducts = [] } = useFlashSaleProducts();
   const { data: featuredProducts = [] } = useFeaturedProducts();
+  const isMobile = useIsMobile();
 
   // Transform products to match the expected format
   const transformProduct = (product: any) => ({
@@ -31,7 +34,7 @@ const Deals = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -70,6 +73,7 @@ const Deals = () => {
               subtitle="Hurry up! These deals won't last long"
               products={transformedFlashSale}
               sectionColor="red"
+              showViewAll={false}
             />
           </div>
         )}
@@ -82,12 +86,14 @@ const Deals = () => {
               subtitle="Our most popular discounted items"
               products={transformedFeatured}
               sectionColor="blue"
+              showViewAll={false}
             />
           </div>
         )}
       </div>
 
-      <Footer />
+      {!isMobile && <Footer />}
+      <MobileNavigation />
     </div>
   );
 };

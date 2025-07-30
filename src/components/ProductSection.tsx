@@ -3,6 +3,7 @@ import React from 'react';
 import ProductCard from './ProductCard';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Zap, Sparkles, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductSectionProps {
   title: string;
@@ -19,6 +20,8 @@ const ProductSection: React.FC<ProductSectionProps> = ({
   showViewAll = true,
   sectionColor = "blue"
 }) => {
+  const navigate = useNavigate();
+
   const getSectionIcon = () => {
     if (title.includes("Flash Sale")) return <Zap className="w-4 h-4 sm:w-6 sm:h-6" />;
     if (title.includes("New Arrivals")) return <Sparkles className="w-4 h-4 sm:w-6 sm:h-6" />;
@@ -28,6 +31,13 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 
   const getColorClasses = () => {
     switch (sectionColor) {
+      case "red":
+        return {
+          border: "border-red-500",
+          text: "text-red-600",
+          bg: "hover:bg-red-50",
+          gradient: "from-red-500 to-red-600"
+        };
       case "blue":
         return {
           border: "border-blue-500",
@@ -49,6 +59,18 @@ const ProductSection: React.FC<ProductSectionProps> = ({
           bg: "hover:bg-blue-50",
           gradient: "from-blue-500 to-blue-600"
         };
+    }
+  };
+
+  const handleViewAllClick = () => {
+    if (title.includes("Flash Sale")) {
+      navigate('/deals');
+    } else if (title.includes("New Arrivals")) {
+      navigate('/products?filter=new-arrivals');
+    } else if (title.includes("Best Sellers")) {
+      navigate('/products?filter=best-sellers');
+    } else {
+      navigate('/products');
     }
   };
 
@@ -81,6 +103,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
           <Button 
             variant="outline" 
             className={`${colors.border} ${colors.text} ${colors.bg} px-3 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg sm:rounded-xl transition-all duration-200 flex items-center hover:scale-105 shadow-md hover:shadow-lg text-sm sm:text-base whitespace-nowrap flex-shrink-0`}
+            onClick={handleViewAllClick}
           >
             <span className="hidden sm:inline">View All</span>
             <span className="sm:hidden">All</span>

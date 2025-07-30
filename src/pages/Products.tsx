@@ -1,91 +1,90 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
-import { useProducts } from '@/hooks/useProducts';
-import { Filter, Grid, List } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Filter, SlidersHorizontal, X, Grid, List, Sparkles, TrendingUp } from 'lucide-react';
+import { useProducts, useFeaturedProducts, useFlashSaleProducts } from '@/hooks/useProducts';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileNavigation from '../components/MobileNavigation';
 
 const Products = () => {
   const [searchParams] = useSearchParams();
-  const brandFilter = searchParams.get('brand');
-  const categoryFilter = searchParams.get('category');
-  const searchQuery = searchParams.get('q');
-  const { data: allProducts = [], isLoading, error } = useProducts();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const filter = searchParams.get('filter');
+  const category = searchParams.get('category');
+  const isMobile = useIsMobile();
+  
+  const { data: allProducts = [], isLoading } = useProducts();
+  const { data: featuredProducts = [] } = useFeaturedProducts();
+  const { data: flashSaleProducts = [] } = useFlashSaleProducts();
+  
+  const [priceRange, setPriceRange] = useState([0, 2000]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('name');
-  const [filteredProducts, setFilteredProducts] = useState(allProducts);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    console.log('=== Products Page Debug Info ===');
-    console.log('All products loaded:', allProducts.length);
-    console.log('Brand filter from URL:', brandFilter);
-    console.log('Category filter from URL:', categoryFilter);
-    console.log('Search query from URL:', searchQuery);
-    console.log('Loading state:', isLoading);
-    console.log('Error state:', error);
-    
-    if (allProducts.length > 0) {
-      console.log('Sample products:', allProducts.slice(0, 3).map(p => ({ 
-        id: p.id, 
-        name: p.name, 
-        brand: p.brand 
-      })));
+  // Get products based on filter
+  const getFilteredProducts = () => {
+    if (filter === 'new-arrivals') {
+      return allProducts
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 20);
+    } else if (filter === 'best-sellers') {
+      return featuredProducts;
+    } else if (filter === 'flash-sale') {
+      return flashSaleProducts;
     }
-    
-    // Get all unique brands from products
-    const availableBrands = Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean)));
-    console.log('Available brands in database:', availableBrands);
-    
-    let filtered = [...allProducts];
+    return allProducts;
+  };
 
-    // Apply brand filter with case-insensitive comparison
-    if (brandFilter) {
-      console.log('Filtering by brand:', brandFilter);
-      const brandLower = brandFilter.toLowerCase();
-      filtered = filtered.filter(product => {
-        const productBrand = product.brand?.toLowerCase();
-        const matches = productBrand === brandLower;
-        if (matches) {
-          console.log('Product matches brand filter:', product.name, 'brand:', product.brand);
-        }
-        return matches;
-      });
-      console.log('Products after brand filter:', filtered.length);
-    }
+  const baseProducts = getFilteredProducts();
 
-    // Apply category filter with case-insensitive comparison
-    if (categoryFilter) {
-      console.log('Filtering by category:', categoryFilter);
-      const categoryLower = categoryFilter.toLowerCase();
-      filtered = filtered.filter(product => {
-        const productCategory = product.category?.toLowerCase();
-        const matches = productCategory === categoryLower;
-        if (matches) {
-          console.log('Product matches category filter:', product.name, 'category:', product.category);
-        }
-        return matches;
-      });
-      console.log('Products after category filter:', filtered.length);
-    }
+  const transformProduct = (product: any) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    originalPrice: product.original_price,
+    rating: product.rating,
+    reviews: product.reviews,
+    image: product.image,
+    category: product.category,
+    brand: product.brand,
+    discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
+    isFlash: product.is_flash_sale,
+    countdownTimer: product.is_flash_sale ? "02:15:23" : undefined,
+    isNew: filter === 'new-arrivals'
+  });
 
-    // Apply search filter if there's a search term from URL
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchLower) ||
-        product.description?.toLowerCase().includes(searchLower) ||
-        product.category?.toLowerCase().includes(searchLower) ||
-        product.brand?.toLowerCase().includes(searchLower) ||
-        product.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-      console.log('Products after search filter:', filtered.length);
-    }
+  const transformedProducts = baseProducts.map(transformProduct);
+
+  // Get unique brands and categories for filters
+  const brands = [...new Set(transformedProducts.map(p => p.brand).filter(Boolean))];
+  const categories = [...new Set(transformedProducts.map(p => p.category).filter(Boolean))];
+
+  // Apply filters
+  const filteredProducts = useMemo(() => {
+    let filtered = transformedProducts.filter(product => {
+      const price = product.price;
+      const inPriceRange = price >= priceRange[0] && price <= priceRange[1];
+      const inSelectedBrands = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+      const inSelectedCategories = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+      const matchesCategory = !category || product.category?.toLowerCase() === category.toLowerCase();
+      
+      return inPriceRange && inSelectedBrands && inSelectedCategories && matchesCategory;
+    });
 
     // Sort products
-    filtered = [...filtered].sort((a, b) => {
+    filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
           return a.price - b.price;
@@ -99,59 +98,42 @@ const Products = () => {
       }
     });
 
-    console.log('Final filtered products:', filtered.length);
-    setFilteredProducts(filtered);
-  }, [allProducts, brandFilter, categoryFilter, searchQuery, sortBy]);
+    return filtered;
+  }, [transformedProducts, priceRange, selectedBrands, selectedCategories, sortBy, category]);
+
+  const clearFilters = () => {
+    setPriceRange([0, 2000]);
+    setSelectedBrands([]);
+    setSelectedCategories([]);
+    setSortBy('name');
+  };
 
   const getPageTitle = () => {
-    if (categoryFilter) {
-      return `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Products`;
-    }
-    if (brandFilter) {
-      return `${brandFilter.charAt(0).toUpperCase() + brandFilter.slice(1)} Products`;
-    }
-    if (searchQuery) {
-      return `Search Results for "${searchQuery}"`;
-    }
+    if (filter === 'new-arrivals') return 'New Arrivals';
+    if (filter === 'best-sellers') return 'Best Sellers';
+    if (filter === 'flash-sale') return 'Flash Sale';
+    if (category) return `${category} Products`;
     return 'All Products';
   };
 
-  const getPageDescription = () => {
-    if (categoryFilter) {
-      return `Discover ${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} products and accessories`;
-    }
-    if (brandFilter) {
-      return `Discover ${brandFilter.charAt(0).toUpperCase() + brandFilter.slice(1)} products and accessories`;
-    }
-    if (searchQuery) {
-      return `${filteredProducts.length} products found`;
-    }
-    return `${filteredProducts.length} products found`;
+  const getPageIcon = () => {
+    if (filter === 'new-arrivals') return <Sparkles className="w-6 h-6 text-blue-600" />;
+    if (filter === 'best-sellers') return <TrendingUp className="w-6 h-6 text-green-600" />;
+    return null;
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="flex items-center justify-center h-96">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center h-96">
+        <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-red-600 mb-2">Error loading products</h3>
-            <p className="text-gray-500">{error.message}</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading products...</p>
           </div>
         </div>
-        <Footer />
+        {!isMobile && <Footer />}
+        <MobileNavigation />
       </div>
     );
   }
@@ -160,132 +142,239 @@ const Products = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {getPageTitle()}
-          </h1>
-          <p className="text-gray-600">
-            {getPageDescription()}
-          </p>
-        </div>
-
-        {/* Filters and Controls */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="name">Sort by Name</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Rating</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              <List className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-              : 'grid-cols-1'
-          }`}>
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={{
-                  id: product.id,
-                  name: product.name,
-                  price: product.price,
-                  originalPrice: product.original_price,
-                  rating: product.rating,
-                  reviews: product.reviews,
-                  image: product.image,
-                  brand: product.brand,
-                  discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
-                  isFlash: product.is_flash_sale,
-                  countdownTimer: product.is_flash_sale ? "02:15:23" : undefined
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="mb-8">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <Filter className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                No products found
-              </h3>
-              <p className="text-gray-500 mb-4">
-                {brandFilter ? (
-                  <>We couldn't find any products for the brand "{brandFilter}"</>
-                ) : searchQuery ? (
-                  <>No products match your search "{searchQuery}"</>
-                ) : (
-                  <>No products match your criteria</>
-                )}
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-3">
+            {getPageIcon()}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{getPageTitle()}</h1>
+              <p className="text-gray-600 mt-1">
+                {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
               </p>
-              {brandFilter && (
-                <p className="text-sm text-gray-400 mb-4">
-                  This could mean there are no products with the brand "{brandFilter}" in our database.
-                </p>
-              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            {/* Sort Dropdown */}
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name A-Z</SelectItem>
+                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                <SelectItem value="price-high">Price: High to Low</SelectItem>
+                <SelectItem value="rating">Highest Rated</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* View Mode Toggle */}
+            <div className="flex bg-white rounded-lg p-1 shadow-sm">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="w-4 h-4" />
+              </Button>
             </div>
             
-            {/* Show available brands when filtering by brand */}
-            {brandFilter && allProducts.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
-                <h4 className="font-semibold text-blue-800 mb-2">Available Brands:</h4>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean))).map((brand) => (
-                    <span
-                      key={brand}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                    >
+            {/* Mobile Filter Toggle */}
+            {isMobile && (
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="lg:hidden"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-8">
+          {/* Sidebar Filters */}
+          <div className={`w-80 flex-shrink-0 ${isMobile && !showFilters ? 'hidden' : ''} ${isMobile ? 'fixed inset-0 z-50 bg-white p-4' : ''}`}>
+            {isMobile && (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Filters</h2>
+                <Button variant="ghost" onClick={() => setShowFilters(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+            
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <SlidersHorizontal className="w-5 h-5 mr-2" />
+                    Filters
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    Clear All
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Price Range */}
+                <div>
+                  <h3 className="font-semibold mb-3">Price Range</h3>
+                  <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    max={2000}
+                    min={0}
+                    step={50}
+                    className="mb-3"
+                  />
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>${priceRange[0]}</span>
+                    <span>${priceRange[1]}</span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Brands */}
+                {brands.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Brands</h3>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {brands.map((brand) => (
+                        <div key={brand} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`brand-${brand}`}
+                            checked={selectedBrands.includes(brand)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedBrands([...selectedBrands, brand]);
+                              } else {
+                                setSelectedBrands(selectedBrands.filter(b => b !== brand));
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={`brand-${brand}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {brand}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Categories */}
+                {categories.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Categories</h3>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {categories.map((cat) => (
+                        <div key={cat} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`category-${cat}`}
+                            checked={selectedCategories.includes(cat)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCategories([...selectedCategories, cat]);
+                              } else {
+                                setSelectedCategories(selectedCategories.filter(c => c !== cat));
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={`category-${cat}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {cat}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Products Grid/List */}
+          <div className="flex-1 min-w-0">
+            {/* Active Filters */}
+            {(selectedBrands.length > 0 || selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 2000) && (
+              <div className="mb-6">
+                <div className="flex flex-wrap gap-2">
+                  {selectedBrands.map((brand) => (
+                    <Badge key={brand} variant="secondary" className="cursor-pointer">
                       {brand}
-                    </span>
+                      <X
+                        className="w-3 h-3 ml-1"
+                        onClick={() => setSelectedBrands(selectedBrands.filter(b => b !== brand))}
+                      />
+                    </Badge>
                   ))}
+                  {selectedCategories.map((cat) => (
+                    <Badge key={cat} variant="secondary" className="cursor-pointer">
+                      {cat}
+                      <X
+                        className="w-3 h-3 ml-1"
+                        onClick={() => setSelectedCategories(selectedCategories.filter(c => c !== cat))}
+                      />
+                    </Badge>
+                  ))}
+                  {(priceRange[0] > 0 || priceRange[1] < 2000) && (
+                    <Badge variant="secondary" className="cursor-pointer">
+                      ${priceRange[0]} - ${priceRange[1]}
+                      <X
+                        className="w-3 h-3 ml-1"
+                        onClick={() => setPriceRange([0, 2000])}
+                      />
+                    </Badge>
+                  )}
                 </div>
               </div>
             )}
-            
-            {/* Show message when no products exist in database */}
-            {allProducts.length === 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto mt-4">
-                <h4 className="font-semibold text-red-800 mb-2">No products in database</h4>
-                <p className="text-red-600 text-sm">
-                  There are no products currently available in the database. Please contact support or check back later.
-                </p>
+
+            {/* Products */}
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500 text-lg mb-4">No products found</div>
+                <Button onClick={clearFilters} variant="outline">
+                  Clear Filters
+                </Button>
+              </div>
+            ) : (
+              <div className={viewMode === 'grid' 
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+                : 'space-y-4'
+              }>
+                {filteredProducts.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product}
+                    variant={viewMode === 'list' ? 'list' : 'grid'}
+                  />
+                ))}
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
 
-      <Footer />
+      {!isMobile && <Footer />}
+      <MobileNavigation />
     </div>
   );
 };
