@@ -84,7 +84,7 @@ const OneClickCheckout: React.FC = () => {
         status: 'confirmed',
         payment_method: 'cash_on_delivery',
         shipping_address: {
-          name: defaultAddress.name || `${defaultAddress.first_name || ''} ${defaultAddress.last_name || ''}`.trim(),
+          name: defaultAddress.name || 'Default Address',
           line1: defaultAddress.line1,
           line2: defaultAddress.line2 || '',
           city: defaultAddress.city,
@@ -93,7 +93,7 @@ const OneClickCheckout: React.FC = () => {
           country: defaultAddress.country || 'Zimbabwe'
         },
         billing_address: {
-          name: defaultAddress.name || `${defaultAddress.first_name || ''} ${defaultAddress.last_name || ''}`.trim(),
+          name: defaultAddress.name || 'Default Address',
           line1: defaultAddress.line1,
           line2: defaultAddress.line2 || '',
           city: defaultAddress.city,
@@ -232,7 +232,7 @@ const OneClickCheckout: React.FC = () => {
             </div>
             <div className="text-sm text-gray-600">
               <p className="font-medium">
-                {defaultAddress.name || `${defaultAddress.first_name || ''} ${defaultAddress.last_name || ''}`.trim() || 'Default Address'}
+                {defaultAddress.name || 'Default Address'}
               </p>
               <p>{defaultAddress.line1}</p>
               {defaultAddress.line2 && <p>{defaultAddress.line2}</p>}
