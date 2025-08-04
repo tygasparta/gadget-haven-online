@@ -144,37 +144,37 @@ const PopupBanner = () => {
               <div className="space-y-4">
                 <div className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-200 transform hover:scale-105">
                   <img 
-                    src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=200&fit=crop&crop=center" 
-                    alt="Latest Laptop" 
+                    src="/lovable-uploads/aea86624-8458-49d3-bd4a-0d1a09221adb.png" 
+                    alt="Smartphones" 
                     className="w-full h-32 object-cover rounded-xl"
                   />
-                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Premium Laptops</p>
+                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Smartphones</p>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-200 transform hover:scale-105">
                   <img 
-                    src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&h=200&fit=crop&crop=center" 
-                    alt="Smart Robot" 
+                    src="/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png" 
+                    alt="Audio & Headphones" 
                     className="w-full h-32 object-cover rounded-xl"
                   />
-                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Smart Gadgets</p>
+                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Audio & Headphones</p>
                 </div>
               </div>
               <div className="space-y-4 pt-8">
                 <div className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-200 transform hover:scale-105">
                   <img 
-                    src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&h=200&fit=crop&crop=center" 
-                    alt="Circuit Board Tech" 
+                    src="/lovable-uploads/5a5bc428-37ca-4936-812a-0aac4ff01635.png" 
+                    alt="Laptops & Computers" 
                     className="w-full h-32 object-cover rounded-xl"
                   />
-                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Tech Components</p>
+                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Laptops & Computers</p>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-200 transform hover:scale-105">
                   <img 
-                    src="https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=300&h=200&fit=crop&crop=center" 
-                    alt="Desktop Setup" 
+                    src="/lovable-uploads/cc2e0b15-5026-46cb-8ba4-383f53be7053.png" 
+                    alt="Gaming" 
                     className="w-full h-32 object-cover rounded-xl"
                   />
-                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Desktop Setups</p>
+                  <p className="text-sm font-medium text-gray-700 mt-2 text-center">Gaming</p>
                 </div>
               </div>
             </div>
@@ -206,19 +206,19 @@ const PopupBanner = () => {
           <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="bg-white rounded-xl p-3 shadow-md">
               <img 
-                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=120&fit=crop&crop=center" 
-                alt="Laptop" 
+                src="/lovable-uploads/aea86624-8458-49d3-bd4a-0d1a09221adb.png" 
+                alt="Smartphones" 
                 className="w-full h-20 object-cover rounded-lg"
               />
-              <p className="text-xs font-medium text-gray-700 mt-2 text-center">Laptops</p>
+              <p className="text-xs font-medium text-gray-700 mt-2 text-center">Smartphones</p>
             </div>
             <div className="bg-white rounded-xl p-3 shadow-md">
               <img 
-                src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&h=120&fit=crop&crop=center" 
-                alt="Smart Gadgets" 
+                src="/lovable-uploads/5a5bc428-37ca-4936-812a-0aac4ff01635.png" 
+                alt="Laptops" 
                 className="w-full h-20 object-cover rounded-lg"
               />
-              <p className="text-xs font-medium text-gray-700 mt-2 text-center">Smart Tech</p>
+              <p className="text-xs font-medium text-gray-700 mt-2 text-center">Laptops</p>
             </div>
           </div>
 
