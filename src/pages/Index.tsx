@@ -20,6 +20,7 @@ import MobileNavigation from '../components/MobileNavigation';
 import MobileQuickCategories from '../components/MobileQuickCategories';
 import MobileTopDeals from '../components/MobileTopDeals';
 import TabletOptimizedBanners from '../components/TabletOptimizedBanners';
+import PopupBanner from '../components/PopupBanner';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -93,6 +94,9 @@ const Index = () => {
           }
         })}
       </script>
+
+      {/* Popup Banner */}
+      <PopupBanner />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative animate-fade-in">
         {/* Conditional Header */}
