@@ -77,18 +77,18 @@ const ProductSection: React.FC<ProductSectionProps> = ({
   const colors = getColorClasses();
 
   return (
-    <div className="mb-8 sm:mb-16 w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-8 gap-4">
+    <div className="mb-12 sm:mb-16 lg:mb-20 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 lg:mb-12 gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center mb-2 sm:mb-3">
-            <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-r ${colors.gradient} text-white mr-2 sm:mr-4 flex-shrink-0`}>
+          <div className="flex items-center mb-3 sm:mb-4">
+            <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-r ${colors.gradient} text-white mr-3 sm:mr-4 flex-shrink-0 shadow-lg`}>
               {getSectionIcon()}
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg sm:text-3xl font-bold text-gray-800 flex flex-col sm:flex-row sm:items-center gap-2">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 flex flex-col sm:flex-row sm:items-center gap-2 lg:gap-3">
                 <span className="truncate">{title}</span>
                 {title === "Flash Sale ⚡" && (
-                  <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold animate-pulse shadow-lg whitespace-nowrap">
+                  <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-bold animate-pulse shadow-lg whitespace-nowrap">
                     ⚡ LIMITED TIME
                   </span>
                 )}
@@ -96,23 +96,23 @@ const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
           </div>
           {subtitle && (
-            <p className="text-sm sm:text-lg text-gray-600 ml-8 sm:ml-14 line-clamp-2">{subtitle}</p>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 ml-11 sm:ml-16 lg:ml-20 line-clamp-2">{subtitle}</p>
           )}
         </div>
         {showViewAll && (
           <Button 
             variant="outline" 
-            className={`${colors.border} ${colors.text} ${colors.bg} px-3 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg sm:rounded-xl transition-all duration-200 flex items-center hover:scale-105 shadow-md hover:shadow-lg text-sm sm:text-base whitespace-nowrap flex-shrink-0`}
+            className={`${colors.border} ${colors.text} ${colors.bg} px-4 sm:px-6 lg:px-8 py-3 sm:py-4 font-semibold rounded-xl lg:rounded-2xl transition-all duration-200 flex items-center hover:scale-105 shadow-md hover:shadow-lg text-base sm:text-lg whitespace-nowrap flex-shrink-0`}
             onClick={handleViewAllClick}
           >
             <span className="hidden sm:inline">View All</span>
             <span className="sm:hidden">All</span>
-            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 w-full">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

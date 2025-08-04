@@ -99,14 +99,14 @@ const Index = () => {
         {isMobile ? <MobileHeader /> : <Header />}
         <CartSidebar />
         
-        <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 py-3 sm:py-6 pb-20 md:pb-6">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-8">
           {/* Tablet Optimized Banners */}
           {isTablet && <TabletOptimizedBanners />}
           
-          <div className="flex flex-col xl:flex-row gap-3 sm:gap-6">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
             {/* Left Sidebar - Desktop Only */}
-            <div className="hidden xl:block xl:w-80 flex-shrink-0">
-              <div className="space-y-6">
+            <div className="hidden xl:block xl:w-80 2xl:w-96 flex-shrink-0">
+              <div className="space-y-6 lg:space-y-8">
                 <Sidebar />
                 <TrendingCarousel />
                 <LiveDeals />
@@ -117,9 +117,13 @@ const Index = () => {
             </div>
             
             <main className="flex-1 min-w-0 w-full">
-              <div className="w-full">
+              <div className="w-full space-y-6 lg:space-y-8">
                 {/* Hero Banner - Desktop Only */}
-                {!isMobile && !isTablet && <HeroBanner />}
+                {!isMobile && !isTablet && (
+                  <div className="mb-8 lg:mb-12">
+                    <HeroBanner />
+                  </div>
+                )}
                 
                 {/* Mobile-specific components */}
                 <div className="md:hidden space-y-6 mt-6">
@@ -127,10 +131,12 @@ const Index = () => {
                   <MobileTopDeals />
                 </div>
                 
-                <FeaturedBrands />
+                <div className="mb-8 lg:mb-12">
+                  <FeaturedBrands />
+                </div>
                 
                 {transformedFlashSale.length > 0 && (
-                  <div className="w-full">
+                  <div className="w-full mb-8 lg:mb-12">
                     <ProductSection
                       title="Flash Sale ⚡"
                       subtitle="Limited time offers. Grab your deal now!"
@@ -141,7 +147,7 @@ const Index = () => {
                 )}
                 
                 {newArrivals.length > 0 && (
-                  <div className="w-full">
+                  <div className="w-full mb-8 lg:mb-12">
                     <ProductSection
                       title="New Arrivals 🆕"
                       subtitle="Discover the latest tech arrivals in our store."
@@ -152,7 +158,7 @@ const Index = () => {
                 )}
                 
                 {transformedFeatured.length > 0 && (
-                  <div className="w-full">
+                  <div className="w-full mb-8 lg:mb-12">
                     <ProductSection
                       title="Best Sellers 🔥"
                       subtitle="Most popular products this month"
@@ -167,10 +173,18 @@ const Index = () => {
         </div>
 
         {/* Newsletter - Desktop Only */}
-        {!isMobile && <Newsletter />}
+        {!isMobile && (
+          <div className="mt-12 lg:mt-16">
+            <Newsletter />
+          </div>
+        )}
         
         {/* Footer - Desktop Only */}
-        {!isMobile && <Footer />}
+        {!isMobile && (
+          <div className="mt-8 lg:mt-12">
+            <Footer />
+          </div>
+        )}
         
         {/* Mobile Navigation - Always visible on mobile */}
         <MobileNavigation />
