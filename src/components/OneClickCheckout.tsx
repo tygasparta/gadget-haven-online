@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +31,7 @@ const OneClickCheckout: React.FC = () => {
   };
 
   const totalPrice = getTotalPrice();
-  const shipping = totalPrice >= 50 ? 0 : 9.99;
+  const shipping = totalPrice >= 50 ? 0 : 3.50;
   const tax = totalPrice * 0.08;
   const finalTotal = totalPrice + shipping + tax;
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Minus, ShoppingBag, Trash2, Sparkles, Gift, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -68,6 +67,7 @@ const CartSidebar = () => {
   const itemsCount = getTotalItems();
   const totalPrice = getTotalPrice();
   const savings = getSavings();
+  const shipping = totalPrice >= 50 ? 0 : 3.50;
 
   if (!isCartOpen) return null;
 
