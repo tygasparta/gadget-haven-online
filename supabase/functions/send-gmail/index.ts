@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("Starting Gmail email processing...");
+    console.log("Starting SMTP email processing...");
 
     // Get pending emails from queue
     const { data: emails, error: fetchError } = await supabase
@@ -56,10 +57,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${emails.length} pending emails`);
 
+    // Initialize SMTP client
+    const smtpClient = new SMTPClient({
+      connection: {
+        hostname: Deno.env.get("SMTP_HOST") ?? "",
+        port: parseInt(Deno.env.get("SMTP_PORT") ?? "465"),
+        tls: parseInt(Deno.env.get("SMTP_PORT") ?? "465") === 465,
+        auth: {
+          username: Deno.env.get("SMTP_USERNAME") ?? "",
+          password: Deno.env.get("SMTP_PASSWORD") ?? "",
+        },
+      },
+    });
+
     let processed = 0;
     let errors = 0;
 
-    // Process each email using Gmail API
+    // Process each email using SMTP
     for (const email of emails as EmailQueueItem[]) {
       try {
         console.log(`Processing email ${email.id} to ${email.recipient_email}`);
@@ -79,48 +93,16 @@ const handler = async (req: Request): Promise<Response> => {
           });
         }
 
-        // Create email message in RFC 2822 format
-        const boundary = "boundary_" + Math.random().toString(36).substr(2, 9);
-        const emailMessage = [
-          `To: ${email.recipient_email}`,
-          `From: Gadget Genie <${Deno.env.get("GMAIL_FROM_EMAIL")}>`,
-          `Subject: ${subject}`,
-          `Content-Type: multipart/alternative; boundary="${boundary}"`,
-          "",
-          `--${boundary}`,
-          "Content-Type: text/plain; charset=utf-8",
-          "",
-          textContent || subject,
-          "",
-          `--${boundary}`,
-          "Content-Type: text/html; charset=utf-8",
-          "",
-          htmlContent,
-          "",
-          `--${boundary}--`
-        ].join("\r\n");
-
-        // Base64 encode the message
-        const encodedMessage = btoa(emailMessage).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-        // Send via Gmail API
-        const response = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/send`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get("GMAIL_ACCESS_TOKEN")}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            raw: encodedMessage
-          })
+        // Send email via SMTP
+        await smtpClient.send({
+          from: Deno.env.get("SMTP_FROM_EMAIL") ?? "",
+          to: email.recipient_email,
+          subject: subject,
+          content: textContent || subject,
+          html: htmlContent,
         });
 
-        if (!response.ok) {
-          throw new Error(`Gmail API error: ${response.status} ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        console.log("Email sent successfully via Gmail:", result);
+        console.log("Email sent successfully via SMTP");
 
         // Update email status to sent
         await supabase
@@ -149,12 +131,15 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Close SMTP connection
+    await smtpClient.close();
+
     console.log(`Email processing complete. Processed: ${processed}, Errors: ${errors}`);
 
     return new Response(JSON.stringify({ 
       processed, 
       errors, 
-      message: `Successfully processed ${processed} emails via Gmail` 
+      message: `Successfully processed ${processed} emails via SMTP` 
     }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },

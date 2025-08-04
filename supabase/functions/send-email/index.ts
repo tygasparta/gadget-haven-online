@@ -1,9 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
-import { Resend } from "npm:resend@4.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,6 +57,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${emails.length} pending emails`);
 
+    // Initialize SMTP client
+    const smtpClient = new SMTPClient({
+      connection: {
+        hostname: Deno.env.get("SMTP_HOST") ?? "",
+        port: parseInt(Deno.env.get("SMTP_PORT") ?? "465"),
+        tls: parseInt(Deno.env.get("SMTP_PORT") ?? "465") === 465,
+        auth: {
+          username: Deno.env.get("SMTP_USERNAME") ?? "",
+          password: Deno.env.get("SMTP_PASSWORD") ?? "",
+        },
+      },
+    });
+
     let processed = 0;
     let errors = 0;
 
@@ -82,16 +93,16 @@ const handler = async (req: Request): Promise<Response> => {
           });
         }
 
-        // Send email via Resend
-        const emailResponse = await resend.emails.send({
-          from: "Gadget Genie <onboarding@resend.dev>",
-          to: [email.recipient_email],
+        // Send email via SMTP
+        await smtpClient.send({
+          from: Deno.env.get("SMTP_FROM_EMAIL") ?? "",
+          to: email.recipient_email,
           subject: subject,
+          content: textContent || subject,
           html: htmlContent,
-          text: textContent || undefined,
         });
 
-        console.log("Email sent successfully:", emailResponse);
+        console.log("Email sent successfully via SMTP");
 
         // Update email status to sent
         await supabase
@@ -120,12 +131,15 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Close SMTP connection
+    await smtpClient.close();
+
     console.log(`Email processing complete. Processed: ${processed}, Errors: ${errors}`);
 
     return new Response(JSON.stringify({ 
       processed, 
       errors, 
-      message: `Successfully processed ${processed} emails` 
+      message: `Successfully processed ${processed} emails via SMTP` 
     }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
