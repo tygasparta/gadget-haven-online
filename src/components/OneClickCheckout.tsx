@@ -156,14 +156,8 @@ const OneClickCheckout: React.FC = () => {
         description: "Your order has been confirmed. Pay cash on delivery.",
       });
       
-      // Navigate to order success page with order details
-      navigate('/order-success', { 
-        state: { 
-          orderId: order.id, 
-          total: finalTotal,
-          paymentMethod: 'cash_on_delivery'
-        }
-      });
+      // Navigate to success page
+      navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
 
     } catch (error: any) {
       console.error('OneClickCheckout - Checkout error:', error);
