@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -248,7 +247,7 @@ const CheckoutDetails = () => {
         description: "Your order has been confirmed for cash on delivery",
       });
       
-      navigate(`/payment/success?reference=ORDER-${order.id}&order_id=${order.id}`);
+      navigate(`/payment-success?reference=ORDER-${order.id}&order_id=${order.id}`);
 
     } catch (error: any) {
       console.error('COD checkout error:', error);
