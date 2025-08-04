@@ -13,19 +13,28 @@ export const useUpdateOrderStatus = () => {
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
       console.log('Updating order status:', { orderId, status });
       
-      // First get the order to get user email
+      // First get the order to get user_id
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles!orders_user_id_fkey(email, full_name)
-        `)
+        .select('*')
         .eq('id', orderId)
         .single();
 
       if (orderError) {
         console.error('Error fetching order:', orderError);
         throw orderError;
+      }
+
+      // Get user email from profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', order.user_id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        // Continue without email if profile not found
       }
 
       // Update the order status
@@ -43,13 +52,13 @@ export const useUpdateOrderStatus = () => {
       }
 
       // Queue email notification if user has email
-      if (order.profiles?.email) {
+      if (profile?.email) {
         try {
           await sendOrderStatusUpdate({
             id: orderId,
             status: status,
             updated_at: new Date().toISOString(),
-            email: order.profiles.email,
+            email: profile.email,
           });
         } catch (emailError) {
           console.error('Failed to queue status update email:', emailError);
