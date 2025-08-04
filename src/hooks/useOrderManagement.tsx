@@ -2,15 +2,33 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useGmailSystem } from '@/hooks/useGmailSystem';
 
 export const useUpdateOrderStatus = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { sendOrderStatusUpdate } = useGmailSystem();
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
       console.log('Updating order status:', { orderId, status });
       
+      // First get the order to get user email
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          profiles!orders_user_id_fkey(email, full_name)
+        `)
+        .eq('id', orderId)
+        .single();
+
+      if (orderError) {
+        console.error('Error fetching order:', orderError);
+        throw orderError;
+      }
+
+      // Update the order status
       const { data, error } = await supabase
         .from('orders')
         .update({ 
@@ -22,6 +40,21 @@ export const useUpdateOrderStatus = () => {
       if (error) {
         console.error('Error updating order status:', error);
         throw error;
+      }
+
+      // Queue email notification if user has email
+      if (order.profiles?.email) {
+        try {
+          await sendOrderStatusUpdate({
+            id: orderId,
+            status: status,
+            updated_at: new Date().toISOString(),
+            email: order.profiles.email,
+          });
+        } catch (emailError) {
+          console.error('Failed to queue status update email:', emailError);
+          // Don't throw here as the order update succeeded
+        }
       }
 
       console.log('Order status updated successfully');

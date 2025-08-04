@@ -5,18 +5,39 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Package, Truck, Home } from 'lucide-react';
 import Header from '@/components/Header';
+import { useGmailSystem } from '@/hooks/useGmailSystem';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const OrderSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { orderId, total } = location.state || {};
+  const { user } = useAuthContext();
+  const { sendOrderConfirmation } = useGmailSystem();
+  const { orderId, total, orderData } = location.state || {};
 
   React.useEffect(() => {
     // If no order data, redirect to home
     if (!orderId) {
       navigate('/');
+      return;
     }
-  }, [orderId, navigate]);
+
+    // Send order confirmation email if user and order data available
+    if (user && orderData) {
+      try {
+        sendOrderConfirmation({
+          id: orderId,
+          total_amount: total,
+          created_at: new Date().toISOString(),
+          email: user.email || orderData.email,
+        });
+      } catch (error) {
+        console.error('Failed to send order confirmation email:', error);
+      }
+    }
+  }, [orderId, navigate, user, orderData, total, sendOrderConfirmation]);
+
+  if (!orderId) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">

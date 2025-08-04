@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Notification {
   id: string;
@@ -22,8 +23,7 @@ export const useNotifications = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      // Using any type temporarily until Supabase types are regenerated
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
@@ -45,8 +45,7 @@ export const useMarkNotificationAsRead = () => {
 
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      // Using any type temporarily until Supabase types are regenerated
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId);
@@ -62,9 +61,9 @@ export const useMarkNotificationAsRead = () => {
   });
 };
 
-// Helper function to create notifications (for admin use)
 export const useCreateNotification = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (notification: {
@@ -73,8 +72,7 @@ export const useCreateNotification = () => {
       message: string;
       type: 'info' | 'warning' | 'error' | 'success';
     }) => {
-      // Using any type temporarily until Supabase types are regenerated
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('notifications')
         .insert([notification]);
       
@@ -85,6 +83,17 @@ export const useCreateNotification = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      toast({
+        title: "Notification created",
+        description: "The notification has been sent successfully.",
+      });
     },
+    onError: (error) => {
+      toast({
+        title: "Error creating notification",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
 };
