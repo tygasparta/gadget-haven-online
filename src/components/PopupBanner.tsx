@@ -157,8 +157,8 @@ const PopupBanner = () => {
         }
       `}</style>
       
-      <div className="fixed inset-0 bg-black/60 modal-backdrop z-[100] flex items-center justify-center p-4">
-        <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-0 shadow-2xl modal-content overflow-hidden">
+      <div className="fixed inset-0 bg-black/60 modal-backdrop z-[100] flex items-center justify-center p-2 sm:p-4">
+        <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
           {/* Animated Background Elements */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-xl float-animation"></div>
@@ -169,9 +169,9 @@ const PopupBanner = () => {
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-90 group"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-90 group"
           >
-            <X className="w-5 h-5 text-gray-600 group-hover:text-red-500 transition-colors duration-300" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-red-500 transition-colors duration-300" />
           </button>
 
           {/* Desktop Layout */}
@@ -316,69 +316,69 @@ const PopupBanner = () => {
           </div>
 
           {/* Enhanced Mobile Layout */}
-          <div className="md:hidden p-6 relative z-10">
-            <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold blink-animation">G</span>
+          <div className="md:hidden p-4 sm:p-6 relative z-10">
+            <div className="text-center mb-4 sm:mb-6">
+              <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-sm sm:text-base blink-animation">G</span>
                 </div>
-                <h1 className="text-xl font-bold shimmer-text">
+                <h1 className="text-lg sm:text-xl font-bold shimmer-text">
                   GadgetGenie
                 </h1>
               </div>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3 leading-tight">
                 Tech Magic Awaits! ✨
               </h2>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6 px-2">
                 Discover cutting-edge gadgets and exclusive deals on your favorite tech!
               </p>
             </div>
 
             {/* Enhanced Mobile Gadget Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
               <div 
-                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md card-hover-effect cursor-pointer"
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-2 sm:p-3 shadow-md card-hover-effect cursor-pointer"
                 onClick={() => handleCategoryCardClick('phones')}
               >
                 <img 
                   src="/lovable-uploads/aea86624-8458-49d3-bd4a-0d1a09221adb.png" 
                   alt="Smartphones" 
-                  className="w-full h-20 object-cover rounded-lg"
+                  className="w-full h-16 sm:h-20 object-cover rounded-lg"
                 />
-                <p className="text-xs font-medium text-gray-700 mt-2 text-center">Smartphones</p>
+                <p className="text-xs font-medium text-gray-700 mt-1 sm:mt-2 text-center">Smartphones</p>
               </div>
               <div 
-                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md card-hover-effect cursor-pointer"
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-2 sm:p-3 shadow-md card-hover-effect cursor-pointer"
                 onClick={() => handleCategoryCardClick('gaming')}
               >
                 <img 
                   src="/lovable-uploads/17dd886e-e0ec-4816-a1fe-c6282cbd2a03.png" 
                   alt="Gaming" 
-                  className="w-full h-20 object-cover rounded-lg"
+                  className="w-full h-16 sm:h-20 object-cover rounded-lg"
                 />
-                <p className="text-xs font-medium text-gray-700 mt-2 text-center">Gaming</p>
+                <p className="text-xs font-medium text-gray-700 mt-1 sm:mt-2 text-center">Gaming</p>
               </div>
             </div>
 
             {/* Enhanced Mobile Feature Highlights */}
-            <div className="flex justify-center gap-2 mb-6">
-              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6 flex-wrap">
+              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 shadow-sm hover:shadow-md transition-all duration-300">
                 <Zap className="w-3 h-3 text-yellow-500" />
                 <span className="text-xs font-medium text-gray-700">Flash Deals</span>
               </div>
-              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 shadow-sm hover:shadow-md transition-all duration-300">
                 <Smartphone className="w-3 h-3 text-blue-500" />
                 <span className="text-xs font-medium text-gray-700">New Arrivals</span>
               </div>
             </div>
 
             {/* Enhanced Mobile Action Buttons */}
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Button
                 onClick={handleShopNow}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2.5 sm:py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                 <ShoppingCart className="w-4 h-4 mr-2 relative z-10" />
@@ -387,7 +387,7 @@ const PopupBanner = () => {
               <Button
                 onClick={handleDealsClick}
                 variant="outline"
-                className="w-full border-2 border-purple-200 hover:border-purple-300 py-3 rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105"
+                className="w-full border-2 border-purple-200 hover:border-purple-300 py-2.5 sm:py-3 rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               >
                 View Deals
               </Button>
