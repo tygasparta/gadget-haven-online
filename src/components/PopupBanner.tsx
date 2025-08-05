@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Zap, Smartphone, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -129,10 +128,6 @@ const PopupBanner = () => {
           animation: pulse 2s ease-in-out infinite;
         }
         
-        .spin-animation {
-          animation: spin 3s linear infinite;
-        }
-        
         .blink-animation {
           animation: blink 1.5s ease-in-out infinite;
         }
@@ -179,7 +174,7 @@ const PopupBanner = () => {
             <div className="flex-1 p-8 lg:p-12">
               <div className="max-w-md">
                 <div className="flex items-center gap-2 mb-4 group">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg spin-animation">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold text-lg blink-animation">G</span>
                   </div>
                   <h1 className="text-2xl font-bold shimmer-text">
@@ -306,7 +301,7 @@ const PopupBanner = () => {
           <div className="md:hidden p-6 relative z-10">
             <div className="text-center mb-6">
               <div className="flex items-center justify-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg spin-animation">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold blink-animation">G</span>
                 </div>
                 <h1 className="text-xl font-bold shimmer-text">
