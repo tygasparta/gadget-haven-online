@@ -45,7 +45,7 @@ const PopupBanner = () => {
   return (
     <>
       {/* Enhanced CSS animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes modalSlideIn {
           0% {
             opacity: 0;
@@ -116,6 +116,7 @@ const PopupBanner = () => {
           background-size: 200% auto;
           color: transparent;
           background-clip: text;
+          -webkit-background-clip: text;
           animation: shimmer 3s linear infinite;
         }
         
