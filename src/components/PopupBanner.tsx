@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Zap, Smartphone, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,11 @@ const PopupBanner = () => {
 
   const handleCategoryClick = (category: string) => {
     navigate(`/${category}`);
+    handleClose();
+  };
+
+  const handleCategoryCardClick = (category: string) => {
+    navigate(`/products?category=${category}`);
     handleClose();
   };
 
@@ -258,7 +264,10 @@ const PopupBanner = () => {
             <div className="flex-1 relative p-8">
               <div className="grid grid-cols-2 gap-4 h-full">
                 <div className="space-y-4">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect">
+                  <div 
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect cursor-pointer"
+                    onClick={() => handleCategoryCardClick('phones')}
+                  >
                     <img 
                       src="/lovable-uploads/aea86624-8458-49d3-bd4a-0d1a09221adb.png" 
                       alt="Smartphones" 
@@ -266,7 +275,10 @@ const PopupBanner = () => {
                     />
                     <p className="text-sm font-medium text-gray-700 mt-2 text-center">Smartphones</p>
                   </div>
-                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect">
+                  <div 
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect cursor-pointer"
+                    onClick={() => handleCategoryCardClick('audio')}
+                  >
                     <img 
                       src="/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png" 
                       alt="Audio & Headphones" 
@@ -276,7 +288,10 @@ const PopupBanner = () => {
                   </div>
                 </div>
                 <div className="space-y-4 pt-8">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect">
+                  <div 
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect cursor-pointer"
+                    onClick={() => handleCategoryCardClick('laptops')}
+                  >
                     <img 
                       src="/lovable-uploads/5a5bc428-37ca-4936-812a-0aac4ff01635.png" 
                       alt="Laptops & Computers" 
@@ -284,7 +299,10 @@ const PopupBanner = () => {
                     />
                     <p className="text-sm font-medium text-gray-700 mt-2 text-center">Laptops & Computers</p>
                   </div>
-                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect">
+                  <div 
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg card-hover-effect cursor-pointer"
+                    onClick={() => handleCategoryCardClick('gaming')}
+                  >
                     <img 
                       src="/lovable-uploads/17dd886e-e0ec-4816-a1fe-c6282cbd2a03.png" 
                       alt="Gaming" 
@@ -320,7 +338,10 @@ const PopupBanner = () => {
 
             {/* Enhanced Mobile Gadget Grid */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md card-hover-effect">
+              <div 
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md card-hover-effect cursor-pointer"
+                onClick={() => handleCategoryCardClick('phones')}
+              >
                 <img 
                   src="/lovable-uploads/aea86624-8458-49d3-bd4a-0d1a09221adb.png" 
                   alt="Smartphones" 
@@ -328,7 +349,10 @@ const PopupBanner = () => {
                 />
                 <p className="text-xs font-medium text-gray-700 mt-2 text-center">Smartphones</p>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md card-hover-effect">
+              <div 
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md card-hover-effect cursor-pointer"
+                onClick={() => handleCategoryCardClick('gaming')}
+              >
                 <img 
                   src="/lovable-uploads/17dd886e-e0ec-4816-a1fe-c6282cbd2a03.png" 
                   alt="Gaming" 
