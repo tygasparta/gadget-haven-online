@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Zap, Smartphone, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,13 +19,23 @@ const PopupBanner = () => {
     }
   }, []);
 
-  const handleClose = () => {
+  const handleClose = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsVisible(false);
     localStorage.setItem('gadgetgenie-banner-dismissed', 'true');
   };
 
-  // Enhanced close function for mobile
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  // Enhanced close function for mobile - separate handlers
+  const handleBackdropMouseClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  const handleBackdropTouchEnd = (e: React.TouchEvent) => {
     if (e.target === e.currentTarget) {
       handleClose();
     }
@@ -170,7 +179,8 @@ const PopupBanner = () => {
       
       <div 
         className="fixed inset-0 bg-black/60 modal-backdrop z-[100] flex items-center justify-center p-2 sm:p-4"
-        onClick={handleBackdropClick}
+        onClick={handleBackdropMouseClick}
+        onTouchEnd={handleBackdropTouchEnd}
       >
         <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
           {/* Animated Background Elements */}
@@ -183,7 +193,10 @@ const PopupBanner = () => {
           {/* Enhanced Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-2 sm:p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-90 group touch-manipulation"
+            onTouchEnd={handleClose}
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 p-2 sm:p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-90 group touch-manipulation"
+            style={{ zIndex: 9999 }}
+            aria-label="Close popup"
           >
             <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 group-hover:text-red-500 transition-colors duration-300" />
           </button>
