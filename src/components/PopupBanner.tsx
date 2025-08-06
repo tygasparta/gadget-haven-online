@@ -25,6 +25,13 @@ const PopupBanner = () => {
     localStorage.setItem('gadgetgenie-banner-dismissed', 'true');
   };
 
+  // Enhanced close function for mobile
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   const handleShopNow = () => {
     navigate('/products');
     handleClose();
@@ -43,6 +50,11 @@ const PopupBanner = () => {
   const handleCategoryCardClick = (category: string) => {
     navigate(`/products?category=${category}`);
     handleClose();
+  };
+
+  // Trigger cart sidebar open event
+  const openCartSidebar = () => {
+    window.dispatchEvent(new CustomEvent('openCart'));
   };
 
   if (!isVisible) return null;
@@ -100,15 +112,6 @@ const PopupBanner = () => {
           }
         }
         
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        
         @keyframes blink {
           0%, 50% {
             opacity: 1;
@@ -155,9 +158,20 @@ const PopupBanner = () => {
           transform: translateY(-8px) scale(1.02);
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
+
+        @media (max-width: 768px) {
+          .mobile-image {
+            height: auto !important;
+            aspect-ratio: 1;
+            object-fit: cover;
+          }
+        }
       `}</style>
       
-      <div className="fixed inset-0 bg-black/60 modal-backdrop z-[100] flex items-center justify-center p-2 sm:p-4">
+      <div 
+        className="fixed inset-0 bg-black/60 modal-backdrop z-[100] flex items-center justify-center p-2 sm:p-4"
+        onClick={handleBackdropClick}
+      >
         <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
           {/* Animated Background Elements */}
           <div className="absolute inset-0 opacity-20">
@@ -166,12 +180,12 @@ const PopupBanner = () => {
             <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full blur-xl float-animation" style={{ animationDelay: '2s' }}></div>
           </div>
 
-          {/* Close Button */}
+          {/* Enhanced Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-90 group"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-2 sm:p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-90 group touch-manipulation"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-red-500 transition-colors duration-300" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 group-hover:text-red-500 transition-colors duration-300" />
           </button>
 
           {/* Desktop Layout */}
@@ -336,49 +350,71 @@ const PopupBanner = () => {
               </p>
             </div>
 
-            {/* Enhanced Mobile Gadget Grid */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
+            {/* Enhanced Mobile Gadget Grid - Fixed Images */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div 
-                className="bg-white/90 backdrop-blur-sm rounded-xl p-2 sm:p-3 shadow-md card-hover-effect cursor-pointer"
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-md card-hover-effect cursor-pointer touch-manipulation"
                 onClick={() => handleCategoryCardClick('phones')}
               >
                 <img 
                   src="/lovable-uploads/aea86624-8458-49d3-bd4a-0d1a09221adb.png" 
                   alt="Smartphones" 
-                  className="w-full h-16 sm:h-20 object-cover rounded-lg"
+                  className="w-full mobile-image rounded-lg"
                 />
-                <p className="text-xs font-medium text-gray-700 mt-1 sm:mt-2 text-center">Smartphones</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mt-2 text-center">Smartphones</p>
               </div>
               <div 
-                className="bg-white/90 backdrop-blur-sm rounded-xl p-2 sm:p-3 shadow-md card-hover-effect cursor-pointer"
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-md card-hover-effect cursor-pointer touch-manipulation"
                 onClick={() => handleCategoryCardClick('gaming')}
               >
                 <img 
                   src="/lovable-uploads/17dd886e-e0ec-4816-a1fe-c6282cbd2a03.png" 
                   alt="Gaming" 
-                  className="w-full h-16 sm:h-20 object-cover rounded-lg"
+                  className="w-full mobile-image rounded-lg"
                 />
-                <p className="text-xs font-medium text-gray-700 mt-1 sm:mt-2 text-center">Gaming</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mt-2 text-center">Gaming</p>
+              </div>
+              <div 
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-md card-hover-effect cursor-pointer touch-manipulation"
+                onClick={() => handleCategoryCardClick('audio')}
+              >
+                <img 
+                  src="/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png" 
+                  alt="Audio & Headphones" 
+                  className="w-full mobile-image rounded-lg"
+                />
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mt-2 text-center">Audio</p>
+              </div>
+              <div 
+                className="bg-white/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-md card-hover-effect cursor-pointer touch-manipulation"
+                onClick={() => handleCategoryCardClick('laptops')}
+              >
+                <img 
+                  src="/lovable-uploads/5a5bc428-37ca-4936-812a-0aac4ff01635.png" 
+                  alt="Laptops & Computers" 
+                  className="w-full mobile-image rounded-lg"
+                />
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mt-2 text-center">Laptops</p>
               </div>
             </div>
 
             {/* Enhanced Mobile Feature Highlights */}
-            <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6 flex-wrap">
-              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-6 flex-wrap">
+              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-all duration-300">
                 <Zap className="w-3 h-3 text-yellow-500" />
                 <span className="text-xs font-medium text-gray-700">Flash Deals</span>
               </div>
-              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-all duration-300">
                 <Smartphone className="w-3 h-3 text-blue-500" />
                 <span className="text-xs font-medium text-gray-700">New Arrivals</span>
               </div>
             </div>
 
             {/* Enhanced Mobile Action Buttons */}
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-3">
               <Button
                 onClick={handleShopNow}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2.5 sm:py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base touch-manipulation"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                 <ShoppingCart className="w-4 h-4 mr-2 relative z-10" />
@@ -387,7 +423,7 @@ const PopupBanner = () => {
               <Button
                 onClick={handleDealsClick}
                 variant="outline"
-                className="w-full border-2 border-purple-200 hover:border-purple-300 py-2.5 sm:py-3 rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base"
+                className="w-full border-2 border-purple-200 hover:border-purple-300 py-3 rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base touch-manipulation"
               >
                 View Deals
               </Button>

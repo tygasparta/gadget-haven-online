@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Minus, ShoppingBag, Trash2, Sparkles, Gift, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,16 +53,33 @@ const CartSidebar = () => {
     navigate('/checkout');
   };
 
-  // Listen for cart open state from header
+  // Enhanced cart open event listener - works from any page
   useEffect(() => {
     const handleCartOpen = () => {
+      console.log('Cart open event received');
       setIsCartOpen(true);
       setCelebrateAdd(true);
       setTimeout(() => setCelebrateAdd(false), 1000);
     };
+
+    // Listen for both custom events and direct function calls
     window.addEventListener('openCart', handleCartOpen);
-    return () => window.removeEventListener('openCart', handleCartOpen);
+    
+    // Also expose function globally for header cart button
+    (window as any).openCartSidebar = handleCartOpen;
+    
+    return () => {
+      window.removeEventListener('openCart', handleCartOpen);
+      delete (window as any).openCartSidebar;
+    };
   }, []);
+
+  // Close cart with enhanced backdrop click handling
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsCartOpen(false);
+    }
+  };
 
   // Animate cart items count
   const itemsCount = getTotalItems();
@@ -73,24 +91,25 @@ const CartSidebar = () => {
 
   return (
     <>
-      {/* Overlay */}
+      {/* Enhanced Overlay with improved click handling */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
-        onClick={() => setIsCartOpen(false)}
+        className="fixed inset-0 bg-black bg-opacity-50 z-50 touch-manipulation"
+        onClick={handleBackdropClick}
+        onTouchEnd={handleBackdropClick}
       />
       
-      {/* Cart Sidebar */}
+      {/* Cart Sidebar with improved mobile handling */}
       <motion.div 
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        className={`fixed right-0 top-0 h-full ${isMobile ? 'w-full' : 'w-96'} bg-gradient-to-b from-white to-gray-50 shadow-2xl z-50 flex flex-col border-l border-gray-200`}
+        className={`fixed right-0 top-0 h-full ${isMobile ? 'w-full' : 'w-96'} bg-gradient-to-b from-white to-gray-50 shadow-2xl z-50 flex flex-col border-l border-gray-200 touch-manipulation`}
       >
-        {/* Header */}
+        {/* Header with improved close button */}
         <div className={`flex items-center justify-between ${isMobile ? 'p-4' : 'p-6'} border-b bg-white`}>
           <div className="flex items-center space-x-3">
             <div className="relative">
@@ -119,7 +138,7 @@ const CartSidebar = () => {
             variant="ghost"
             size="icon"
             onClick={() => setIsCartOpen(false)}
-            className="hover:bg-gray-100"
+            className={`hover:bg-gray-100 ${isMobile ? 'p-3' : 'p-2'} touch-manipulation`}
           >
             <X className="w-6 h-6" />
           </Button>
@@ -137,7 +156,7 @@ const CartSidebar = () => {
           </motion.div>
         )}
 
-        {/* Cart Items */}
+        {/* Cart Items with improved mobile layout */}
         <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-6'} ${isMobile ? 'pb-24' : ''}`}>
           {cartItems.length === 0 ? (
             <div className="text-center py-12">
@@ -158,7 +177,7 @@ const CartSidebar = () => {
                     setIsCartOpen(false);
                     navigate('/');
                   }}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 touch-manipulation"
                 >
                   Start Shopping
                 </Button>
@@ -180,7 +199,7 @@ const CartSidebar = () => {
                       <img
                         src={item.products.image}
                         alt={item.products.name}
-                        className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} object-cover rounded-lg`}
+                        className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} object-cover rounded-lg`}
                         onError={(e) => {
                           e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
                         }}
@@ -208,11 +227,11 @@ const CartSidebar = () => {
                       </div>
                       
                       <div className={`flex items-center justify-between ${isMobile ? 'mt-2' : 'mt-3'}`}>
-                        <div className={`flex items-center space-x-${isMobile ? '1' : '2'} bg-gray-100 rounded-lg p-1`}>
+                        <div className={`flex items-center space-x-${isMobile ? '2' : '2'} bg-gray-100 rounded-lg p-1`}>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} hover:bg-gray-200`}
+                            className={`${isMobile ? 'h-7 w-7' : 'h-8 w-8'} hover:bg-gray-200 touch-manipulation`}
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
                             <Minus className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
@@ -223,7 +242,7 @@ const CartSidebar = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} hover:bg-gray-200`}
+                            className={`${isMobile ? 'h-7 w-7' : 'h-8 w-8'} hover:bg-gray-200 touch-manipulation`}
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
                             <Plus className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
@@ -233,7 +252,7 @@ const CartSidebar = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-red-500 hover:text-red-700 hover:bg-red-50`}
+                          className={`${isMobile ? 'h-7 w-7' : 'h-8 w-8'} text-red-500 hover:text-red-700 hover:bg-red-50 touch-manipulation`}
                           onClick={() => handleRemoveFromCart(item.id)}
                         >
                           <Trash2 className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
@@ -247,7 +266,7 @@ const CartSidebar = () => {
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer with improved mobile spacing */}
         {cartItems.length > 0 && (
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -292,7 +311,7 @@ const CartSidebar = () => {
             )}
 
             <Button 
-              className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white ${isMobile ? 'py-2.5 text-sm' : 'py-3'} font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300`}
+              className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white ${isMobile ? 'py-3 text-sm' : 'py-3'} font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation`}
               onClick={handleCheckout}
             >
               Proceed to Checkout • ${totalPrice.toFixed(2)}
