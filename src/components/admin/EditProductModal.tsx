@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -153,13 +154,17 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         const imageUrls = galleryImages.map(img => img.image_url);
         const mainImageIndex = galleryImages.findIndex(img => img.is_main);
         console.log('Loaded gallery images:', imageUrls);
+        console.log('Main image index from database:', mainImageIndex);
         
         // Filter out sample/placeholder images
         const actualImages = imageUrls.filter(url => !url.includes('unsplash.com'));
         
         if (actualImages.length > 0) {
           setProductImages(actualImages);
-          setFeaturedImageIndex(Math.max(0, mainImageIndex));
+          // Set featured image index - ensure it's valid
+          const validMainIndex = mainImageIndex >= 0 && mainImageIndex < actualImages.length ? mainImageIndex : 0;
+          setFeaturedImageIndex(validMainIndex);
+          console.log('Set featured image index to:', validMainIndex);
         } else if (product.image && !product.image.includes('unsplash.com')) {
           setProductImages([product.image]);
           setFeaturedImageIndex(0);
@@ -180,6 +185,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
     setIsLoading(true);
     
     try {
+      console.log('Updating product with featured image index:', featuredImageIndex);
+      console.log('Product images:', productImages);
       console.log('Updating product with specifications:', productSpecs);
       
       // Calculate discount percentage if original price is provided
@@ -194,6 +201,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       // Use the featured image as main product image, or keep existing if no new images
       const mainProductImage = productImages.length > 0 ? productImages[featuredImageIndex] : product.image;
+      console.log('Setting main product image to:', mainProductImage);
 
       // Filter out empty items and specs
       const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
@@ -247,7 +255,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
           is_main: index === featuredImageIndex
         }));
 
-        console.log('Saving updated gallery data:', galleryData);
+        console.log('Saving updated gallery data with featured image:', galleryData);
 
         const { error: galleryError } = await supabase
           .from('product_galleries')
@@ -255,14 +263,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
         if (galleryError) {
           console.error('Gallery update error:', galleryError);
+          throw galleryError;
         } else {
-          console.log('Gallery updated successfully');
+          console.log('Gallery updated successfully with featured image at index:', featuredImageIndex);
         }
       }
 
       toast({
         title: "Product updated successfully",
-        description: `Updated with featured image ${featuredImageIndex + 1} of ${productImages.length} total images`
+        description: `Product updated with featured image ${featuredImageIndex + 1} of ${productImages.length} total images`
       });
 
       onClose();
@@ -283,8 +292,26 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
   };
 
   const handleFeaturedImageChange = (index: number) => {
-    console.log('Setting featured image index to:', index);
+    console.log('Featured image selection changed to index:', index);
+    console.log('Image URL at index:', productImages[index]);
     setFeaturedImageIndex(index);
+    
+    toast({
+      title: "Featured image updated",
+      description: `Image ${index + 1} is now set as the featured image`,
+    });
+  };
+
+  const handleImagesChange = (images: string[]) => {
+    console.log('Images changed in EditProductModal:', images);
+    setProductImages(images);
+    
+    // Ensure featured image index is still valid
+    if (featuredImageIndex >= images.length) {
+      const newIndex = Math.max(0, images.length - 1);
+      setFeaturedImageIndex(newIndex);
+      console.log('Adjusted featured image index to:', newIndex);
+    }
   };
 
   if (!isOpen) return null;
@@ -431,12 +458,25 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
             {/* Product Image Gallery with Featured Image Selection */}
             <div className="space-y-3">
+              <div className="bg-blue-900/20 border border-blue-600/30 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <span className="text-yellow-400 font-medium text-sm">Featured Image Selection</span>
+                </div>
+                <p className="text-gray-300 text-sm">
+                  Click the star icon on any image to set it as the featured image. 
+                  The featured image will be used as the main product display image.
+                </p>
+                {productImages.length > 0 && (
+                  <p className="text-blue-300 text-xs mt-1">
+                    Currently selected: Image {featuredImageIndex + 1} of {productImages.length}
+                  </p>
+                )}
+              </div>
+              
               <ProductImageGallery 
                 images={productImages}
-                onImagesChange={(images: string[]) => {
-                  console.log('Images changed in EditProductModal:', images);
-                  setProductImages(images);
-                }}
+                onImagesChange={handleImagesChange}
                 featuredImageIndex={featuredImageIndex}
                 onFeaturedImageChange={handleFeaturedImageChange}
                 maxImages={15}
