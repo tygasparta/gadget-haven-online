@@ -9,14 +9,11 @@ const PopupBanner = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Show banner after 3 seconds, but only if user hasn't dismissed it before
-    const hasSeenBanner = localStorage.getItem('gadgetgenie-banner-dismissed');
-    if (!hasSeenBanner) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
+    // Show banner after 3 seconds - always show for testing, remove localStorage check temporarily
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleClose = (e?: React.MouseEvent | React.TouchEvent) => {
@@ -25,6 +22,7 @@ const PopupBanner = () => {
       e.stopPropagation();
     }
     setIsVisible(false);
+    // Store dismissal in localStorage
     localStorage.setItem('gadgetgenie-banner-dismissed', 'true');
   };
 
@@ -61,10 +59,8 @@ const PopupBanner = () => {
     handleClose();
   };
 
-  // Trigger cart sidebar open event
-  const openCartSidebar = () => {
-    window.dispatchEvent(new CustomEvent('openCart'));
-  };
+  // Add debug logging
+  console.log('PopupBanner render - isVisible:', isVisible);
 
   if (!isVisible) return null;
 
