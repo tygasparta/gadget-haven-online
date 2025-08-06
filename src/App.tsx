@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import EnhancedPreloader from "@/components/EnhancedPreloader";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import MobileNavigation from "@/components/MobileNavigation";
+import CartSidebar from "@/components/CartSidebar";
 import { usePWA } from "@/hooks/usePWA";
 import { Suspense, lazy } from "react";
 
@@ -75,6 +75,7 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <PWAInstallPrompt />
+                <CartSidebar />
                 <Suspense fallback={<div></div>}>
                   <Routes>
                     <Route path="/" element={<Index />} />
