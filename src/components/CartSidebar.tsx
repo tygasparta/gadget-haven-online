@@ -74,8 +74,14 @@ const CartSidebar = () => {
     };
   }, []);
 
-  // Close cart with enhanced backdrop click handling
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  // Close cart with separate handlers for mouse and touch events
+  const handleBackdropMouseClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsCartOpen(false);
+    }
+  };
+
+  const handleBackdropTouchEnd = (e: React.TouchEvent) => {
     if (e.target === e.currentTarget) {
       setIsCartOpen(false);
     }
@@ -97,8 +103,8 @@ const CartSidebar = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black bg-opacity-50 z-50 touch-manipulation"
-        onClick={handleBackdropClick}
-        onTouchEnd={handleBackdropClick}
+        onClick={handleBackdropMouseClick}
+        onTouchEnd={handleBackdropTouchEnd}
       />
       
       {/* Cart Sidebar with improved mobile handling */}
