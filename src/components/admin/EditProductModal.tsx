@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,11 +67,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
   useEffect(() => {
     if (product) {
       console.log('Loading product data:', product);
+      
+      // Convert tax-included prices back to base prices for editing
+      const basePrice = product.price / 1.02;
+      const baseOriginalPrice = product.original_price ? product.original_price / 1.02 : null;
+      
       setEditProduct({
         name: product.name || '',
         description: product.description || '',
-        price: product.price.toString(),
-        original_price: product.original_price?.toString() || '',
+        price: basePrice.toFixed(2),
+        original_price: baseOriginalPrice?.toFixed(2) || '',
         category: product.category || '',
         brand: product.brand || '',
         stock: product.stock?.toString() || '',
@@ -81,37 +85,31 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         discount_percentage: product.discount_percentage?.toString() || ''
       });
       
-      // Load colors
       if (product.colors && Array.isArray(product.colors)) {
         setSelectedColors(product.colors as Color[]);
       } else {
         setSelectedColors([]);
       }
       
-      // Load tags
       if (product.tags && Array.isArray(product.tags)) {
         setProductTags(product.tags);
       } else {
         setProductTags([]);
       }
       
-      // Load what's in the box
       if (product.whats_in_box && Array.isArray(product.whats_in_box)) {
         setWhatsInBox(product.whats_in_box);
       } else {
         setWhatsInBox(['']);
       }
       
-      // Load specifications
       console.log('Raw specifications from product:', product.specifications);
       if (product.specifications) {
         try {
           let specs = product.specifications;
-          // If it's a string, parse it
           if (typeof specs === 'string') {
             specs = JSON.parse(specs);
           }
-          // Ensure it's an array of objects with key and value
           if (Array.isArray(specs)) {
             const validSpecs = specs.filter(spec => 
               spec && typeof spec === 'object' && 'key' in spec && 'value' in spec
@@ -129,7 +127,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         setProductSpecs([]);
       }
       
-      // Load existing gallery images
       loadGalleryImages();
     }
   }, [product]);
@@ -145,7 +142,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       if (error) {
         console.error('Error loading gallery images:', error);
-        // Fallback to main product image if it exists and is not a sample image
         if (product.image && !product.image.includes('unsplash.com')) {
           setProductImages([product.image]);
           setFeaturedImageIndex(0);
@@ -156,12 +152,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         console.log('Loaded gallery images:', imageUrls);
         console.log('Main image index from database:', mainImageIndex);
         
-        // Filter out sample/placeholder images
         const actualImages = imageUrls.filter(url => !url.includes('unsplash.com'));
         
         if (actualImages.length > 0) {
           setProductImages(actualImages);
-          // Set featured image index - ensure it's valid
           const validMainIndex = mainImageIndex >= 0 && mainImageIndex < actualImages.length ? mainImageIndex : 0;
           setFeaturedImageIndex(validMainIndex);
           console.log('Set featured image index to:', validMainIndex);
@@ -172,7 +166,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       }
     } catch (error) {
       console.error('Failed to load gallery images:', error);
-      // Fallback to main product image if it's not a sample
       if (product.image && !product.image.includes('unsplash.com')) {
         setProductImages([product.image]);
         setFeaturedImageIndex(0);
@@ -189,21 +182,27 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       console.log('Product images:', productImages);
       console.log('Updating product with specifications:', productSpecs);
       
+      // Apply 2% tax to the entered prices
+      const basePrice = parseFloat(editProduct.price);
+      const taxIncludedPrice = basePrice * 1.02;
+      
+      let taxIncludedOriginalPrice = null;
+      if (editProduct.original_price) {
+        const baseOriginalPrice = parseFloat(editProduct.original_price);
+        taxIncludedOriginalPrice = baseOriginalPrice * 1.02;
+      }
+
       // Calculate discount percentage if original price is provided
       let calculatedDiscount = 0;
-      if (editProduct.original_price && editProduct.price) {
-        const original = parseFloat(editProduct.original_price);
-        const current = parseFloat(editProduct.price);
-        calculatedDiscount = Math.round(((original - current) / original) * 100);
+      if (taxIncludedOriginalPrice && taxIncludedPrice) {
+        calculatedDiscount = Math.round(((taxIncludedOriginalPrice - taxIncludedPrice) / taxIncludedOriginalPrice) * 100);
       } else if (editProduct.discount_percentage) {
         calculatedDiscount = parseInt(editProduct.discount_percentage);
       }
 
-      // Use the featured image as main product image, or keep existing if no new images
       const mainProductImage = productImages.length > 0 ? productImages[featuredImageIndex] : product.image;
       console.log('Setting main product image to:', mainProductImage);
 
-      // Filter out empty items and specs
       const validWhatsInBox = whatsInBox.filter(item => item.trim() !== '');
       const validSpecs = productSpecs.filter(spec => 
         spec && spec.key && spec.value && spec.key.trim() !== '' && spec.value.trim() !== ''
@@ -214,8 +213,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       const updateData = {
         name: editProduct.name,
         description: editProduct.description,
-        price: parseFloat(editProduct.price),
-        original_price: editProduct.original_price ? parseFloat(editProduct.original_price) : null,
+        price: taxIncludedPrice, // Price with 2% tax included
+        original_price: taxIncludedOriginalPrice, // Original price with 2% tax included
         image: mainProductImage,
         category: editProduct.category,
         brand: editProduct.brand,
@@ -229,7 +228,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         specifications: validSpecs.length > 0 ? JSON.parse(JSON.stringify(validSpecs)) : null,
       };
 
-      console.log('Update data being sent:', updateData);
+      console.log('Update data being sent (with 2% tax included):', updateData);
 
       const { error } = await supabase
         .from('products')
@@ -241,7 +240,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         throw error;
       }
 
-      // Update gallery images - first clear existing ones, then add new ones
       await supabase
         .from('product_galleries')
         .delete()
@@ -271,12 +269,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: `Product updated with featured image ${featuredImageIndex + 1} of ${productImages.length} total images`
+        description: `Product updated with 2% tax included (${basePrice.toFixed(2)} + tax = ${taxIncludedPrice.toFixed(2)})`
       });
 
       onClose();
       
-      // Refresh products list
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', product.id] });
     } catch (error: any) {
@@ -306,7 +303,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
     console.log('Images changed in EditProductModal:', images);
     setProductImages(images);
     
-    // Ensure featured image index is still valid
     if (featuredImageIndex >= images.length) {
       const newIndex = Math.max(0, images.length - 1);
       setFeaturedImageIndex(newIndex);
@@ -332,6 +328,18 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Tax Notice */}
+            <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                <span className="text-green-400 font-medium text-sm">Automatic Tax Inclusion</span>
+              </div>
+              <p className="text-gray-300 text-sm">
+                Prices shown are base prices (without tax). A 2% tax will be automatically added. 
+                Current price includes tax: ${(parseFloat(editProduct.price || '0') * 1.02).toFixed(2)}
+              </p>
+            </div>
+
             {/* Basic Info - Responsive Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -368,7 +376,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             {/* Pricing - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price" className="text-gray-300">Price</Label>
+                <Label htmlFor="price" className="text-gray-300">Price (before tax)</Label>
                 <Input
                   id="price"
                   type="number"
@@ -378,9 +386,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   className="bg-gray-800 border-gray-600 text-white"
                   required
                 />
+                {editProduct.price && (
+                  <p className="text-xs text-green-400 mt-1">
+                    Final price: ${(parseFloat(editProduct.price) * 1.02).toFixed(2)}
+                  </p>
+                )}
               </div>
               <div>
-                <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
+                <Label htmlFor="original_price" className="text-gray-300">Original Price (before tax)</Label>
                 <Input
                   id="original_price"
                   type="number"
@@ -389,6 +402,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   onChange={(e) => setEditProduct({...editProduct, original_price: e.target.value})}
                   className="bg-gray-800 border-gray-600 text-white"
                 />
+                {editProduct.original_price && (
+                  <p className="text-xs text-green-400 mt-1">
+                    Final original price: ${(parseFloat(editProduct.original_price) * 1.02).toFixed(2)}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="stock" className="text-gray-300">Stock</Label>

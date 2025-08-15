@@ -1,11 +1,22 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Shield, Smartphone, Package, Truck, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { CartItem } from '@/hooks/useCart';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingCart, Package, Truck, CreditCard } from 'lucide-react';
+
+interface CartItem {
+  id: string;
+  quantity: number;
+  products: {
+    id: number;
+    name: string;
+    price: number;
+    image: string;
+  };
+}
 
 interface OrderSummarySectionProps {
   cartItems: CartItem[];
@@ -30,148 +41,126 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
   isProcessing,
   onSubmit
 }) => {
-  const getPaymentIcon = () => {
-    switch (paymentMethod) {
-      case 'web': return <Shield className="w-5 h-5 text-green-600" />;
-      case 'mobile': return <Smartphone className="w-5 h-5 text-blue-600" />;
-      case 'cod': return <Package className="w-5 h-5 text-orange-600" />;
-      default: return <Shield className="w-5 h-5 text-green-600" />;
-    }
-  };
-
-  const getPaymentText = () => {
-    switch (paymentMethod) {
-      case 'web': return 'Secure payment via Paynow';
-      case 'mobile': return `Mobile payment via ${mobileMethod === 'ecocash' ? 'EcoCash' : 'OneMoney'}`;
-      case 'cod': return 'Pay cash on delivery';
-      default: return 'Secure payment via Paynow';
-    }
-  };
-
-  const getPaymentBgColor = () => {
-    switch (paymentMethod) {
-      case 'web': return 'bg-green-50 border-green-200';
-      case 'mobile': return 'bg-blue-50 border-blue-200';
-      case 'cod': return 'bg-orange-50 border-orange-200';
-      default: return 'bg-green-50 border-green-200';
-    }
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.4 }}
+      transition={{ delay: 0.3 }}
     >
-      <Card className="sticky top-4 shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-        
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-gray-800">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <ShoppingBag className="w-5 h-5 text-indigo-600" />
-            </div>
+      <Card className="sticky top-4 bg-white border-0 shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+          <CardTitle className="flex items-center space-x-2 text-gray-800">
+            <ShoppingCart className="w-5 h-5 text-blue-600" />
             <span>Order Summary</span>
           </CardTitle>
         </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {/* Order Items */}
-          <div className="space-y-4">
+        <CardContent className="p-6 space-y-4">
+          {/* Cart Items */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2 text-sm font-medium text-gray-600">
+              <Package className="w-4 h-4" />
+              <span>{cartItems.length} Items</span>
+            </div>
+            
             {cartItems.map((item) => (
-              <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src={item.products.image} 
+              <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="relative">
+                  <img
+                    src={item.products.image}
                     alt={item.products.name}
-                    className="w-12 h-12 object-cover rounded-lg"
+                    className="w-12 h-12 object-cover rounded-md"
                   />
-                  <div>
-                    <p className="font-medium text-sm text-gray-800">{item.products.name}</p>
-                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs bg-blue-600 text-white"
+                  >
+                    {item.quantity}
+                  </Badge>
                 </div>
-                <span className="font-semibold text-gray-800">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {item.products.name}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    ${item.products.price.toFixed(2)} each
+                  </p>
+                </div>
+                <div className="text-sm font-semibold text-gray-900">
                   ${(item.products.price * item.quantity).toFixed(2)}
-                </span>
+                </div>
               </div>
             ))}
           </div>
-          
+
           <Separator />
-          
-          {/* Price Breakdown */}
+
+          {/* Order Totals */}
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
+              <span className="text-gray-600">Subtotal (tax included)</span>
               <span className="font-medium">${totalPrice.toFixed(2)}</span>
             </div>
+            
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Shipping</span>
+              <div className="flex items-center space-x-1">
+                <Truck className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-600">Shipping</span>
+              </div>
               <span className="font-medium">
-                {shipping === 0 ? (
-                  <span className="text-green-600 font-semibold">FREE</span>
-                ) : (
-                  `$${shipping.toFixed(2)}`
-                )}
+                {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax</span>
-              <span className="font-medium">${tax.toFixed(2)}</span>
+
+            {/* Remove tax display since it's now included in product prices */}
+
+            <Separator />
+            
+            <div className="flex justify-between text-lg font-bold text-gray-900">
+              <span>Total</span>
+              <span>${finalTotal.toFixed(2)}</span>
             </div>
+
+            {shipping === 0 && (
+              <p className="text-xs text-green-600 text-center">
+                🎉 You saved $3.50 on shipping!
+              </p>
+            )}
           </div>
-          
+
           <Separator />
-          
-          {/* Total */}
-          <div className="flex justify-between items-center text-lg font-bold">
-            <span className="text-gray-800">Total</span>
-            <span className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              ${finalTotal.toFixed(2)}
-            </span>
+
+          {/* Payment Method Display */}
+          <div className="flex items-center space-x-2 text-sm">
+            <CreditCard className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-600">Payment:</span>
+            <Badge variant="outline" className="capitalize">
+              {paymentMethod === 'dischub' ? 'Dischub Payment' : 
+               paymentMethod === 'cod' ? 'Cash on Delivery' : 
+               mobileMethod || paymentMethod}
+            </Badge>
           </div>
 
-          {/* Payment Info */}
-          <div className={`${getPaymentBgColor()} border rounded-xl p-4 flex items-center space-x-3`}>
-            {getPaymentIcon()}
-            <span className="text-sm font-medium text-gray-700">{getPaymentText()}</span>
-          </div>
-
-          {/* Shipping Info */}
-          {totalPrice >= 50 ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center space-x-3">
-              <Truck className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">FREE shipping included! 🎉</span>
-            </div>
-          ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center space-x-3">
-              <Truck className="w-5 h-5 text-gray-600" />
-              <span className="text-sm text-gray-700">
-                Add <span className="font-semibold">${(50 - totalPrice).toFixed(2)}</span> more for FREE shipping
-              </span>
-            </div>
-          )}
-
-          {/* Complete Order Button */}
-          <Button 
+          {/* Action Button */}
+          <Button
             onClick={onSubmit}
             disabled={isProcessing}
-            className="w-full h-14 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
           >
             {isProcessing ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 <span>Processing...</span>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                <span>
-                  {paymentMethod === 'cod' ? 'Confirm Order' : 'Complete Order'} - ${finalTotal.toFixed(2)}
-                </span>
-              </div>
+              <span>Complete Order • ${finalTotal.toFixed(2)}</span>
             )}
           </Button>
+
+          {/* Security Notice */}
+          <div className="text-xs text-gray-500 text-center space-y-1">
+            <p>🔒 Your payment information is secure and encrypted</p>
+            <p>✅ All prices include applicable taxes</p>
+          </div>
         </CardContent>
       </Card>
     </motion.div>

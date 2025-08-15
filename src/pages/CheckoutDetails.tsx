@@ -37,7 +37,6 @@ const CheckoutDetails = () => {
     country: 'Zimbabwe'
   });
 
-  // Initialize form data when user is available
   useEffect(() => {
     if (user?.email) {
       setFormData(prev => ({
@@ -47,7 +46,6 @@ const CheckoutDetails = () => {
     }
   }, [user]);
 
-  // Debug logs
   useEffect(() => {
     console.log('CheckoutDetails - User:', user?.email);
     console.log('CheckoutDetails - Cart loading:', cartLoading);
@@ -55,7 +53,6 @@ const CheckoutDetails = () => {
     console.log('CheckoutDetails - Cart error:', cartError);
   }, [user, cartLoading, cartItems, cartError]);
 
-  // Check authentication
   useEffect(() => {
     if (!cartLoading && !user) {
       console.log('No user found, redirecting to auth');
@@ -63,7 +60,6 @@ const CheckoutDetails = () => {
     }
   }, [user, cartLoading, navigate]);
 
-  // Check cart items
   useEffect(() => {
     if (!cartLoading && user && cartItems.length === 0) {
       console.log('No cart items found, redirecting to checkout');
@@ -71,7 +67,6 @@ const CheckoutDetails = () => {
     }
   }, [cartLoading, user, cartItems, navigate]);
 
-  // Calculate totals
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => {
       return total + (item.products.price * item.quantity);
@@ -80,8 +75,7 @@ const CheckoutDetails = () => {
 
   const totalPrice = getTotalPrice();
   const shipping = totalPrice >= 50 ? 0 : 3.50;
-  const tax = totalPrice * 0.08;
-  const finalTotal = totalPrice + shipping + tax;
+  const finalTotal = totalPrice + shipping;
 
   const handleDischubPayment = async (currency: 'USD') => {
     if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
@@ -96,7 +90,6 @@ const CheckoutDetails = () => {
     try {
       console.log('Starting Dischub payment process...');
       
-      // Create order in database first
       const orderData = {
         user_id: user.id,
         total_amount: finalTotal,
@@ -133,7 +126,6 @@ const CheckoutDetails = () => {
 
       console.log('Order created successfully:', order);
 
-      // Create order items
       const orderItems = cartItems.map(item => ({
         order_id: order.id,
         product_id: item.product_id,
@@ -152,7 +144,6 @@ const CheckoutDetails = () => {
 
       console.log('Order items created successfully');
 
-      // Prepare payment data for Dischub
       const paymentData = {
         order_id: `ORDER-${order.id}`,
         amount: finalTotal,
@@ -186,7 +177,6 @@ const CheckoutDetails = () => {
     try {
       console.log('Starting cash on delivery process...');
       
-      // Create order in database
       const orderData = {
         user_id: user.id,
         total_amount: finalTotal,
@@ -223,7 +213,6 @@ const CheckoutDetails = () => {
 
       console.log('COD order created successfully:', order);
 
-      // Create order items
       const orderItems = cartItems.map(item => ({
         order_id: order.id,
         product_id: item.product_id,
@@ -271,7 +260,6 @@ const CheckoutDetails = () => {
     }
   };
 
-  // Show loading screen
   if (cartLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -287,7 +275,6 @@ const CheckoutDetails = () => {
     );
   }
 
-  // Show error state
   if (cartError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -305,7 +292,6 @@ const CheckoutDetails = () => {
     );
   }
 
-  // Show empty cart state
   if (!cartItems || cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -323,7 +309,6 @@ const CheckoutDetails = () => {
     );
   }
 
-  // Don't render if user is not available
   if (!user) {
     return null;
   }
@@ -333,7 +318,6 @@ const CheckoutDetails = () => {
       <Header />
       
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Enhanced Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -361,7 +345,6 @@ const CheckoutDetails = () => {
         </motion.div>
 
         <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-5 gap-8'}`}>
-          {/* Form Sections */}
           <div className={`${isMobile ? '' : 'col-span-3'} space-y-6`}>
             <ContactInformationSection 
               formData={formData}
@@ -388,13 +371,12 @@ const CheckoutDetails = () => {
             />
           </div>
 
-          {/* Order Summary */}
           <div className={`${isMobile ? '' : 'col-span-2'}`}>
             <OrderSummarySection 
               cartItems={cartItems}
               totalPrice={totalPrice}
               shipping={shipping}
-              tax={tax}
+              tax={0}
               finalTotal={finalTotal}
               paymentMethod={paymentMethod}
               mobileMethod=""
