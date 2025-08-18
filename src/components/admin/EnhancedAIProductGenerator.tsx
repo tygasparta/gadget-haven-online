@@ -184,12 +184,16 @@ Only return the JSON object, no additional text.`;
       const detectedBrand = detectBrand(parsedData.name || '', parsedData.description || '');
       const generatedColors = generateColors(parsedData.name || '', parsedData.category || '');
       
+      // Apply 2% tax to the base price
+      const basePrice = typeof parsedData.price === 'string' ? parseFloat(parsedData.price) : (parsedData.price || 99.99);
+      const priceWithTax = parseFloat((basePrice * 1.02).toFixed(2));
+
       const enhancedData = {
         name: parsedData.name,
         description: parsedData.description,
         category: parsedData.category || 'Electronics',
         brand: parsedData.brand || detectedBrand,
-        price: typeof parsedData.price === 'string' ? parseFloat(parsedData.price) : (parsedData.price || 99.99),
+        price: priceWithTax,
         features: Array.isArray(parsedData.features) ? parsedData.features : [],
         whats_in_box: Array.isArray(parsedData.whats_in_box) ? parsedData.whats_in_box : [
           parsedData.name || 'Product',
@@ -211,7 +215,7 @@ Only return the JSON object, no additional text.`;
         
         toast({
           title: "✨ AI Generation Complete!",
-          description: `Successfully generated "${parsedData.name}" with brand: ${enhancedData.brand}`,
+          description: `Successfully generated "${parsedData.name}" with brand: ${enhancedData.brand} (2% tax included: $${enhancedData.price})`,
         });
       }, 1000);
       

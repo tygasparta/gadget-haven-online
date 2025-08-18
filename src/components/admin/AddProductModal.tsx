@@ -15,6 +15,7 @@ import ColorSelector from './ColorSelector';
 import TagsInput from './TagsInput';
 import WhatsInBoxInput from './WhatsInBoxInput';
 import ProductSpecsInput from './ProductSpecsInput';
+import EnhancedAIProductGenerator from './EnhancedAIProductGenerator';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   const [productTags, setProductTags] = useState<string[]>([]);
   const [whatsInBox, setWhatsInBox] = useState<string[]>(['']);
   const [productSpecs, setProductSpecs] = useState<Array<{key: string, value: string}>>([]);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -198,6 +200,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       setProductTags([]);
       setWhatsInBox(['']);
       setProductSpecs([]);
+      setShowAIGenerator(false);
       
       onClose();
       
@@ -238,13 +241,54 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     }
   };
 
+  const handleAIGenerate = (generatedData: any) => {
+    // The AI generator already applies 2% tax, so we use the price directly
+    setNewProduct({
+      ...newProduct,
+      name: generatedData.name || '',
+      description: generatedData.description || '',
+      price: generatedData.price ? generatedData.price.toString() : '',
+      brand: generatedData.brand || '',
+      category: generatedData.category || '',
+    });
+    
+    if (generatedData.tags && Array.isArray(generatedData.tags)) {
+      setProductTags(generatedData.tags);
+    }
+    
+    if (generatedData.whats_in_box && Array.isArray(generatedData.whats_in_box)) {
+      setWhatsInBox(generatedData.whats_in_box);
+    }
+    
+    if (generatedData.colors && Array.isArray(generatedData.colors)) {
+      setSelectedColors(generatedData.colors);
+    }
+    
+    setShowAIGenerator(false);
+    
+    toast({
+      title: "AI Generation Complete!",
+      description: `Product "${generatedData.name}" has been generated with 2% tax included ($${generatedData.price})`,
+    });
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700 text-white">
         <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-gray-900 z-10 border-b border-gray-700">
-          <CardTitle className="text-white">Add New Product</CardTitle>
+          <div className="flex items-center space-x-4">
+            <CardTitle className="text-white">Add New Product</CardTitle>
+            <Button
+              onClick={() => setShowAIGenerator(!showAIGenerator)}
+              variant="outline"
+              size="sm"
+              className="bg-purple-600 hover:bg-purple-700 text-white border-purple-500"
+            >
+              ✨ AI Generate
+            </Button>
+          </div>
           <Button
             onClick={onClose}
             variant="ghost"
@@ -255,6 +299,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
           </Button>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
+          {showAIGenerator && (
+            <div className="mb-6">
+              <EnhancedAIProductGenerator onGenerate={handleAIGenerate} />
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Tax Notice */}
             <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4">
