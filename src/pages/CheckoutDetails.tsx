@@ -74,7 +74,7 @@ const CheckoutDetails = () => {
   };
 
   const totalPrice = getTotalPrice();
-  const shipping = totalPrice >= 50 ? 0 : 3.50;
+  const shipping = 0; // Free shipping for all orders
   const finalTotal = totalPrice + shipping;
 
   const handleDischubPayment = async (currency: 'USD') => {
