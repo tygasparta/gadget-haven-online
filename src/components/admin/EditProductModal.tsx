@@ -68,15 +68,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
     if (product) {
       console.log('Loading product data:', product);
       
-      // Convert tax-included prices back to base prices for editing
-      const basePrice = product.price / 1.02;
-      const baseOriginalPrice = product.original_price ? product.original_price / 1.02 : null;
-      
       setEditProduct({
         name: product.name || '',
         description: product.description || '',
-        price: basePrice.toFixed(2),
-        original_price: baseOriginalPrice?.toFixed(2) || '',
+        price: product.price?.toString() || '',
+        original_price: product.original_price?.toString() || '',
         category: product.category || '',
         brand: product.brand || '',
         stock: product.stock?.toString() || '',
@@ -182,20 +178,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       console.log('Product images:', productImages);
       console.log('Updating product with specifications:', productSpecs);
       
-      // Apply 2% tax to the entered prices
-      const basePrice = parseFloat(editProduct.price);
-      const taxIncludedPrice = basePrice * 1.02;
-      
-      let taxIncludedOriginalPrice = null;
-      if (editProduct.original_price) {
-        const baseOriginalPrice = parseFloat(editProduct.original_price);
-        taxIncludedOriginalPrice = baseOriginalPrice * 1.02;
-      }
-
       // Calculate discount percentage if original price is provided
       let calculatedDiscount = 0;
-      if (taxIncludedOriginalPrice && taxIncludedPrice) {
-        calculatedDiscount = Math.round(((taxIncludedOriginalPrice - taxIncludedPrice) / taxIncludedOriginalPrice) * 100);
+      const finalPrice = parseFloat(editProduct.price);
+      const finalOriginalPrice = editProduct.original_price ? parseFloat(editProduct.original_price) : null;
+      
+      if (finalOriginalPrice && finalPrice) {
+        calculatedDiscount = Math.round(((finalOriginalPrice - finalPrice) / finalOriginalPrice) * 100);
       } else if (editProduct.discount_percentage) {
         calculatedDiscount = parseInt(editProduct.discount_percentage);
       }
@@ -213,8 +202,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
       const updateData = {
         name: editProduct.name,
         description: editProduct.description,
-        price: taxIncludedPrice, // Price with 2% tax included
-        original_price: taxIncludedOriginalPrice, // Original price with 2% tax included
+        price: finalPrice,
+        original_price: finalOriginalPrice,
         image: mainProductImage,
         category: editProduct.category,
         brand: editProduct.brand,
@@ -228,7 +217,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         specifications: validSpecs.length > 0 ? JSON.parse(JSON.stringify(validSpecs)) : null,
       };
 
-      console.log('Update data being sent (with 2% tax included):', updateData);
+      console.log('Update data being sent:', updateData);
 
       const { error } = await supabase
         .from('products')
@@ -269,7 +258,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
 
       toast({
         title: "Product updated successfully",
-        description: `Product updated with 2% tax included (${basePrice.toFixed(2)} + tax = ${taxIncludedPrice.toFixed(2)})`
+        description: `Product "${editProduct.name}" has been updated`
       });
 
       onClose();
@@ -328,17 +317,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tax Notice */}
-            <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                <span className="text-green-400 font-medium text-sm">Automatic Tax Inclusion</span>
-              </div>
-              <p className="text-gray-300 text-sm">
-                Prices shown are base prices (without tax). A 2% tax will be automatically added. 
-                Current price includes tax: ${(parseFloat(editProduct.price || '0') * 1.02).toFixed(2)}
-              </p>
-            </div>
 
             {/* Basic Info - Responsive Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,7 +354,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
             {/* Pricing - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price" className="text-gray-300">Price (before tax)</Label>
+                <Label htmlFor="price" className="text-gray-300">Price</Label>
                 <Input
                   id="price"
                   type="number"
@@ -386,14 +364,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   className="bg-gray-800 border-gray-600 text-white"
                   required
                 />
-                {editProduct.price && (
-                  <p className="text-xs text-green-400 mt-1">
-                    Final price: ${(parseFloat(editProduct.price) * 1.02).toFixed(2)}
-                  </p>
-                )}
               </div>
               <div>
-                <Label htmlFor="original_price" className="text-gray-300">Original Price (before tax)</Label>
+                <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
                 <Input
                   id="original_price"
                   type="number"
@@ -402,11 +375,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, isOpen, on
                   onChange={(e) => setEditProduct({...editProduct, original_price: e.target.value})}
                   className="bg-gray-800 border-gray-600 text-white"
                 />
-                {editProduct.original_price && (
-                  <p className="text-xs text-green-400 mt-1">
-                    Final original price: ${(parseFloat(editProduct.original_price) * 1.02).toFixed(2)}
-                  </p>
-                )}
               </div>
               <div>
                 <Label htmlFor="stock" className="text-gray-300">Stock</Label>
