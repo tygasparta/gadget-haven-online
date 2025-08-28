@@ -92,20 +92,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       console.log('Creating product with featured image index:', featuredImageIndex);
       console.log('Product images:', productImages);
       
-      // Apply 2% tax to prices automatically
-      const basePrice = parseFloat(newProduct.price);
-      const taxIncludedPrice = basePrice * 1.02;
-      
-      let taxIncludedOriginalPrice = null;
-      if (newProduct.original_price) {
-        const baseOriginalPrice = parseFloat(newProduct.original_price);
-        taxIncludedOriginalPrice = baseOriginalPrice * 1.02;
-      }
-
       // Calculate discount percentage if original price is provided
       let calculatedDiscount = 0;
-      if (taxIncludedOriginalPrice && taxIncludedPrice) {
-        calculatedDiscount = Math.round(((taxIncludedOriginalPrice - taxIncludedPrice) / taxIncludedOriginalPrice) * 100);
+      const finalPrice = parseFloat(newProduct.price);
+      const finalOriginalPrice = newProduct.original_price ? parseFloat(newProduct.original_price) : null;
+      
+      if (finalOriginalPrice && finalPrice) {
+        calculatedDiscount = Math.round(((finalOriginalPrice - finalPrice) / finalOriginalPrice) * 100);
       } else if (newProduct.discount_percentage) {
         calculatedDiscount = parseInt(newProduct.discount_percentage);
       }
@@ -123,8 +116,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
       const productData = {
         name: newProduct.name,
         description: newProduct.description,
-        price: taxIncludedPrice, // Price with 2% tax included
-        original_price: taxIncludedOriginalPrice, // Original price with 2% tax included
+        price: finalPrice,
+        original_price: finalOriginalPrice,
         image: mainProductImage,
         category: newProduct.category,
         brand: newProduct.brand,
@@ -138,7 +131,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
         specifications: validSpecs.length > 0 ? JSON.parse(JSON.stringify(validSpecs)) : null,
       };
 
-      console.log('Product data being sent (with 2% tax included):', productData);
+      console.log('Product data being sent:', productData);
 
       const { data: product, error } = await supabase
         .from('products')
@@ -178,7 +171,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
 
       toast({
         title: "Product created successfully",
-        description: `Product created with 2% tax included in price (${basePrice.toFixed(2)} + tax = ${taxIncludedPrice.toFixed(2)})`
+        description: `Product "${newProduct.name}" has been added to the catalog`
       });
 
       // Reset form
@@ -242,7 +235,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
   };
 
   const handleAIGenerate = (generatedData: any) => {
-    // The AI generator already applies 2% tax, so we use the price directly
     setNewProduct({
       ...newProduct,
       name: generatedData.name || '',
@@ -268,7 +260,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     
     toast({
       title: "AI Generation Complete!",
-      description: `Product "${generatedData.name}" has been generated with 2% tax included ($${generatedData.price})`,
+      description: `Product "${generatedData.name}" has been generated ($${generatedData.price})`,
     });
   };
 
@@ -305,16 +297,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tax Notice */}
-            <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                <span className="text-green-400 font-medium text-sm">Automatic Tax Inclusion</span>
-              </div>
-              <p className="text-gray-300 text-sm">
-                A 2% tax will be automatically added to the entered price. The final price will be calculated as: entered price × 1.02
-              </p>
-            </div>
 
             {/* Basic Info - Responsive Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -352,7 +334,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
             {/* Pricing - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price" className="text-gray-300">Price (before tax)</Label>
+                <Label htmlFor="price" className="text-gray-300">Price</Label>
                 <Input
                   id="price"
                   type="number"
@@ -362,14 +344,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   className="bg-gray-800 border-gray-600 text-white"
                   required
                 />
-                {newProduct.price && (
-                  <p className="text-xs text-green-400 mt-1">
-                    Final price: ${(parseFloat(newProduct.price) * 1.02).toFixed(2)}
-                  </p>
-                )}
               </div>
               <div>
-                <Label htmlFor="original_price" className="text-gray-300">Original Price (before tax)</Label>
+                <Label htmlFor="original_price" className="text-gray-300">Original Price</Label>
                 <Input
                   id="original_price"
                   type="number"
@@ -378,11 +355,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
                   onChange={(e) => setNewProduct({...newProduct, original_price: e.target.value})}
                   className="bg-gray-800 border-gray-600 text-white"
                 />
-                {newProduct.original_price && (
-                  <p className="text-xs text-green-400 mt-1">
-                    Final original price: ${(parseFloat(newProduct.original_price) * 1.02).toFixed(2)}
-                  </p>
-                )}
               </div>
               <div>
                 <Label htmlFor="stock" className="text-gray-300">Stock</Label>
