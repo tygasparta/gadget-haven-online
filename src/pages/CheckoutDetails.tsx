@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import ContactInformationSection from '@/components/checkout/ContactInformationSection';
 import ShippingAddressSection from '@/components/checkout/ShippingAddressSection';
 import PaymentMethodSection from '@/components/checkout/PaymentMethodSection';
+import ShippingMethodSection from '@/components/checkout/ShippingMethodSection';
 import OrderSummarySection from '@/components/checkout/OrderSummarySection';
 
 const CheckoutDetails = () => {
@@ -27,6 +28,7 @@ const CheckoutDetails = () => {
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
+  const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
@@ -81,15 +83,22 @@ const CheckoutDetails = () => {
     return getSubtotal() + getTaxAmount();
   };
 
+  const getShippingCost = () => {
+    return shippingMethod === 'shipping' ? 5.00 : 0;
+  };
+
   const totalPrice = getTotalPrice();
-  const shipping = 0; // Free shipping for all orders
+  const shipping = getShippingCost();
   const finalTotal = totalPrice + shipping;
 
   const handleDischubPayment = async (currency: 'USD') => {
-    if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
+    if (!formData.firstName || !formData.lastName || 
+        (shippingMethod === 'shipping' && (!formData.address || !formData.city))) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: shippingMethod === 'shipping' 
+          ? "Please fill in all required fields including shipping address"
+          : "Please fill in all required fields",
         variant: "destructive"
       });
       return;
@@ -103,20 +112,21 @@ const CheckoutDetails = () => {
         total_amount: finalTotal,
         status: 'pending',
         payment_method: 'dischub',
-        shipping_address: {
+        shipping_method: shippingMethod,
+        shipping_address: shippingMethod === 'shipping' ? {
           firstName: formData.firstName,
           lastName: formData.lastName,
           address: formData.address,
           city: formData.city,
           zipCode: formData.zipCode,
           country: formData.country
-        },
+        } : null,
         billing_address: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          address: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
+          address: formData.address || 'Shop Collection',
+          city: formData.city || 'Shop Location',
+          zipCode: formData.zipCode || '00000',
           country: formData.country
         }
       };
@@ -173,10 +183,13 @@ const CheckoutDetails = () => {
   };
 
   const handleCashOnDelivery = async () => {
-    if (!formData.firstName || !formData.lastName || !formData.address || !formData.city) {
+    if (!formData.firstName || !formData.lastName || 
+        (shippingMethod === 'shipping' && (!formData.address || !formData.city))) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: shippingMethod === 'shipping' 
+          ? "Please fill in all required fields including shipping address"
+          : "Please fill in all required fields",
         variant: "destructive"
       });
       return;
@@ -190,20 +203,21 @@ const CheckoutDetails = () => {
         total_amount: finalTotal,
         status: 'confirmed',
         payment_method: 'cash_on_delivery',
-        shipping_address: {
+        shipping_method: shippingMethod,
+        shipping_address: shippingMethod === 'shipping' ? {
           firstName: formData.firstName,
           lastName: formData.lastName,
           address: formData.address,
           city: formData.city,
           zipCode: formData.zipCode,
           country: formData.country
-        },
+        } : null,
         billing_address: {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          address: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
+          address: formData.address || 'Shop Collection',
+          city: formData.city || 'Shop Location',
+          zipCode: formData.zipCode || '00000',
           country: formData.country
         }
       };
@@ -359,12 +373,19 @@ const CheckoutDetails = () => {
               setFormData={setFormData}
             />
             
-            <ShippingAddressSection 
-              formData={formData}
-              setFormData={setFormData}
+            <ShippingMethodSection 
+              shippingMethod={shippingMethod}
+              setShippingMethod={setShippingMethod}
             />
             
-            <PaymentMethodSection 
+            {shippingMethod === 'shipping' && (
+              <ShippingAddressSection 
+                formData={formData}
+                setFormData={setFormData}
+              />
+            )}
+            
+            <PaymentMethodSection
               paymentMethod={paymentMethod}
               setPaymentMethod={setPaymentMethod}
               mobileMethod=""

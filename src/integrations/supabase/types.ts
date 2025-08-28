@@ -300,6 +300,7 @@ export type Database = {
           payment_method: string | null
           payment_reference: string | null
           shipping_address: Json | null
+          shipping_method: string | null
           status: string | null
           total_amount: number
           updated_at: string | null
@@ -312,6 +313,7 @@ export type Database = {
           payment_method?: string | null
           payment_reference?: string | null
           shipping_address?: Json | null
+          shipping_method?: string | null
           status?: string | null
           total_amount: number
           updated_at?: string | null
@@ -324,6 +326,7 @@ export type Database = {
           payment_method?: string | null
           payment_reference?: string | null
           shipping_address?: Json | null
+          shipping_method?: string | null
           status?: string | null
           total_amount?: number
           updated_at?: string | null

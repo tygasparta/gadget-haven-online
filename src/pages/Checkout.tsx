@@ -30,6 +30,7 @@ import ProductColorSelector from '@/components/ProductColorSelector';
 import TabletOptimizedBanners from '@/components/TabletOptimizedBanners';
 import OneClickCheckout from '@/components/OneClickCheckout';
 import ProductComparison from '@/components/ProductComparison';
+import ShippingMethodSection from '@/components/checkout/ShippingMethodSection';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Checkout = () => {
@@ -43,6 +44,7 @@ const Checkout = () => {
   
   const [selectedColors, setSelectedColors] = useState<Record<string, string>>({});
   const [showComparison, setShowComparison] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
 
   React.useEffect(() => {
     if (!user) {
@@ -85,11 +87,19 @@ const Checkout = () => {
     }, 0);
   };
 
+  const getShippingCost = () => {
+    return shippingMethod === 'shipping' ? 5.00 : 0;
+  };
+
+  const getTaxAmount = () => {
+    return getTotalPrice() * 0.02; // 2% tax
+  };
+
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
   const savings = getSavings();
-  const shipping = 0; // Free shipping for all orders
-  const tax = totalPrice * 0.02; // 2% tax
+  const shipping = getShippingCost();
+  const tax = getTaxAmount();
   const finalTotal = totalPrice + shipping + tax;
 
   if (cartItems.length === 0) {
@@ -181,6 +191,12 @@ const Checkout = () => {
 
         {/* One-Click Checkout */}
         <OneClickCheckout />
+
+        {/* Shipping Method Selection */}
+        <ShippingMethodSection 
+          shippingMethod={shippingMethod}
+          setShippingMethod={setShippingMethod}
+        />
 
         <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3'}`}>
           {/* Cart Items */}
@@ -311,7 +327,9 @@ const Checkout = () => {
                   
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium">FREE</span>
+                    <span className="font-medium">
+                      {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
+                    </span>
                   </div>
                   
                   <div className="flex justify-between">
@@ -328,9 +346,11 @@ const Checkout = () => {
                 </div>
 
                 {/* Shipping Info */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
-                  <Truck className="w-5 h-5 text-green-600" />
-                  <span className="text-sm text-green-700 font-medium">🎉 You qualify for FREE shipping!</span>
+                <div className={`${shipping === 0 ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'} rounded-lg p-3 flex items-center space-x-2`}>
+                  <Truck className={`w-5 h-5 ${shipping === 0 ? 'text-green-600' : 'text-blue-600'}`} />
+                  <span className={`text-sm font-medium ${shipping === 0 ? 'text-green-700' : 'text-blue-700'}`}>
+                    {shipping === 0 ? '🎉 FREE collection at shop!' : `$5.00 delivery to your address`}
+                  </span>
                 </div>
 
                 {/* Security Badge */}

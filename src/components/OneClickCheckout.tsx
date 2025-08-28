@@ -39,7 +39,7 @@ const OneClickCheckout: React.FC = () => {
   };
 
   const totalPrice = getTotalPrice();
-  const shipping = 0; // Free shipping
+  const shipping = 0; // One-click checkout defaults to collection (free)
   const finalTotal = totalPrice + shipping;
 
   const handleOneClickCheckout = async () => {
@@ -83,21 +83,14 @@ const OneClickCheckout: React.FC = () => {
         cart_items_count: cartItems.length
       });
 
-      // Create order in database with cash on delivery
+      // Create order in database with cash on delivery (collection method)
       const orderData = {
         user_id: user.id,
         total_amount: finalTotal,
         status: 'confirmed',
         payment_method: 'cash_on_delivery',
-        shipping_address: {
-          name: defaultAddress.name || 'Default Address',
-          line1: defaultAddress.line1,
-          line2: defaultAddress.line2 || '',
-          city: defaultAddress.city,
-          state: defaultAddress.state,
-          zipcode: defaultAddress.zipcode,
-          country: defaultAddress.country || 'Zimbabwe'
-        },
+        shipping_method: 'collection', // One-click checkout defaults to collection
+        shipping_address: null, // No shipping address needed for collection
         billing_address: {
           name: defaultAddress.name || 'Default Address',
           line1: defaultAddress.line1,
@@ -160,7 +153,7 @@ const OneClickCheckout: React.FC = () => {
 
       toast({
         title: "Order Placed Successfully!",
-        description: "Your order has been confirmed. Pay cash on delivery.",
+        description: "Your order is confirmed for collection at our shop. Pay when you collect.",
       });
       
       // Navigate to success page - fix the URL path
@@ -229,29 +222,26 @@ const OneClickCheckout: React.FC = () => {
           </div>
         </div>
 
-        {/* Default Address */}
+        {/* Default Address - Updated for Collection */}
         {defaultAddress ? (
           <div className="bg-white rounded-lg p-3 border border-blue-100">
             <div className="flex items-center space-x-2 mb-2">
               <MapPin className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-medium">Ship to:</span>
+              <span className="text-sm font-medium">Collect at Shop:</span>
             </div>
             <div className="text-sm text-gray-600">
-              <p className="font-medium">
-                {defaultAddress.name || 'Default Address'}
-              </p>
-              <p>{defaultAddress.line1}</p>
-              {defaultAddress.line2 && <p>{defaultAddress.line2}</p>}
-              <p>{defaultAddress.city}, {defaultAddress.state} {defaultAddress.zipcode}</p>
+              <p className="font-medium">Shop Collection (FREE)</p>
+              <p>123 Main Street, City Center</p>
+              <p className="text-green-600 text-xs mt-1">Ready in 2-3 business days</p>
             </div>
           </div>
         ) : (
-          <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+          <div className="bg-green-50 rounded-lg p-3 border border-green-200">
             <div className="flex items-center space-x-2 mb-2">
-              <MapPin className="w-4 h-4 text-yellow-600" />
-              <span className="text-sm font-medium text-yellow-800">No delivery address</span>
+              <MapPin className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Shop Collection Available</span>
             </div>
-            <p className="text-xs text-yellow-700">Please add a delivery address to use one-click checkout</p>
+            <p className="text-xs text-green-700">Collect your order from our shop - no shipping fees!</p>
           </div>
         )}
 
@@ -264,7 +254,7 @@ const OneClickCheckout: React.FC = () => {
           </div>
         </div>
 
-        {defaultAddress ? (
+        {true ? (
           <Button 
             onClick={handleOneClickCheckout}
             disabled={isProcessing}
@@ -278,7 +268,7 @@ const OneClickCheckout: React.FC = () => {
             ) : (
               <div className="flex items-center space-x-2">
                 <Zap className="w-5 h-5" />
-                <span>Order Now - Cash on Delivery</span>
+                <span>Order Now - Collect at Shop (FREE)</span>
               </div>
             )}
           </Button>

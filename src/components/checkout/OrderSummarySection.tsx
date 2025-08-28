@@ -125,7 +125,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
 
             {shipping === 0 && (
               <p className="text-xs text-green-600 text-center">
-                🎉 You saved $3.50 on shipping!
+                🎉 You saved $5.00 on shipping by choosing collection!
               </p>
             )}
           </div>
