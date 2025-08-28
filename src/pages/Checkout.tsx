@@ -88,8 +88,8 @@ const Checkout = () => {
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
   const savings = getSavings();
-  const shipping = totalPrice >= 50 ? 0 : 3.50;
-  const tax = totalPrice * 0.08;
+  const shipping = 0; // Free shipping for all orders
+  const tax = totalPrice * 0.02; // 2% tax
   const finalTotal = totalPrice + shipping + tax;
 
   if (cartItems.length === 0) {
@@ -311,9 +311,7 @@ const Checkout = () => {
                   
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium">
-                      {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-                    </span>
+                    <span className="font-medium">FREE</span>
                   </div>
                   
                   <div className="flex justify-between">
@@ -330,19 +328,10 @@ const Checkout = () => {
                 </div>
 
                 {/* Shipping Info */}
-                {totalPrice >= 50 ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
-                    <Truck className="w-5 h-5 text-green-600" />
-                    <span className="text-sm text-green-700 font-medium">You qualify for FREE shipping!</span>
-                  </div>
-                ) : (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center space-x-2">
-                    <Star className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm text-blue-700">
-                      Add ${(50 - totalPrice).toFixed(2)} more for FREE shipping
-                    </span>
-                  </div>
-                )}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
+                  <Truck className="w-5 h-5 text-green-600" />
+                  <span className="text-sm text-green-700 font-medium">🎉 You qualify for FREE shipping!</span>
+                </div>
 
                 {/* Security Badge */}
                 <div className="bg-gray-50 rounded-lg p-3 flex items-center space-x-2">
