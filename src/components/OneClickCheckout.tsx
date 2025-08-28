@@ -24,16 +24,23 @@ const OneClickCheckout: React.FC = () => {
 
   const defaultAddress = addresses.find(addr => addr.isdefault) || addresses[0];
   
-  const getTotalPrice = () => {
+  const getSubtotal = () => {
     return cartItems.reduce((total, item) => {
       return total + (item.products.price * item.quantity);
     }, 0);
   };
 
+  const getTaxAmount = () => {
+    return getSubtotal() * 0.02; // 2% tax
+  };
+
+  const getTotalPrice = () => {
+    return getSubtotal() + getTaxAmount();
+  };
+
   const totalPrice = getTotalPrice();
-  const shipping = totalPrice >= 50 ? 0 : 3.50;
-  const tax = totalPrice * 0.08;
-  const finalTotal = totalPrice + shipping + tax;
+  const shipping = 0; // Free shipping
+  const finalTotal = totalPrice + shipping;
 
   const handleOneClickCheckout = async () => {
     console.log('OneClickCheckout - Starting checkout process');

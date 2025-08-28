@@ -67,10 +67,18 @@ const CheckoutDetails = () => {
     }
   }, [cartLoading, user, cartItems, navigate]);
 
-  const getTotalPrice = () => {
+  const getSubtotal = () => {
     return cartItems.reduce((total, item) => {
       return total + (item.products.price * item.quantity);
     }, 0);
+  };
+
+  const getTaxAmount = () => {
+    return getSubtotal() * 0.02; // 2% tax
+  };
+
+  const getTotalPrice = () => {
+    return getSubtotal() + getTaxAmount();
   };
 
   const totalPrice = getTotalPrice();
@@ -374,9 +382,9 @@ const CheckoutDetails = () => {
           <div className={`${isMobile ? '' : 'col-span-2'}`}>
             <OrderSummarySection 
               cartItems={cartItems}
-              totalPrice={totalPrice}
+              subtotal={getSubtotal()}
+              tax={getTaxAmount()}
               shipping={shipping}
-              tax={0}
               finalTotal={finalTotal}
               paymentMethod={paymentMethod}
               mobileMethod=""

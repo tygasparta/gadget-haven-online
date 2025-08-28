@@ -20,9 +20,9 @@ interface CartItem {
 
 interface OrderSummarySectionProps {
   cartItems: CartItem[];
-  totalPrice: number;
-  shipping: number;
+  subtotal: number;
   tax: number;
+  shipping: number;
   finalTotal: number;
   paymentMethod: string;
   mobileMethod: string;
@@ -32,9 +32,9 @@ interface OrderSummarySectionProps {
 
 const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
   cartItems,
-  totalPrice,
-  shipping,
+  subtotal,
   tax,
+  shipping,
   finalTotal,
   paymentMethod,
   mobileMethod,
@@ -97,8 +97,13 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           {/* Order Totals */}
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal (tax included)</span>
-              <span className="font-medium">${totalPrice.toFixed(2)}</span>
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">${subtotal.toFixed(2)}</span>
+            </div>
+            
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Tax (2%)</span>
+              <span className="font-medium">${tax.toFixed(2)}</span>
             </div>
             
             <div className="flex justify-between text-sm">
@@ -110,8 +115,6 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
                 {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
               </span>
             </div>
-
-            {/* Remove tax display since it's now included in product prices */}
 
             <Separator />
             
@@ -159,7 +162,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           {/* Security Notice */}
           <div className="text-xs text-gray-500 text-center space-y-1">
             <p>🔒 Your payment information is secure and encrypted</p>
-            <p>✅ All prices include applicable taxes</p>
+            <p>✅ Tax calculated at checkout</p>
           </div>
         </CardContent>
       </Card>
