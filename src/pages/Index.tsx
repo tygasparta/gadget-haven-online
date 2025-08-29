@@ -23,10 +23,12 @@ import MobileTopDeals from '../components/MobileTopDeals';
 import TabletOptimizedBanners from '../components/TabletOptimizedBanners';
 import PopupBanner from '../components/PopupBanner';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { storeSettings } = useStoreSettings();
   const [showPreloader, setShowPreloader] = useState(true);
   const isMobile = useIsMobile();
   const isTablet = !isMobile && window.innerWidth < 1024;
@@ -142,7 +144,7 @@ const Index = () => {
                     🛍️ Shop All Products
                   </button>
                   <button 
-                    onClick={() => window.open('https://wa.me/c/263719337910', '_blank')} 
+                    onClick={() => window.open(storeSettings.whatsapp_number, '_blank')} 
                     className="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
                   >
                     📱 WhatsApp Us

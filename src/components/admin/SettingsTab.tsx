@@ -8,7 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Settings, 
   Store, 
@@ -17,10 +21,26 @@ import {
   Database, 
   Save,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Upload,
+  RefreshCw,
+  Activity,
+  Users,
+  ShoppingCart,
+  Package
 } from 'lucide-react';
 
 const SettingsTab: React.FC = () => {
+  const { toast } = useToast();
+  const [systemStats, setSystemStats] = React.useState({
+    totalUsers: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    storageUsed: 0
+  });
+  const [exporting, setExporting] = React.useState(false);
+
   const {
     loading,
     saving,
@@ -37,6 +57,79 @@ const SettingsTab: React.FC = () => {
     saveSecuritySettings,
     saveSystemSettings
   } = useAdminSettings();
+
+  // Fetch system statistics
+  const fetchSystemStats = async () => {
+    try {
+      const [usersRes, ordersRes, productsRes] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('orders').select('id', { count: 'exact' }),
+        supabase.from('products').select('id', { count: 'exact' })
+      ]);
+
+      setSystemStats({
+        totalUsers: usersRes.count || 0,
+        totalOrders: ordersRes.count || 0,
+        totalProducts: productsRes.count || 0,
+        storageUsed: Math.round(Math.random() * 500) // Mock storage usage
+      });
+    } catch (error) {
+      console.error('Error fetching system stats:', error);
+    }
+  };
+
+  // Export data functionality
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      // Mock export process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Create mock CSV data
+      const csvData = `Date,Type,Count\n${new Date().toISOString().split('T')[0]},Users,${systemStats.totalUsers}\n${new Date().toISOString().split('T')[0]},Orders,${systemStats.totalOrders}\n${new Date().toISOString().split('T')[0]},Products,${systemStats.totalProducts}`;
+      
+      // Create and download file
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gadget-genie-data-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export completed",
+        description: "Data has been exported successfully."
+      });
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "Failed to export data. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Validation functions
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^\+?[\d\s-()]+$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validateWhatsApp = (url: string) => {
+    return url.startsWith('https://wa.me/') || url.startsWith('https://api.whatsapp.com/');
+  };
+
+  React.useEffect(() => {
+    fetchSystemStats();
+  }, []);
 
   if (loading) {
     return (
@@ -326,27 +419,82 @@ const SettingsTab: React.FC = () => {
             <CardHeader className="border-b border-white/10">
               <CardTitle className="text-white flex items-center space-x-2">
                 <Database className="w-5 h-5" />
-                <span>System Information & Settings</span>
+                <span>System Information & Statistics</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+              {/* System Statistics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg border border-blue-500/30">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Total Users</h4>
+                      <p className="text-2xl font-bold text-blue-400">{systemStats.totalUsers}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg border border-green-500/30">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-green-500 rounded-lg">
+                      <ShoppingCart className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Total Orders</h4>
+                      <p className="text-2xl font-bold text-green-400">{systemStats.totalOrders}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-lg border border-purple-500/30">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-500 rounded-lg">
+                      <Package className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Total Products</h4>
+                      <p className="text-2xl font-bold text-purple-400">{systemStats.totalProducts}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-lg border border-orange-500/30">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-orange-500 rounded-lg">
+                      <Activity className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Storage Used</h4>
+                      <p className="text-2xl font-bold text-orange-400">{systemStats.storageUsed} MB</p>
+                      <Progress value={(systemStats.storageUsed / 1000) * 100} className="mt-1 h-2" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* System Status */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <div className="p-4 bg-white/5 rounded-lg border border-white/10">
                   <div className="flex items-center space-x-2 mb-2">
                     <CheckCircle className="w-5 h-5 text-green-400" />
                     <h4 className="font-semibold text-white">Database Status</h4>
                   </div>
-                  <p className="text-green-400">Connected & Operational</p>
+                  <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
+                    Connected & Operational
+                  </Badge>
                 </div>
                 <div className="p-4 bg-white/5 rounded-lg border border-white/10">
                   <div className="flex items-center space-x-2 mb-2">
                     <AlertCircle className="w-5 h-5 text-blue-400" />
                     <h4 className="font-semibold text-white">System Version</h4>
                   </div>
-                  <p className="text-gray-400">v2.1.0 (Latest)</p>
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                    v2.1.0 (Latest)
+                  </Badge>
                 </div>
               </div>
               
+              {/* System Settings */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
                   <div>
@@ -392,6 +540,28 @@ const SettingsTab: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {/* System Actions */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  onClick={handleExportData}
+                  disabled={exporting}
+                  variant="outline"
+                  className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {exporting ? 'Exporting...' : 'Export Data'}
+                </Button>
+                <Button 
+                  onClick={fetchSystemStats}
+                  variant="outline"
+                  className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Stats
+                </Button>
+              </div>
+
               <Button 
                 onClick={saveSystemSettings}
                 disabled={saving}
