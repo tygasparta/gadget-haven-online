@@ -142,7 +142,7 @@ const Index = () => {
                     🛍️ Shop All Products
                   </button>
                   <button 
-                    onClick={() => window.open('https://wa.me/1234567890?text=Hello! I\'m interested in your products from GadgetGenie.', '_blank')} 
+                    onClick={() => window.open('https://wa.me/c/263719337910', '_blank')} 
                     className="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
                   >
                     📱 WhatsApp Us
