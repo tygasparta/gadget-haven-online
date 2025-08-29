@@ -22,6 +22,10 @@ import EditProductModal from '@/components/admin/EditProductModal';
 import BulkProductUpload from '@/components/admin/BulkProductUpload';
 import StockManagement from '@/components/admin/StockManagement';
 import SettingsTab from '@/components/admin/SettingsTab';
+import MobileAdminNavigation from '@/components/admin/MobileAdminNavigation';
+import MobileProductForm from '@/components/admin/MobileProductForm';
+import MobileQuickActions from '@/components/admin/MobileQuickActions';
+import MobileOverviewTab from '@/components/admin/MobileOverviewTab';
 
 import { 
   BarChart3, 
@@ -46,6 +50,8 @@ const AdminDashboard = () => {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showMobileProductForm, setShowMobileProductForm] = useState(false);
 
   React.useEffect(() => {
     if (!loading && !isAdmin) {
@@ -54,7 +60,11 @@ const AdminDashboard = () => {
   }, [isAdmin, loading, navigate]);
 
   const handleAddProduct = () => {
-    setShowAddProductModal(true);
+    if (isMobile) {
+      setShowMobileProductForm(true);
+    } else {
+      setShowAddProductModal(true);
+    }
   };
 
   const handleEditProduct = (product: any) => {
@@ -69,6 +79,10 @@ const AdminDashboard = () => {
   const handleCloseEditModal = () => {
     setShowEditProductModal(false);
     setEditingProduct(null);
+  };
+
+  const handleToggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   if (loading) {
@@ -88,20 +102,31 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950">
-      <div className="w-full px-4 py-4">
-        {/* Header */}
-        <div className="flex flex-col space-y-4 mb-6 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:mb-8">
+      {/* Mobile Navigation */}
+      {isMobile && (
+        <MobileAdminNavigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onAddProduct={handleAddProduct}
+          isMenuOpen={isMobileMenuOpen}
+          onToggleMenu={handleToggleMobileMenu}
+        />
+      )}
+      
+      <div className={`w-full px-4 py-4 ${isMobile ? 'pb-20' : ''}`}>
+        {/* Header - Hidden on mobile when menu is open */}
+        <div className={`flex flex-col space-y-4 mb-6 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:mb-8 ${isMobile && isMobileMenuOpen ? 'hidden' : ''}`}>
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <Button
               onClick={() => navigate('/')}
               variant="outline"
-              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm"
+              className={`bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm ${isMobile ? 'ml-16' : ''}`}
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Store</span>
             </Button>
             <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Admin Dashboard</h1>
+              <h1 className={`text-2xl sm:text-3xl font-bold text-white ${isMobile ? 'text-xl' : ''}`}>Admin Dashboard</h1>
               <p className="text-gray-300 mt-1 text-sm sm:text-base">Manage your Gadget Genie store</p>
             </div>
           </div>
@@ -136,7 +161,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* Desktop Navigation */}
+        {!isMobile && (
         <div className="flex space-x-2 sm:space-x-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
           <Button
             onClick={() => setActiveTab('overview')}
@@ -235,10 +261,21 @@ const AdminDashboard = () => {
             <span className={isMobile ? 'hidden' : 'inline'}>Settings</span>
           </Button>
         </div>
+        )}
 
         {/* Tab Contents */}
         <div className="space-y-6">
-          {activeTab === 'overview' && <OverviewTab onTabChange={setActiveTab} />}
+          {/* Mobile Quick Actions - Only show on overview tab */}
+          {isMobile && activeTab === 'overview' && (
+            <MobileQuickActions 
+              onAddProduct={handleAddProduct}
+              onTabChange={setActiveTab}
+            />
+          )}
+          
+          {activeTab === 'overview' && (
+            isMobile ? <MobileOverviewTab onTabChange={setActiveTab} /> : <OverviewTab onTabChange={setActiveTab} />
+          )}
           {activeTab === 'products' && (
             <ProductsTab 
               onAddProduct={handleAddProduct}
@@ -254,16 +291,28 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Modals */}
-      <AddProductModal 
-        isOpen={showAddProductModal}
-        onClose={handleCloseAddModal}
-      />
-      <EditProductModal 
-        isOpen={showEditProductModal}
-        onClose={handleCloseEditModal}
-        product={editingProduct}
-      />
+      {/* Modals - Conditional rendering for mobile */}
+      {!isMobile && (
+        <>
+          <AddProductModal 
+            isOpen={showAddProductModal}
+            onClose={handleCloseAddModal}
+          />
+          <EditProductModal 
+            isOpen={showEditProductModal}
+            onClose={handleCloseEditModal}
+            product={editingProduct}
+          />
+        </>
+      )}
+      
+      {/* Mobile Product Form */}
+      {isMobile && (
+        <MobileProductForm
+          isOpen={showMobileProductForm}
+          onClose={() => setShowMobileProductForm(false)}
+        />
+      )}
     </div>
   );
 };
