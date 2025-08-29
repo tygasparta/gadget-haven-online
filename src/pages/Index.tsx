@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import EnhancedPreloader from '../components/EnhancedPreloader';
 import Header from '../components/Header';
 import MobileHeader from '../components/MobileHeader';
@@ -25,6 +26,7 @@ import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [showPreloader, setShowPreloader] = useState(true);
   const isMobile = useIsMobile();
   const isTablet = !isMobile && window.innerWidth < 1024;
@@ -131,6 +133,22 @@ const Index = () => {
                   <MobileTopDeals />
                 </div>
                 
+                {/* Shop All Products and WhatsApp Buttons */}
+                <div className="w-full flex flex-col sm:flex-row gap-4 mb-6">
+                  <button 
+                    onClick={() => navigate('/products')} 
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    🛍️ Shop All Products
+                  </button>
+                  <button 
+                    onClick={() => window.open('https://wa.me/1234567890?text=Hello! I\'m interested in your products from GadgetGenie.', '_blank')} 
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                  >
+                    📱 WhatsApp Us
+                  </button>
+                </div>
+
                 <FeaturedBrands />
                 
                 {transformedFlashSale.length > 0 && (
