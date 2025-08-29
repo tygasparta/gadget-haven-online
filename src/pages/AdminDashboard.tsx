@@ -21,6 +21,7 @@ import EditProductModal from '@/components/admin/EditProductModal';
 // Import new components
 import BulkProductUpload from '@/components/admin/BulkProductUpload';
 import StockManagement from '@/components/admin/StockManagement';
+import SettingsTab from '@/components/admin/SettingsTab';
 
 import { 
   BarChart3, 
@@ -115,6 +116,7 @@ const AdminDashboard = () => {
                   <span>Notifications</span>
                 </Button>
                 <Button
+                  onClick={() => setActiveTab('settings')}
                   variant="outline"
                   className="bg-green-500 hover:bg-green-600 text-white border-green-400 flex items-center justify-center space-x-2 text-sm"
                 >
@@ -220,6 +222,18 @@ const AdminDashboard = () => {
             <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className={isMobile ? 'hidden' : 'inline'}>Stock</span>
           </Button>
+          <Button
+            onClick={() => setActiveTab('settings')}
+            variant={activeTab === 'settings' ? 'default' : 'outline'}
+            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
+              activeTab === 'settings' 
+                ? 'bg-white text-purple-600 hover:bg-gray-100' 
+                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
+            }`}
+          >
+            <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Settings</span>
+          </Button>
         </div>
 
         {/* Tab Contents */}
@@ -236,6 +250,7 @@ const AdminDashboard = () => {
           {activeTab === 'analytics' && <AnalyticsTab />}
           {activeTab === 'bulk-upload' && <BulkProductUpload />}
           {activeTab === 'stock' && <StockManagement />}
+          {activeTab === 'settings' && <SettingsTab />}
         </div>
       </div>
 
