@@ -145,10 +145,10 @@ const Index = () => {
                     🛍️ Shop All Products
                   </button>
                   <button 
-                    onClick={() => window.open(storeSettings.whatsapp_number, '_blank')} 
-                    className="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                    onClick={() => navigate('/deals')} 
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
                   >
-                    📱 WhatsApp Us
+                    🔥 View Deals
                   </button>
                 </div>
 
