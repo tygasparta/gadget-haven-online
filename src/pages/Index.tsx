@@ -1,27 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import EnhancedPreloader from '../components/EnhancedPreloader';
-import Header from '../components/Header';
-import MobileHeader from '../components/MobileHeader';
-import Sidebar from '../components/Sidebar';
-import HeroBanner from '../components/HeroBanner';
-import FeaturedBrands from '../components/FeaturedBrands';
-import ProductSection from '../components/ProductSection';
-import Newsletter from '../components/Newsletter';
-import Footer from '../components/Footer';
-import SideBanners from '../components/SideBanners';
-import CartSidebar from '../components/CartSidebar';
-import TrendingCarousel from '../components/TrendingCarousel';
-import LiveDeals from '../components/LiveDeals';
-import QuickCategories from '../components/QuickCategories';
-import CustomerReviews from '../components/CustomerReviews';
-import SpecialOffers from '../components/SpecialOffers';
-import MobileNavigation from '../components/MobileNavigation';
-import MobileQuickCategories from '../components/MobileQuickCategories';
-import MobileTopDeals from '../components/MobileTopDeals';
-import TabletOptimizedBanners from '../components/TabletOptimizedBanners';
-import PopupBanner from '../components/PopupBanner';
+import EnhancedPreloader from '@/components/EnhancedPreloader';
+import Header from '@/components/Header';
+import MobileHeader from '@/components/MobileHeader';
+import Sidebar from '@/components/Sidebar';
+import HeroBanner from '@/components/HeroBanner';
+import FeaturedBrands from '@/components/FeaturedBrands';
+import ProductSection from '@/components/ProductSection';
+import Newsletter from '@/components/Newsletter';
+import Footer from '@/components/Footer';
+import SideBanners from '@/components/SideBanners';
+import CartSidebar from '@/components/CartSidebar';
+import TrendingCarousel from '@/components/TrendingCarousel';
+import LiveDeals from '@/components/LiveDeals';
+import QuickCategories from '@/components/QuickCategories';
+import CustomerReviews from '@/components/CustomerReviews';
+import SpecialOffers from '@/components/SpecialOffers';
+import MobileNavigation from '@/components/MobileNavigation';
+import MobileQuickCategories from '@/components/MobileQuickCategories';
+import MobileTopDeals from '@/components/MobileTopDeals';
+import TabletOptimizedBanners from '@/components/TabletOptimizedBanners';
+import PopupBanner from '@/components/PopupBanner';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -196,7 +196,6 @@ const Index = () => {
         
         {/* Footer - Desktop Only */}
         {!isMobile && <Footer />}
-        
         
         {/* Mobile Navigation - Always visible on mobile */}
         <MobileNavigation />
