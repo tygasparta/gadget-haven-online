@@ -2,11 +2,25 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 console.log("WhatsApp webhook function starting...");
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+};
+
 serve(async (req) => {
   console.log("=== WEBHOOK REQUEST RECEIVED ===");
   console.log(`Method: ${req.method}`);
   console.log(`URL: ${req.url}`);
   console.log(`Headers: ${JSON.stringify([...req.headers.entries()])}`);
+  
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 200, 
+      headers: corsHeaders 
+    });
+  }
   
   // Handle GET request for webhook verification
   if (req.method === "GET") {
