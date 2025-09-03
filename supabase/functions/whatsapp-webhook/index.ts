@@ -36,6 +36,9 @@ serve(async (req) => {
       
       const VERIFY_TOKEN = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
       console.log(`Environment verify token exists: ${!!VERIFY_TOKEN}`);
+      console.log(`Environment verify token value: "${VERIFY_TOKEN}"`);
+      console.log(`Received token value: "${token}"`);
+      console.log(`Token length comparison: env=${VERIFY_TOKEN?.length || 0}, received=${token?.length || 0}`);
       console.log(`Token match: ${token === VERIFY_TOKEN}`);
       
       if (mode === "subscribe" && token === VERIFY_TOKEN) {
