@@ -25,7 +25,7 @@ import PopupBanner from '../components/PopupBanner';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useIsMobile } from '@/hooks/use-mobile';
-import WhatsAppFloat from '@/components/WhatsAppFloat';
+
 
 const Index = () => {
   const navigate = useNavigate();
@@ -197,8 +197,6 @@ const Index = () => {
         {/* Footer - Desktop Only */}
         {!isMobile && <Footer />}
         
-        {/* WhatsApp Float Button */}
-        <WhatsAppFloat />
         
         {/* Mobile Navigation - Always visible on mobile */}
         <MobileNavigation />

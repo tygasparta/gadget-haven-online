@@ -89,33 +89,6 @@ export type Database = {
         }
         Relationships: []
       }
-      bot_settings: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          key: string
-          updated_at: string
-          value: Json
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          key: string
-          updated_at?: string
-          value: Json
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          key?: string
-          updated_at?: string
-          value?: Json
-        }
-        Relationships: []
-      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -616,86 +589,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      whatsapp_conversations: {
-        Row: {
-          created_at: string
-          id: string
-          last_message_at: string
-          metadata: Json | null
-          phone_number: string
-          status: string
-          updated_at: string
-          user_id: string | null
-          user_name: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          metadata?: Json | null
-          phone_number: string
-          status?: string
-          updated_at?: string
-          user_id?: string | null
-          user_name?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          metadata?: Json | null
-          phone_number?: string
-          status?: string
-          updated_at?: string
-          user_id?: string | null
-          user_name?: string | null
-        }
-        Relationships: []
-      }
-      whatsapp_messages: {
-        Row: {
-          content: Json
-          conversation_id: string
-          created_at: string
-          delivered: boolean | null
-          id: string
-          message_id: string | null
-          message_type: string
-          read: boolean | null
-          sender_type: string
-        }
-        Insert: {
-          content: Json
-          conversation_id: string
-          created_at?: string
-          delivered?: boolean | null
-          id?: string
-          message_id?: string | null
-          message_type?: string
-          read?: boolean | null
-          sender_type: string
-        }
-        Update: {
-          content?: Json
-          conversation_id?: string
-          created_at?: string
-          delivered?: boolean | null
-          id?: string
-          message_id?: string | null
-          message_type?: string
-          read?: boolean | null
-          sender_type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "whatsapp_conversations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       wishlists: {
         Row: {
