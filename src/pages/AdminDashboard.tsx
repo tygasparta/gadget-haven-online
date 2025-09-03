@@ -26,6 +26,7 @@ import MobileAdminNavigation from '@/components/admin/MobileAdminNavigation';
 import MobileProductForm from '@/components/admin/MobileProductForm';
 import MobileQuickActions from '@/components/admin/MobileQuickActions';
 import MobileOverviewTab from '@/components/admin/MobileOverviewTab';
+import BotDashboardTab from '@/components/admin/BotDashboardTab';
 
 
 import { 
@@ -251,16 +252,16 @@ const AdminDashboard = () => {
             <span className={isMobile ? 'hidden' : 'inline'}>Stock</span>
           </Button>
           <Button
-            onClick={() => setActiveTab('settings')}
-            variant={activeTab === 'settings' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('whatsapp-bot')}
+            variant={activeTab === 'whatsapp-bot' ? 'default' : 'outline'}
             className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'settings' 
+              activeTab === 'whatsapp-bot' 
                 ? 'bg-white text-purple-600 hover:bg-gray-100' 
                 : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
             }`}
           >
-            <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Settings</span>
+            <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className={isMobile ? 'hidden' : 'inline'}>WhatsApp Bot</span>
           </Button>
         </div>
         )}
@@ -290,6 +291,7 @@ const AdminDashboard = () => {
           {activeTab === 'bulk-upload' && <BulkProductUpload />}
           {activeTab === 'stock' && <StockManagement />}
           {activeTab === 'settings' && <SettingsTab />}
+          {activeTab === 'whatsapp-bot' && <BotDashboardTab />}
           
         </div>
       </div>
