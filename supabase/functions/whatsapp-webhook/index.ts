@@ -7,29 +7,40 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Log all incoming requests for debugging
+  console.log(`Incoming ${req.method} request to webhook`);
+  console.log(`Request URL: ${req.url}`);
+  
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const url = new URL(req.url);
+    console.log(`Parsed URL: ${url.toString()}`);
     
     // Handle GET request for webhook verification
     if (req.method === "GET") {
+      console.log("Handling GET request for webhook verification");
+      
       const mode = url.searchParams.get("hub.mode");
       const token = url.searchParams.get("hub.verify_token");
       const challenge = url.searchParams.get("hub.challenge");
       
+      console.log(`Mode: ${mode}, Token: ${token}, Challenge: ${challenge}`);
+      
       const VERIFY_TOKEN = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
+      console.log(`Expected verify token exists: ${!!VERIFY_TOKEN}`);
       
       if (mode === "subscribe" && token === VERIFY_TOKEN) {
-        console.log("Webhook verified successfully");
+        console.log("Webhook verified successfully!");
         return new Response(challenge, { 
           status: 200,
           headers: { "Content-Type": "text/plain" }
         });
       } else {
-        console.log("Webhook verification failed");
+        console.log(`Webhook verification failed. Mode: ${mode}, Token match: ${token === VERIFY_TOKEN}`);
         return new Response("Forbidden", { status: 403 });
       }
     }
