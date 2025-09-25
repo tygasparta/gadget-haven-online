@@ -45,18 +45,28 @@ serve(async (req) => {
     };
 
     console.log('Sending payment request to PesePay API');
+    console.log('Integration key length:', integrationKey ? integrationKey.length : 'undefined');
+    console.log('Payment payload:', JSON.stringify(paymentPayload, null, 2));
 
     // For now, we'll use a simplified approach without encryption
     // In production, you would need to implement proper encryption/decryption
+    const headers = {
+      'authorization': integrationKey,  // PesePay expects integration key directly, not Bearer prefix
+      'content-type': 'application/json',
+    };
+    
+    console.log('Request headers:', JSON.stringify(headers, null, 2));
+    
+    const requestBody = { 
+      payload: JSON.stringify(paymentPayload)
+    };
+    
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
     const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
       method: 'POST',
-      headers: {
-        'authorization': integrationKey,  // PesePay expects integration key directly, not Bearer prefix
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        payload: JSON.stringify(paymentPayload)
-      }),
+      headers: headers,
+      body: JSON.stringify(requestBody),
     });
 
     if (!pesePayResponse.ok) {
