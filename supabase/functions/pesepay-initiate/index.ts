@@ -101,8 +101,8 @@ serve(async (req) => {
   }
 
   try {
-    const integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY')?.trim();
-    const encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY')?.trim();
+    const integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY')?.trim().replace(/[\x00-\x1F\x7F]/g, '');
+    const encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY')?.trim().replace(/[\x00-\x1F\x7F]/g, '');
 
     if (!integrationKey || !encryptionKey) {
       console.error('Missing PesePay credentials');
@@ -111,6 +111,10 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Integration key length:', integrationKey.length);
+    console.log('Integration key first 10 chars:', integrationKey.slice(0, 10));
+    console.log('Encryption key length:', encryptionKey.length);
 
     const body = await req.json();
     console.log('Initiating PesePay transaction:', JSON.stringify(body, null, 2));
@@ -132,15 +136,22 @@ serve(async (req) => {
     const encryptedPayload = await encryptPayload(JSON.stringify(transaction), encryptionKey);
     console.log('Payload encrypted successfully');
 
+    // Prepare headers with proper validation
+    const headers = {
+      'Authorization': integrationKey,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+
+    console.log('Request headers:', Object.keys(headers));
+    console.log('Request body payload length:', encryptedPayload.length);
+
     // Make request to PesePay
     const response = await fetch(
       'https://api.pesepay.com/api/payments-engine/v1/payments/initiate',
       {
         method: 'POST',
-        headers: {
-          'authorization': integrationKey,
-          'content-type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({ payload: encryptedPayload })
       }
     );
