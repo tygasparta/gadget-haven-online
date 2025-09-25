@@ -5,6 +5,7 @@ import { CreditCard, Package, Wallet } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { motion } from 'framer-motion';
 import DischubPaymentSection from './DischubPaymentSection';
+import PesePaymentSection from './PesePaymentSection';
 
 interface PaymentMethodSectionProps {
   paymentMethod: string;
@@ -19,6 +20,11 @@ interface PaymentMethodSectionProps {
   totalAmount: number;
   onInitiateDischubPayment: (currency: 'USD') => void;
   isDischubProcessing: boolean;
+  // PesePay props
+  pesePayCurrency: 'USD' | 'ZWL';
+  setPesePayCurrency: (currency: 'USD' | 'ZWL') => void;
+  onInitiatePesePayPayment: (currency: 'USD' | 'ZWL') => void;
+  isPesePayProcessing: boolean;
 }
 
 const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
@@ -28,7 +34,11 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
   setDischubCurrency,
   totalAmount,
   onInitiateDischubPayment,
-  isDischubProcessing
+  isDischubProcessing,
+  pesePayCurrency,
+  setPesePayCurrency,
+  onInitiatePesePayPayment,
+  isPesePayProcessing
 }) => {
   return (
     <motion.div
@@ -62,6 +72,21 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               </div>
             </div>
 
+            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer">
+              <RadioGroupItem value="pesepay" id="pesepay" className="text-green-600" />
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CreditCard className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <label htmlFor="pesepay" className="font-semibold text-gray-800 cursor-pointer">
+                    PesePay
+                  </label>
+                  <p className="text-sm text-gray-500">Mobile Money & Bank Cards (USD/ZWL)</p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer">
               <RadioGroupItem value="cod" id="cod" className="text-orange-600" />
               <div className="flex items-center space-x-3 flex-1">
@@ -85,6 +110,15 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
             amount={totalAmount}
             onInitiatePayment={onInitiateDischubPayment}
             isProcessing={isDischubProcessing}
+          />
+
+          <PesePaymentSection
+            isVisible={paymentMethod === 'pesepay'}
+            selectedCurrency={pesePayCurrency}
+            onCurrencyChange={setPesePayCurrency}
+            amount={totalAmount}
+            onInitiatePayment={onInitiatePesePayPayment}
+            isProcessing={isPesePayProcessing}
           />
 
           {paymentMethod === 'cod' && (
