@@ -29,12 +29,12 @@ serve(async (req) => {
       );
     }
 
-    // Clean integration key - remove any non-alphanumeric characters except hyphens
-    const cleanIntegrationKey = integrationKey.trim().replace(/[^a-zA-Z0-9\-]/g, '');
-    console.log('Cleaned integration key length:', cleanIntegrationKey.length);
+    // Clean integration key - encode for HTTP header safety
+    const cleanIntegrationKey = integrationKey.trim();
+    console.log('Original integration key length:', cleanIntegrationKey.length);
     
     if (cleanIntegrationKey.length === 0) {
-      console.error('Integration key is empty after cleaning');
+      console.error('Integration key is empty');
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid integration key format' }),
         { 
@@ -43,6 +43,10 @@ serve(async (req) => {
         }
       );
     }
+    
+    // Encode the key for safe HTTP header transmission
+    const encodedKey = btoa(cleanIntegrationKey);
+    console.log('Encoded integration key for header use');
 
     const requestData = await req.json();
     console.log('Request data received:', { 
@@ -67,11 +71,11 @@ serve(async (req) => {
     console.log('Making API request to PesePay with payload:', JSON.stringify(paymentPayload, null, 2));
 
     try {
-      // Try different authorization header formats
+      // Try different authorization header formats with proper encoding
       const authFormats: Record<string, string>[] = [
+        { 'Authorization': `Basic ${encodedKey}`, 'Content-Type': 'application/json' },
         { 'authorization': cleanIntegrationKey, 'content-type': 'application/json' },
-        { 'Authorization': `Bearer ${cleanIntegrationKey}`, 'Content-Type': 'application/json' },
-        { 'Authorization': cleanIntegrationKey, 'Content-Type': 'application/json' }
+        { 'Authorization': `Bearer ${cleanIntegrationKey}`, 'Content-Type': 'application/json' }
       ];
       
       let response: Response | null = null;
