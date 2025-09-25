@@ -101,8 +101,8 @@ serve(async (req) => {
   }
 
   try {
-    const integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY')?.trim().replace(/[\x00-\x1F\x7F]/g, '');
-    const encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY')?.trim().replace(/[\x00-\x1F\x7F]/g, '');
+    let integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY');
+    let encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY');
 
     if (!integrationKey || !encryptionKey) {
       console.error('Missing PesePay credentials');
@@ -112,9 +112,21 @@ serve(async (req) => {
       );
     }
 
+    // Clean the keys thoroughly
+    integrationKey = integrationKey.trim().replace(/[\r\n\t\0]/g, '');
+    encryptionKey = encryptionKey.trim().replace(/[\r\n\t\0]/g, '');
+
     console.log('Integration key length:', integrationKey.length);
-    console.log('Integration key first 10 chars:', integrationKey.slice(0, 10));
+    console.log('Integration key format check:', /^[a-f0-9-]{36}$/.test(integrationKey));
     console.log('Encryption key length:', encryptionKey.length);
+
+    // Validate key formats
+    if (integrationKey.length !== 36) {
+      throw new Error('Invalid integration key length');
+    }
+    if (encryptionKey.length !== 32) {
+      throw new Error('Invalid encryption key length');
+    }
 
     const body = await req.json();
     console.log('Initiating PesePay transaction:', JSON.stringify(body, null, 2));
@@ -136,23 +148,18 @@ serve(async (req) => {
     const encryptedPayload = await encryptPayload(JSON.stringify(transaction), encryptionKey);
     console.log('Payload encrypted successfully');
 
-    // Prepare headers with proper validation
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'authorization': integrationKey  // lowercase as per PesePay docs
-    };
-
-    console.log('Request headers:', Object.keys(headers));
-    console.log('Authorization header value length:', integrationKey.length);
-    console.log('Request body payload length:', encryptedPayload.length);
-
-    // Make request to PesePay
+    // Make request with minimal headers
+    console.log('Making request to PesePay API...');
+    console.log('Request payload length:', encryptedPayload.length);
+    
     const response = await fetch(
       'https://api.pesepay.com/api/payments-engine/v1/payments/initiate',
       {
         method: 'POST',
-        headers,
+        headers: {
+          'authorization': integrationKey,
+          'content-type': 'application/json'
+        },
         body: JSON.stringify({ payload: encryptedPayload })
       }
     );
