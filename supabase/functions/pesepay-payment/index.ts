@@ -51,9 +51,8 @@ serve(async (req) => {
     const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${integrationKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        'authorization': integrationKey,  // PesePay expects integration key directly, not Bearer prefix
+        'content-type': 'application/json',
       },
       body: JSON.stringify({ 
         payload: JSON.stringify(paymentPayload)
