@@ -5,6 +5,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to create PesePay signature using Web Crypto API
+async function createPesePaySignature(payload: string, encryptionKey: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(encryptionKey);
+  const data = encoder.encode(payload);
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, data);
+  const hashArray = Array.from(new Uint8Array(signature));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 serve(async (req) => {
   console.log('PesePay payment function called');
   
@@ -15,11 +34,13 @@ serve(async (req) => {
 
   try {
     const integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY');
+    const encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY');
     
     console.log('Integration key available:', !!integrationKey);
+    console.log('Encryption key available:', !!encryptionKey);
     
-    if (!integrationKey) {
-      console.error('Missing PesePay integration key');
+    if (!integrationKey || !encryptionKey) {
+      console.error('Missing PesePay keys');
       return new Response(
         JSON.stringify({ success: false, error: 'Payment service configuration error' }),
         { 
@@ -29,28 +50,9 @@ serve(async (req) => {
       );
     }
 
-    // Clean integration key - encode for HTTP header safety
-    const cleanIntegrationKey = integrationKey.trim();
-    console.log('Original integration key length:', cleanIntegrationKey.length);
-    
-    if (cleanIntegrationKey.length === 0) {
-      console.error('Integration key is empty');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid integration key format' }),
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    // Encode the key for safe HTTP header transmission
-    const encodedKey = btoa(cleanIntegrationKey);
-    console.log('Encoded integration key for header use');
-
     const requestData = await req.json();
-    console.log('Request data received:', { 
-      amount: requestData.amount, 
+    console.log('Request data received:', {
+      amount: requestData.amount,
       currencyCode: requestData.currencyCode,
       merchantReference: requestData.merchantReference,
       reasonForPayment: requestData.reasonForPayment
@@ -68,53 +70,35 @@ serve(async (req) => {
       returnUrl: requestData.returnUrl
     };
 
-    console.log('Making API request to PesePay with payload:', JSON.stringify(paymentPayload, null, 2));
+    const payloadString = JSON.stringify(paymentPayload);
+    console.log('Making API request to PesePay with payload:', payloadString);
+
+    // Create proper authentication headers for PesePay
+    const timestamp = Date.now().toString();
+    const signature = await createPesePaySignature(payloadString + timestamp, encryptionKey);
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': integrationKey,
+      'X-Timestamp': timestamp,
+      'X-Signature': signature
+    };
+
+    console.log('Request headers prepared with signature authentication');
 
     try {
-      // Try different authorization header formats with proper encoding
-      const authFormats: Record<string, string>[] = [
-        { 'Authorization': `Basic ${encodedKey}`, 'Content-Type': 'application/json' },
-        { 'authorization': cleanIntegrationKey, 'content-type': 'application/json' },
-        { 'Authorization': `Bearer ${cleanIntegrationKey}`, 'Content-Type': 'application/json' }
-      ];
-      
-      let response: Response | null = null;
-      let responseText = '';
-      let lastError: Error | null = null;
-      
-      for (let i = 0; i < authFormats.length; i++) {
-        try {
-          console.log(`Trying authorization format ${i + 1}`);
-          
-          response = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
-            method: 'POST',
-            headers: authFormats[i],
-            body: JSON.stringify(paymentPayload),
-          });
-          
-          responseText = await response.text();
-          console.log(`Attempt ${i + 1} - Status:`, response.status, 'Response:', responseText);
-          
-          // If we get a successful response or a different error than auth, break
-          if (response.ok || !responseText.toLowerCase().includes('unauthorized')) {
-            break;
-          }
-        } catch (error) {
-          console.log(`Attempt ${i + 1} failed:`, error);
-          lastError = error instanceof Error ? error : new Error('Unknown error');
-          if (i === authFormats.length - 1) {
-            throw lastError; // Re-throw on last attempt
-          }
-        }
-      }
+      const response = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
+        method: 'POST',
+        headers: headers,
+        body: payloadString,
+      });
 
-      if (!response) {
-        throw lastError || new Error('All API attempts failed');
-      }
-
-      console.log('Final PesePay response status:', response.status);
-      console.log('Final PesePay response ok:', response.ok);
-      console.log('Final PesePay raw response:', responseText);
+      console.log('PesePay response status:', response.status);
+      console.log('PesePay response ok:', response.ok);
+      
+      const responseText = await response.text();
+      console.log('PesePay raw response:', responseText);
       
       if (response.ok) {
         try {
@@ -194,23 +178,6 @@ serve(async (req) => {
       
     } catch (fetchError) {
       console.error('Fetch error:', fetchError);
-      
-      // Provide specific error message for header issues
-      if (fetchError instanceof Error && fetchError.message.includes('header')) {
-        console.error('Header error detected - integration key may have invalid characters');
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'Payment service configuration error',
-            details: 'Invalid integration key format or characters',
-            keyLength: cleanIntegrationKey.length
-          }),
-          { 
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
       
       return new Response(
         JSON.stringify({ 
