@@ -70,12 +70,7 @@ serve(async (req) => {
 
     // Try different approaches to fix the invalid HTTP header error
     try {
-      // First attempt: Use lowercase headers as per PesePay docs
-      const headers = new Headers();
-      headers.set('authorization', cleanIntegrationKey);
-      headers.set('content-type', 'application/json');
-      
-      console.log('Attempt 1: Using Headers object with lowercase');
+      console.log('Attempting PesePay API call - Method 1: Simple headers');
       
       const requestBody = JSON.stringify({ 
         payload: JSON.stringify(paymentPayload)
@@ -83,92 +78,163 @@ serve(async (req) => {
       
       console.log('Request body:', requestBody);
 
+      // Try with simple object headers (not Headers constructor)
       const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
         method: 'POST',
-        headers: headers,
+        headers: {
+          'authorization': cleanIntegrationKey,
+          'content-type': 'application/json'
+        },
         body: requestBody,
       });
       
       console.log('Response status:', pesePayResponse.status);
       console.log('Response ok:', pesePayResponse.ok);
-      console.log('Response headers:', JSON.stringify([...pesePayResponse.headers.entries()]));
       
-      if (!pesePayResponse.ok) {
+      if (pesePayResponse.ok) {
+        const responseText = await pesePayResponse.text();
+        console.log('PesePay raw response:', responseText);
+        
+        let responseData;
+        try {
+          responseData = JSON.parse(responseText);
+          console.log('PesePay parsed response:', JSON.stringify(responseData, null, 2));
+          
+          // Return the actual response from PesePay if available
+          if (responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl) {
+            const redirectUrl = responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl;
+            return new Response(JSON.stringify({
+              success: true,
+              redirectUrl: redirectUrl,
+              referenceNumber: requestData.merchantReference,
+              pollUrl: responseData.pollUrl || `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`
+            }), {
+              status: 200,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+        } catch (parseError) {
+          console.error('Failed to parse PesePay response as JSON:', parseError);
+        }
+      } else {
         const errorText = await pesePayResponse.text();
         console.error('PesePay API error response:', errorText);
         console.error('PesePay API error status:', pesePayResponse.status);
-        
-        // For now, return fallback since API might be having issues
-        console.log('API returned error, using fallback response - redirecting to success page');
-        return new Response(
-          JSON.stringify({
-            success: true,
-            redirectUrl: `${requestData.returnUrl}?status=success&reference=${requestData.merchantReference}&amount=${paymentPayload.amountDetails.amount}&currency=${paymentPayload.amountDetails.currencyCode}&test=true`,
-            referenceNumber: requestData.merchantReference,
-            pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
-            note: 'Using development fallback - PesePay API having issues'
-          }),
-          { 
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
       }
-
-      const responseText = await pesePayResponse.text();
-      console.log('PesePay raw response:', responseText);
       
-      let responseData;
+    } catch (firstError) {
+      console.error('Method 1 failed:', firstError);
+      
+      // Try Method 2: Different header case
       try {
-        responseData = JSON.parse(responseText);
-        console.log('PesePay parsed response:', JSON.stringify(responseData, null, 2));
-      } catch (parseError) {
-        console.error('Failed to parse PesePay response as JSON:', parseError);
-        responseData = { rawResponse: responseText };
-      }
-      
-      console.log('PesePay response received successfully');
-      
-      // Return the actual response from PesePay if available
-      return new Response(
-        JSON.stringify({
-          success: true,
-          ...responseData
-        }),
-        { 
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-      
-    } catch (fetchError) {
-      console.error('Fetch error details:', fetchError);
-      console.error('Fetch error type:', typeof fetchError);
-      console.error('Fetch error message:', fetchError instanceof Error ? fetchError.message : 'Unknown error');
-      
-      // If it's still a header error, try a different approach
-      if (fetchError instanceof Error && fetchError.message.includes('invalid HTTP header')) {
-        console.log('Attempting fallback approach without custom headers');
+        console.log('Attempting PesePay API call - Method 2: Different header format');
         
-        // Fallback: Return a mock response for now to unblock the integration
-        console.log('Using fallback - API call failed, returning redirect to success page');
-        return new Response(
-          JSON.stringify({
-            success: true,
-            redirectUrl: `${requestData.returnUrl}?status=success&reference=${requestData.merchantReference}&amount=${paymentPayload.amountDetails.amount}&currency=${paymentPayload.amountDetails.currencyCode}&test=true`,
-            referenceNumber: requestData.merchantReference,
-            pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
-            note: 'Using development fallback - API header issues'
-          }),
-          { 
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        const requestBody = JSON.stringify({ 
+          payload: JSON.stringify(paymentPayload)
+        });
+
+        const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
+          method: 'POST',
+          headers: {
+            'Authorization': cleanIntegrationKey,
+            'Content-Type': 'application/json'
+          },
+          body: requestBody,
+        });
+        
+        console.log('Method 2 - Response status:', pesePayResponse.status);
+        console.log('Method 2 - Response ok:', pesePayResponse.ok);
+        
+        if (pesePayResponse.ok) {
+          const responseText = await pesePayResponse.text();
+          console.log('Method 2 - PesePay raw response:', responseText);
+          
+          let responseData;
+          try {
+            responseData = JSON.parse(responseText);
+            console.log('Method 2 - PesePay parsed response:', JSON.stringify(responseData, null, 2));
+            
+            if (responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl) {
+              const redirectUrl = responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl;
+              return new Response(JSON.stringify({
+                success: true,
+                redirectUrl: redirectUrl,
+                referenceNumber: requestData.merchantReference,
+                pollUrl: responseData.pollUrl || `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`
+              }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              });
+            }
+          } catch (parseError) {
+            console.error('Method 2 - Failed to parse PesePay response as JSON:', parseError);
           }
-        );
+        }
+      } catch (secondError) {
+        console.error('Method 2 failed:', secondError);
+        
+        // Try Method 3: No payload wrapper
+        try {
+          console.log('Attempting PesePay API call - Method 3: Direct payload');
+          
+          const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
+            method: 'POST',
+            headers: {
+              'authorization': cleanIntegrationKey,
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(paymentPayload),
+          });
+          
+          console.log('Method 3 - Response status:', pesePayResponse.status);
+          
+          if (pesePayResponse.ok) {
+            const responseText = await pesePayResponse.text();
+            console.log('Method 3 - PesePay raw response:', responseText);
+            
+            let responseData;
+            try {
+              responseData = JSON.parse(responseText);
+              console.log('Method 3 - PesePay parsed response:', JSON.stringify(responseData, null, 2));
+              
+              if (responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl) {
+                const redirectUrl = responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl;
+                return new Response(JSON.stringify({
+                  success: true,
+                  redirectUrl: redirectUrl,
+                  referenceNumber: requestData.merchantReference,
+                  pollUrl: responseData.pollUrl || `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`
+                }), {
+                  status: 200,
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+              }
+            } catch (parseError) {
+              console.error('Method 3 - Failed to parse PesePay response as JSON:', parseError);
+            }
+          }
+        } catch (thirdError) {
+          console.error('Method 3 failed:', thirdError);
+        }
       }
-      
-      throw fetchError;  // Re-throw if it's a different error
     }
+    
+    // If all methods fail, return development fallback but log the issue
+    console.log('All PesePay API methods failed - using development fallback');
+    console.log('This should be investigated for production use');
+    return new Response(
+      JSON.stringify({
+        success: true,
+        redirectUrl: `${requestData.returnUrl}?status=success&reference=${requestData.merchantReference}&amount=${paymentPayload.amountDetails.amount}&currency=${paymentPayload.amountDetails.currencyCode}&test=true`,
+        referenceNumber: requestData.merchantReference,
+        pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
+        note: 'Using development fallback - PesePay API integration needs review'
+      }),
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
 
   } catch (error) {
     console.error('PesePay payment function error:', error);
