@@ -138,12 +138,13 @@ serve(async (req) => {
 
     // Prepare headers with proper validation
     const headers = {
-      'Authorization': integrationKey,
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'authorization': integrationKey  // lowercase as per PesePay docs
     };
 
     console.log('Request headers:', Object.keys(headers));
+    console.log('Authorization header value length:', integrationKey.length);
     console.log('Request body payload length:', encryptedPayload.length);
 
     // Make request to PesePay
