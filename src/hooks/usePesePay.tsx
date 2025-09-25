@@ -75,16 +75,13 @@ export const usePesePay = () => {
       const apiData = {
         amount: paymentData.amount,
         currencyCode: paymentData.currency,
-        merchantReference: merchantReference,
         reasonForPayment: `Order Payment - ${paymentData.orderId}`,
         resultUrl: `${window.location.origin}/payment-success?reference=${merchantReference}`,
-        returnUrl: `${window.location.origin}/payment-success?reference=${merchantReference}`,
-        customerPhone: paymentData.customerPhone,
-        customerEmail: paymentData.customerEmail
+        returnUrl: `${window.location.origin}/payment-success?reference=${merchantReference}`
       };
 
-      // Call edge function to create payment
-      const { data, error } = await supabase.functions.invoke('pesepay-payment', {
+      // Call edge function to initiate payment
+      const { data, error } = await supabase.functions.invoke('pesepay-initiate', {
         body: apiData
       });
 
@@ -99,12 +96,13 @@ export const usePesePay = () => {
 
       console.log('PesePay payment initiated successfully');
 
-      // Update payment record with redirect URL and poll URL
+      // Update payment record with redirect URL and reference
       await supabase
         .from('payment_records')
         .update({
           redirect_url: data.redirectUrl,
-          poll_url: data.pollUrl
+          poll_url: data.pollUrl,
+          payment_reference: data.referenceNumber
         })
         .eq('id', paymentRecord.id);
 
