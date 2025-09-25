@@ -30,11 +30,27 @@ serve(async (req) => {
         status,
         currency,
         amount,
-        merchantReference
+        merchantReference,
+        // Try different possible field names from PesePay
+        reference,
+        paymentReference,
+        transactionId,
+        pollReference
       } = webhookData;
 
-      // Update payment record using the referenceNumber or merchantReference
-      const paymentStatus = status === 'PAID' || status === 'SUCCESSFUL' || status === 'SUCCESS' ? 'paid' : 'failed';
+      // Get the actual reference to use for lookup
+      const actualReference = referenceNumber || merchantReference || reference || paymentReference || transactionId || pollReference;
+      
+      console.log('Using reference for lookup:', actualReference);
+
+      // Update payment record using the actual reference
+      const paymentStatus = (
+        status === 'PAID' || 
+        status === 'SUCCESSFUL' || 
+        status === 'SUCCESS' || 
+        status === 'COMPLETED' ||
+        status === 'paid'
+      ) ? 'paid' : 'failed';
       
       const { error: updateError } = await supabase
         .from('payment_records')
@@ -42,7 +58,7 @@ serve(async (req) => {
           status: paymentStatus,
           updated_at: new Date().toISOString()
         })
-        .eq('payment_reference', referenceNumber || merchantReference);
+        .eq('payment_reference', actualReference);
 
       if (updateError) {
         console.error('Error updating payment record:', updateError);
@@ -56,7 +72,7 @@ serve(async (req) => {
         const { data: paymentRecord, error: paymentError } = await supabase
           .from('payment_records')
           .select('order_id')
-          .eq('payment_reference', referenceNumber || merchantReference)
+          .eq('payment_reference', actualReference)
           .single();
 
         if (paymentError) {
@@ -68,7 +84,7 @@ serve(async (req) => {
             .from('orders')
             .update({ 
               status: 'confirmed',
-              payment_reference: referenceNumber || merchantReference,
+              payment_reference: actualReference,
               updated_at: new Date().toISOString()
             })
             .eq('id', paymentRecord.order_id);

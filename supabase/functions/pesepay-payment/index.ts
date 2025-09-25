@@ -58,6 +58,7 @@ serve(async (req) => {
         amount: requestData.amount,
         currencyCode: requestData.currencyCode
       },
+      merchantReference: requestData.merchantReference,
       reasonForPayment: requestData.reasonForPayment,
       resultUrl: requestData.resultUrl,
       returnUrl: requestData.returnUrl
@@ -66,21 +67,50 @@ serve(async (req) => {
     console.log('Making API request to PesePay with payload:', JSON.stringify(paymentPayload, null, 2));
 
     try {
-      // First try without encryption - many payment gateways accept both
-      const response = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
-        method: 'POST',
-        headers: {
-          'authorization': cleanIntegrationKey,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify(paymentPayload),
-      });
+      // Try different authorization header formats
+      const authFormats: Record<string, string>[] = [
+        { 'authorization': cleanIntegrationKey, 'content-type': 'application/json' },
+        { 'Authorization': `Bearer ${cleanIntegrationKey}`, 'Content-Type': 'application/json' },
+        { 'Authorization': cleanIntegrationKey, 'Content-Type': 'application/json' }
+      ];
       
-      console.log('PesePay response status:', response.status);
-      console.log('PesePay response ok:', response.ok);
+      let response: Response | null = null;
+      let responseText = '';
+      let lastError: Error | null = null;
       
-      const responseText = await response.text();
-      console.log('PesePay raw response:', responseText);
+      for (let i = 0; i < authFormats.length; i++) {
+        try {
+          console.log(`Trying authorization format ${i + 1}`);
+          
+          response = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
+            method: 'POST',
+            headers: authFormats[i],
+            body: JSON.stringify(paymentPayload),
+          });
+          
+          responseText = await response.text();
+          console.log(`Attempt ${i + 1} - Status:`, response.status, 'Response:', responseText);
+          
+          // If we get a successful response or a different error than auth, break
+          if (response.ok || !responseText.toLowerCase().includes('unauthorized')) {
+            break;
+          }
+        } catch (error) {
+          console.log(`Attempt ${i + 1} failed:`, error);
+          lastError = error instanceof Error ? error : new Error('Unknown error');
+          if (i === authFormats.length - 1) {
+            throw lastError; // Re-throw on last attempt
+          }
+        }
+      }
+
+      if (!response) {
+        throw lastError || new Error('All API attempts failed');
+      }
+
+      console.log('Final PesePay response status:', response.status);
+      console.log('Final PesePay response ok:', response.ok);
+      console.log('Final PesePay raw response:', responseText);
       
       if (response.ok) {
         try {
