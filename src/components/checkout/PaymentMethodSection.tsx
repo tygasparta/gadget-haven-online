@@ -40,6 +40,7 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
   onInitiatePesePayPayment,
   isPesePayProcessing
 }) => {
+  console.log('PaymentMethodSection rendering with method:', paymentMethod);
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
