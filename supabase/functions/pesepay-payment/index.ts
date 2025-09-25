@@ -1,88 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// AES encryption function for PesePay
-async function encryptPayload(payload: string, encryptionKey: string): Promise<string> {
-  try {
-    const encoder = new TextEncoder();
-    
-    // Use encryption key as-is, pad or truncate to 32 bytes for AES-256
-    const keyString = encryptionKey.padEnd(32, '0').substring(0, 32);
-    const keyBytes = encoder.encode(keyString);
-    
-    // Import the key
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyBytes,
-      { name: 'AES-CBC' },
-      false,
-      ['encrypt']
-    );
-    
-    // Generate a random IV
-    const iv = crypto.getRandomValues(new Uint8Array(16));
-    
-    // Encrypt the payload
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-CBC', iv: iv },
-      cryptoKey,
-      encoder.encode(payload)
-    );
-    
-    // Combine IV and encrypted data, then encode as base64
-    const combined = new Uint8Array(iv.length + encrypted.byteLength);
-    combined.set(iv);
-    combined.set(new Uint8Array(encrypted), iv.length);
-    
-    return btoa(String.fromCharCode(...combined));
-  } catch (error) {
-    console.error('Encryption error:', error);
-    throw new Error('Failed to encrypt payload');
-  }
-}
-
-// AES decryption function for PesePay response
-async function decryptPayload(encryptedData: string, encryptionKey: string): Promise<string> {
-  try {
-    const decoder = new TextDecoder();
-    const encoder = new TextEncoder();
-    
-    // Use encryption key as-is, pad or truncate to 32 bytes for AES-256
-    const keyString = encryptionKey.padEnd(32, '0').substring(0, 32);
-    const keyBytes = encoder.encode(keyString);
-    
-    // Import the key
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyBytes,
-      { name: 'AES-CBC' },
-      false,
-      ['decrypt']
-    );
-    
-    // Decode base64 and extract IV and encrypted data
-    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-    const iv = combined.slice(0, 16);
-    const encrypted = combined.slice(16);
-    
-    // Decrypt the data
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-CBC', iv: iv },
-      cryptoKey,
-      encrypted
-    );
-    
-    return decoder.decode(decrypted);
-  } catch (error) {
-    console.error('Decryption error:', error);
-    throw new Error('Failed to decrypt payload');
-  }
-}
 
 serve(async (req) => {
   console.log('PesePay payment function called');
@@ -94,13 +15,11 @@ serve(async (req) => {
 
   try {
     const integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY');
-    const encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY');
     
     console.log('Integration key available:', !!integrationKey);
-    console.log('Encryption key available:', !!encryptionKey);
     
-    if (!integrationKey || !encryptionKey) {
-      console.error('Missing PesePay credentials');
+    if (!integrationKey) {
+      console.error('Missing PesePay integration key');
       return new Response(
         JSON.stringify({ success: false, error: 'Payment service configuration error' }),
         { 
@@ -110,78 +29,101 @@ serve(async (req) => {
       );
     }
 
-    const requestData = await req.json();
-    console.log('Request data received:', { ...requestData, customerPhone: '***' });
+    // Clean integration key - remove any non-alphanumeric characters except hyphens
+    const cleanIntegrationKey = integrationKey.trim().replace(/[^a-zA-Z0-9\-]/g, '');
+    console.log('Cleaned integration key length:', cleanIntegrationKey.length);
+    
+    if (cleanIntegrationKey.length === 0) {
+      console.error('Integration key is empty after cleaning');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid integration key format' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
-    // Prepare payment payload
+    const requestData = await req.json();
+    console.log('Request data received:', { 
+      amount: requestData.amount, 
+      currencyCode: requestData.currencyCode,
+      merchantReference: requestData.merchantReference,
+      reasonForPayment: requestData.reasonForPayment
+    });
+
+    // Prepare payment payload according to PesePay docs
     const paymentPayload = {
       amountDetails: {
         amount: requestData.amount,
         currencyCode: requestData.currencyCode
       },
-      merchantReference: requestData.merchantReference,
       reasonForPayment: requestData.reasonForPayment,
       resultUrl: requestData.resultUrl,
       returnUrl: requestData.returnUrl
     };
 
-    console.log('Payment payload:', JSON.stringify(paymentPayload, null, 2));
+    console.log('Making API request to PesePay with payload:', JSON.stringify(paymentPayload, null, 2));
 
-    // Try making API request without encryption first
     try {
-      console.log('Attempting PesePay API call...');
-      
-      const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
+      // First try without encryption - many payment gateways accept both
+      const response = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${integrationKey.trim()}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'authorization': cleanIntegrationKey,
+          'content-type': 'application/json'
         },
         body: JSON.stringify(paymentPayload),
       });
       
-      console.log('Response status:', pesePayResponse.status);
-      console.log('Response headers:', Object.fromEntries(pesePayResponse.headers.entries()));
+      console.log('PesePay response status:', response.status);
+      console.log('PesePay response ok:', response.ok);
       
-      const responseText = await pesePayResponse.text();
+      const responseText = await response.text();
       console.log('PesePay raw response:', responseText);
       
-      if (pesePayResponse.ok) {
-        let responseData;
+      if (response.ok) {
         try {
-          responseData = JSON.parse(responseText);
-          console.log('PesePay parsed response:', JSON.stringify(responseData, null, 2));
+          const responseData = JSON.parse(responseText);
+          console.log('Parsed PesePay response:', JSON.stringify(responseData, null, 2));
           
-          // Return the response from PesePay
-          if (responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl) {
-            const redirectUrl = responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl;
+          // Check for various possible redirect URL field names
+          const redirectUrl = responseData.redirectUrl || 
+                             responseData.paymentUrl || 
+                             responseData.checkoutUrl ||
+                             responseData.redirect_url ||
+                             responseData.payment_url;
+          
+          if (redirectUrl) {
             return new Response(JSON.stringify({
               success: true,
               redirectUrl: redirectUrl,
-              referenceNumber: responseData.referenceNumber || requestData.merchantReference,
-              pollUrl: responseData.pollUrl || `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${responseData.referenceNumber || requestData.merchantReference}`
+              referenceNumber: responseData.referenceNumber || responseData.reference || requestData.merchantReference,
+              pollUrl: responseData.pollUrl || `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${responseData.referenceNumber || requestData.merchantReference}`,
+              transactionReference: responseData.transactionReference || responseData.reference
             }), {
               status: 200,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
           } else {
-            console.log('No redirect URL found, returning full response');
+            console.log('No redirect URL found in response, returning full response');
             return new Response(JSON.stringify({
               success: true,
-              ...responseData
+              data: responseData,
+              message: 'Payment initiated but no redirect URL provided'
             }), {
               status: 200,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
           }
+          
         } catch (parseError) {
           console.error('Failed to parse PesePay response:', parseError);
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: 'Failed to process PesePay response',
-              details: parseError instanceof Error ? parseError.message : 'Unknown parse error',
+              error: 'Failed to parse payment service response',
+              details: parseError instanceof Error ? parseError.message : 'Parse error',
               rawResponse: responseText
             }),
             { 
@@ -191,57 +133,23 @@ serve(async (req) => {
           );
         }
       } else {
-        console.error('PesePay API error status:', pesePayResponse.status);
-        console.error('PesePay API error response:', responseText);
+        console.error('PesePay API error:', response.status, responseText);
         
-        // If unencrypted fails, try with encryption
-        if (pesePayResponse.status === 400 || pesePayResponse.status === 401) {
-          console.log('Trying with encryption...');
-          
-          try {
-            const encryptedPayload = await encryptPayload(JSON.stringify(paymentPayload), encryptionKey);
-            console.log('Payload encrypted successfully');
-            
-            const encryptedResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${integrationKey.trim()}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({ payload: encryptedPayload }),
-            });
-            
-            const encryptedResponseText = await encryptedResponse.text();
-            console.log('Encrypted API response:', encryptedResponseText);
-            
-            if (encryptedResponse.ok) {
-              const parsedResponse = JSON.parse(encryptedResponseText);
-              
-              if (parsedResponse.payload) {
-                const decryptedPayload = await decryptPayload(parsedResponse.payload, encryptionKey);
-                const responseData = JSON.parse(decryptedPayload);
-                
-                return new Response(JSON.stringify({
-                  success: true,
-                  redirectUrl: responseData.redirectUrl || responseData.paymentUrl,
-                  referenceNumber: responseData.referenceNumber || requestData.merchantReference
-                }), {
-                  status: 200,
-                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                });
-              }
-            }
-          } catch (encryptionError) {
-            console.error('Encryption attempt failed:', encryptionError);
-          }
+        // Try to parse error response
+        let errorDetails = responseText;
+        try {
+          const errorData = JSON.parse(responseText);
+          errorDetails = errorData.message || errorData.error || responseText;
+        } catch {
+          // Keep original response text if not JSON
         }
         
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: `PesePay API error: ${pesePayResponse.status}`,
-            details: responseText
+            error: `Payment service error: ${response.status}`,
+            details: errorDetails,
+            statusCode: response.status
           }),
           { 
             status: 500,
@@ -250,13 +158,31 @@ serve(async (req) => {
         );
       }
       
-    } catch (apiError) {
-      console.error('API call error:', apiError);
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError);
+      
+      // Provide specific error message for header issues
+      if (fetchError instanceof Error && fetchError.message.includes('header')) {
+        console.error('Header error detected - integration key may have invalid characters');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Payment service configuration error',
+            details: 'Invalid integration key format or characters',
+            keyLength: cleanIntegrationKey.length
+          }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Failed to connect to PesePay API',
-          details: apiError instanceof Error ? apiError.message : 'Unknown API error'
+          error: 'Failed to connect to payment service',
+          details: fetchError instanceof Error ? fetchError.message : 'Network error'
         }),
         { 
           status: 500,
@@ -266,7 +192,7 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('PesePay payment function error:', error);
+    console.error('PesePay function error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
