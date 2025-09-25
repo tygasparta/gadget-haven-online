@@ -115,11 +115,37 @@ serve(async (req) => {
           }
         } catch (parseError) {
           console.error('Failed to parse PesePay response as JSON:', parseError);
+          // Return error instead of fallback
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: 'Failed to parse PesePay response',
+              details: parseError instanceof Error ? parseError.message : 'Unknown parse error'
+            }),
+            { 
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
       } else {
         const errorText = await pesePayResponse.text();
         console.error('PesePay API error response:', errorText);
         console.error('PesePay API error status:', pesePayResponse.status);
+        
+        // Return the actual error instead of fallback
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `PesePay API error: ${pesePayResponse.status}`,
+            details: errorText,
+            method: 'Method 1'
+          }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
     } catch (firstError) {
@@ -168,70 +194,61 @@ serve(async (req) => {
             }
           } catch (parseError) {
             console.error('Method 2 - Failed to parse PesePay response as JSON:', parseError);
+            return new Response(
+              JSON.stringify({ 
+                success: false, 
+                error: 'Failed to parse PesePay response (Method 2)',
+                details: parseError instanceof Error ? parseError.message : 'Unknown parse error'
+              }),
+              { 
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
           }
+        } else {
+          const errorText = await pesePayResponse.text();
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `PesePay API error (Method 2): ${pesePayResponse.status}`,
+              details: errorText
+            }),
+            { 
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
       } catch (secondError) {
         console.error('Method 2 failed:', secondError);
         
-        // Try Method 3: No payload wrapper
-        try {
-          console.log('Attempting PesePay API call - Method 3: Direct payload');
-          
-          const pesePayResponse = await fetch('https://api.pesepay.com/api/payments-engine/v1/payments/initiate', {
-            method: 'POST',
-            headers: {
-              'authorization': cleanIntegrationKey,
-              'content-type': 'application/json'
-            },
-            body: JSON.stringify(paymentPayload),
-          });
-          
-          console.log('Method 3 - Response status:', pesePayResponse.status);
-          
-          if (pesePayResponse.ok) {
-            const responseText = await pesePayResponse.text();
-            console.log('Method 3 - PesePay raw response:', responseText);
-            
-            let responseData;
-            try {
-              responseData = JSON.parse(responseText);
-              console.log('Method 3 - PesePay parsed response:', JSON.stringify(responseData, null, 2));
-              
-              if (responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl) {
-                const redirectUrl = responseData.redirectUrl || responseData.paymentUrl || responseData.checkoutUrl;
-                return new Response(JSON.stringify({
-                  success: true,
-                  redirectUrl: redirectUrl,
-                  referenceNumber: requestData.merchantReference,
-                  pollUrl: responseData.pollUrl || `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`
-                }), {
-                  status: 200,
-                  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                });
-              }
-            } catch (parseError) {
-              console.error('Method 3 - Failed to parse PesePay response as JSON:', parseError);
+        // Return the actual errors instead of fallback
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'All PesePay API methods failed',
+            details: {
+              method1: firstError instanceof Error ? firstError.message : 'Unknown error',
+              method2: secondError instanceof Error ? secondError.message : 'Unknown error'
             }
+          }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
-        } catch (thirdError) {
-          console.error('Method 3 failed:', thirdError);
-        }
+        );
       }
     }
     
-    // If all methods fail, return development fallback but log the issue
-    console.log('All PesePay API methods failed - using development fallback');
-    console.log('This should be investigated for production use');
+    // Fallback return (should not reach here, but needed for TypeScript)
     return new Response(
-      JSON.stringify({
-        success: true,
-        redirectUrl: `${requestData.returnUrl}?status=success&reference=${requestData.merchantReference}&amount=${paymentPayload.amountDetails.amount}&currency=${paymentPayload.amountDetails.currencyCode}&test=true`,
-        referenceNumber: requestData.merchantReference,
-        pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
-        note: 'Using development fallback - PesePay API integration needs review'
+      JSON.stringify({ 
+        success: false, 
+        error: 'Unexpected code path reached'
       }),
       { 
-        status: 200,
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
