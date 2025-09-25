@@ -18,10 +18,30 @@ serve(async (req) => {
     const integrationKey = Deno.env.get('PESEPAY_INTEGRATION_KEY');
     const encryptionKey = Deno.env.get('PESEPAY_ENCRYPTION_KEY');
     
+    console.log('Raw integration key:', integrationKey);
+    console.log('Integration key type:', typeof integrationKey);
+    
     if (!integrationKey || !encryptionKey) {
       console.error('Missing PesePay credentials');
       return new Response(
         JSON.stringify({ success: false, error: 'Payment service configuration error' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Clean and validate the integration key
+    const cleanIntegrationKey = integrationKey.trim();
+    console.log('Cleaned integration key length:', cleanIntegrationKey.length);
+    
+    // Check for invalid characters in the integration key
+    const invalidChars = /[^\w\-]/g;
+    if (invalidChars.test(cleanIntegrationKey)) {
+      console.error('Integration key contains invalid characters');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid integration key format' }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -51,8 +71,8 @@ serve(async (req) => {
     // For now, we'll use a simplified approach without encryption
     // In production, you would need to implement proper encryption/decryption
     const headers = {
-      'authorization': integrationKey,  // PesePay expects integration key directly, not Bearer prefix
-      'content-type': 'application/json',
+      'Authorization': cleanIntegrationKey,  // Try capitalized Authorization
+      'Content-Type': 'application/json',
     };
     
     console.log('Request headers:', JSON.stringify(headers, null, 2));
