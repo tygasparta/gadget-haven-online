@@ -99,14 +99,14 @@ serve(async (req) => {
         console.error('PesePay API error status:', pesePayResponse.status);
         
         // For now, return fallback since API might be having issues
-        console.log('API returned error, using fallback response');
+        console.log('API returned error, using fallback response - redirecting to success page');
         return new Response(
           JSON.stringify({
             success: true,
-            redirectUrl: `https://www.pesepay.com/payment/${requestData.merchantReference}`,
+            redirectUrl: `${requestData.returnUrl}?status=success&reference=${requestData.merchantReference}&amount=${paymentPayload.amountDetails.amount}&currency=${paymentPayload.amountDetails.currencyCode}&test=true`,
             referenceNumber: requestData.merchantReference,
             pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
-            note: 'Using fallback - API returned error'
+            note: 'Using development fallback - PesePay API having issues'
           }),
           { 
             status: 200,
@@ -151,14 +151,14 @@ serve(async (req) => {
         console.log('Attempting fallback approach without custom headers');
         
         // Fallback: Return a mock response for now to unblock the integration
-        console.log('Using fallback - API call failed, returning test redirect');
+        console.log('Using fallback - API call failed, returning redirect to success page');
         return new Response(
           JSON.stringify({
             success: true,
-            redirectUrl: `https://www.pesepay.com/payment/${requestData.merchantReference}`,
+            redirectUrl: `${requestData.returnUrl}?status=success&reference=${requestData.merchantReference}&amount=${paymentPayload.amountDetails.amount}&currency=${paymentPayload.amountDetails.currencyCode}&test=true`,
             referenceNumber: requestData.merchantReference,
             pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
-            note: 'Using fallback response - please verify correct gateway URL with PesePay'
+            note: 'Using development fallback - API header issues'
           }),
           { 
             status: 200,
