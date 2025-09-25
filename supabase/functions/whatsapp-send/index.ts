@@ -145,7 +145,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error sending WhatsApp message:", error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       success: false
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

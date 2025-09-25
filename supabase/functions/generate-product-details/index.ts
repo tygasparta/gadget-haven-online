@@ -139,7 +139,7 @@ MANDATORY: The specifications array MUST contain at least 5-8 real specification
     }
 
     // Validate specifications have proper structure
-    const hasValidSpecs = parsedData.specifications.every(spec => 
+    const hasValidSpecs = parsedData.specifications.every((spec: any) => 
       spec.key && spec.value && 
       typeof spec.key === 'string' && 
       typeof spec.value === 'string' &&

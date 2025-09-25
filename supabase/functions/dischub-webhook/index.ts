@@ -102,7 +102,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Internal server error' 
+        error: error instanceof Error ? error.message : 'Internal server error'
       }),
       { 
         status: 200, // Return 200 so Dischub doesn't retry
