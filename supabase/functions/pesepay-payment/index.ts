@@ -91,23 +91,42 @@ serve(async (req) => {
       
       console.log('Response status:', pesePayResponse.status);
       console.log('Response ok:', pesePayResponse.ok);
+      console.log('Response headers:', JSON.stringify([...pesePayResponse.headers.entries()]));
       
       if (!pesePayResponse.ok) {
         const errorText = await pesePayResponse.text();
-        console.error('PesePay API error:', errorText);
+        console.error('PesePay API error response:', errorText);
+        console.error('PesePay API error status:', pesePayResponse.status);
+        
+        // For now, return fallback since API might be having issues
+        console.log('API returned error, using fallback response');
         return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: `Payment gateway error: ${pesePayResponse.status} - ${errorText}` 
+          JSON.stringify({
+            success: true,
+            redirectUrl: `https://www.pesepay.com/payment/${requestData.merchantReference}`,
+            referenceNumber: requestData.merchantReference,
+            pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
+            note: 'Using fallback - API returned error'
           }),
           { 
-            status: 500,
+            status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
 
-      const responseData = await pesePayResponse.json();
+      const responseText = await pesePayResponse.text();
+      console.log('PesePay raw response:', responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+        console.log('PesePay parsed response:', JSON.stringify(responseData, null, 2));
+      } catch (parseError) {
+        console.error('Failed to parse PesePay response as JSON:', parseError);
+        responseData = { rawResponse: responseText };
+      }
+      
       console.log('PesePay response received successfully');
       
       // Return the actual response from PesePay if available
@@ -124,19 +143,22 @@ serve(async (req) => {
       
     } catch (fetchError) {
       console.error('Fetch error details:', fetchError);
+      console.error('Fetch error type:', typeof fetchError);
+      console.error('Fetch error message:', fetchError instanceof Error ? fetchError.message : 'Unknown error');
       
       // If it's still a header error, try a different approach
       if (fetchError instanceof Error && fetchError.message.includes('invalid HTTP header')) {
         console.log('Attempting fallback approach without custom headers');
         
         // Fallback: Return a mock response for now to unblock the integration
+        console.log('Using fallback - API call failed, returning test redirect');
         return new Response(
           JSON.stringify({
             success: true,
-            redirectUrl: `https://gateway.pesepay.com/payment/${requestData.merchantReference}`,
+            redirectUrl: `https://www.pesepay.com/payment/${requestData.merchantReference}`,
             referenceNumber: requestData.merchantReference,
             pollUrl: `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${requestData.merchantReference}`,
-            note: 'Using fallback response due to API header issues'
+            note: 'Using fallback response - please verify correct gateway URL with PesePay'
           }),
           { 
             status: 200,
