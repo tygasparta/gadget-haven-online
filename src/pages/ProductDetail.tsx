@@ -138,6 +138,15 @@ const ProductDetail = () => {
     return `Check out this amazing product: ${product?.name} - Only $${product?.price}!`;
   };
 
+  const getAbsoluteImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    // Convert relative URL to absolute URL
+    return `${window.location.origin}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
+
   const handleShare = async (platform: string) => {
     const url = getProductUrl();
     const text = getShareText();
@@ -223,7 +232,7 @@ const ProductDetail = () => {
         <meta property="og:type" content="product" />
         <meta property="og:title" content={`${product.name} - GadgetGenie`} />
         <meta property="og:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
-        <meta property="og:image" content={product.image} />
+        <meta property="og:image" content={getAbsoluteImageUrl(product.image)} />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:site_name" content="GadgetGenie" />
         <meta property="product:price:amount" content={product.price.toString()} />
@@ -234,12 +243,14 @@ const ProductDetail = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${product.name} - GadgetGenie`} />
         <meta name="twitter:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
-        <meta name="twitter:image" content={product.image} />
+        <meta name="twitter:image" content={getAbsoluteImageUrl(product.image)} />
         
         {/* WhatsApp and other messaging apps */}
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={product.name} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:secure_url" content={getAbsoluteImageUrl(product.image)} />
       </Helmet>
       <Header />
       
