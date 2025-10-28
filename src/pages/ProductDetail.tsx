@@ -151,9 +151,10 @@ const ProductDetail = () => {
   };
 
   const getShareUrl = () => {
-    // For social media crawlers, use the edge function URL that serves proper meta tags
-    const baseUrl = 'https://gadgetgenie.org';
-    return `${baseUrl}/product/${id}`;
+    // Use the edge function URL that serves static HTML with proper meta tags for social media crawlers
+    // This edge function will show meta tags to crawlers and redirect real users to the actual page
+    const supabaseUrl = 'https://ktpxqjyfguxckdzlqwai.supabase.co';
+    return `${supabaseUrl}/functions/v1/og-meta?id=${id}`;
   };
 
   const handleShare = async (platform: string) => {
