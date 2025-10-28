@@ -139,18 +139,27 @@ const ProductDetail = () => {
   };
 
   const getAbsoluteImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return '';
+    if (!imageUrl) return 'https://gadgetgenie.org/favicon.png';
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return imageUrl;
     }
-    // Convert relative URL to absolute URL
-    return `${window.location.origin}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+    // Use production domain for social media sharing
+    const domain = window.location.hostname === 'localhost' 
+      ? window.location.origin 
+      : 'https://gadgetgenie.org';
+    return `${domain}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
+
+  const getShareUrl = () => {
+    // For social media crawlers, use the edge function URL that serves proper meta tags
+    const baseUrl = 'https://gadgetgenie.org';
+    return `${baseUrl}/product/${id}`;
   };
 
   const handleShare = async (platform: string) => {
-    const url = getProductUrl();
+    const url = getShareUrl(); // Use the SEO-friendly URL
     const text = getShareText();
-    const imageUrl = product?.image || galleryImages[0];
+    const imageUrl = getAbsoluteImageUrl(product?.image || galleryImages[0]);
     
     switch (platform) {
       case 'native':
