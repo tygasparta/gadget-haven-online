@@ -153,8 +153,10 @@ const ProductDetail = () => {
   };
 
   const getShareUrl = () => {
-    // Use the production domain for sharing
-    return `https://gadgetgenie.org/product/${id}`;
+    // Use the edge function URL for social media crawlers to get proper meta tags
+    // The edge function serves static HTML with meta tags and redirects users to the real domain
+    const supabaseUrl = 'https://ktpxqjyfguxckdzlqwai.supabase.co';
+    return `${supabaseUrl}/functions/v1/og-meta?id=${id}`;
   };
   
   const getProductUrl = () => {
