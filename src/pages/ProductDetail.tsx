@@ -153,10 +153,8 @@ const ProductDetail = () => {
   };
 
   const getShareUrl = () => {
-    // Use the edge function URL for social media crawlers to get proper meta tags
-    // The edge function serves static HTML with meta tags and redirects users to the real domain
-    const supabaseUrl = 'https://ktpxqjyfguxckdzlqwai.supabase.co';
-    return `${supabaseUrl}/functions/v1/og-meta?id=${id}`;
+    // Using real domain - note: social media previews won't work without server-side rendering
+    return `https://gadgetgenie.org/product/${id}`;
   };
   
   const getProductUrl = () => {
