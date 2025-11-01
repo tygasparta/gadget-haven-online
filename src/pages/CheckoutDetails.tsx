@@ -10,7 +10,6 @@ import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
 import useDischub from '@/hooks/useDischub';
-import { usePesePay } from '@/hooks/usePesePay';
 import { usePayPal } from '@/hooks/usePayPal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,12 +26,10 @@ const CheckoutDetails = () => {
   const { toast } = useToast();
   const { data: cartItems = [], isLoading: cartLoading, error: cartError } = useCartItems();
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
-  const { initiatePesePayPayment, isProcessing: isPesePayProcessing } = usePesePay();
   const { initiatePayPalPayment, isProcessing: isPayPalProcessing } = usePayPal();
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
-  const [pesePayCurrency, setPesePayCurrency] = useState<'USD' | 'ZWL'>('USD');
   const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
   const [formData, setFormData] = useState({
     email: '',
@@ -275,81 +272,6 @@ const CheckoutDetails = () => {
     }
   };
 
-  const handlePesePayPayment = async (currency: 'USD' | 'ZWL') => {
-    console.log('Starting PesePay payment process');
-    
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to proceed with payment",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast({
-        title: "Empty Cart",
-        description: "Please add items to your cart before proceeding",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const orderData = {
-        user_id: user.id,
-        total_amount: finalTotal,
-        shipping_method: shippingMethod,
-        payment_method: 'pesepay',
-        status: 'pending',
-        shipping_address: shippingMethod === 'shipping' ? formData : null,
-        billing_address: shippingMethod === 'shipping' ? formData : null
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      console.log('Order created:', order.id);
-
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.products?.price || 0
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      console.log('Order items created');
-
-      await initiatePesePayPayment({
-        orderId: order.id,
-        amount: finalTotal,
-        currency: currency,
-        customerPhone: formData.firstName || user.phone,
-        customerEmail: formData.email || user.email
-      }, order.id);
-
-    } catch (error) {
-      console.error('PesePay payment error:', error);
-      toast({
-        title: "Payment Error",
-        description: error instanceof Error ? error.message : "Failed to process payment",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handlePayPalPayment = async () => {
     console.log('Starting PayPal payment process');
     
@@ -430,8 +352,6 @@ const CheckoutDetails = () => {
     
     if (paymentMethod === 'dischub') {
       await handleDischubPayment(dischubCurrency);
-    } else if (paymentMethod === 'pesepay') {
-      await handlePesePayPayment(pesePayCurrency);
     } else if (paymentMethod === 'paypal') {
       await handlePayPalPayment();
     } else if (paymentMethod === 'cod') {
@@ -554,10 +474,6 @@ const CheckoutDetails = () => {
               totalAmount={finalTotal}
               onInitiateDischubPayment={handleDischubPayment}
               isDischubProcessing={isDischubProcessing}
-              pesePayCurrency={pesePayCurrency}
-              setPesePayCurrency={setPesePayCurrency}
-              onInitiatePesePayPayment={handlePesePayPayment}
-              isPesePayProcessing={isPesePayProcessing}
               onInitiatePayPalPayment={handlePayPalPayment}
               isPayPalProcessing={isPayPalProcessing}
             />
