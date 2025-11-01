@@ -35,13 +35,23 @@ Deno.serve(async (req) => {
 
     // Get the site URL from environment or use default
     const siteUrl = Deno.env.get('SITE_URL') || 'https://gadgetgenie.org'
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     
-    // Convert relative image URL to absolute
+    // Convert image URL to absolute URL
     const getAbsoluteImageUrl = (imageUrl: string) => {
       if (!imageUrl) return `${siteUrl}/favicon.png`
+      
+      // If already absolute URL, return as is
       if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl
       }
+      
+      // If it's a Supabase storage URL (starts with storage path)
+      if (imageUrl.includes('/storage/v1/object/public/')) {
+        return `${supabaseUrl}${imageUrl}`
+      }
+      
+      // If it's a public folder or lovable-uploads path
       return `${siteUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`
     }
 

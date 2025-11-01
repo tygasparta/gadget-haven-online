@@ -130,10 +130,6 @@ const ProductDetail = () => {
   };
 
   // Share functionality
-  const getProductUrl = () => {
-    return window.location.href;
-  };
-
   const getShareText = () => {
     return `Check out this amazing product: ${product?.name} - Only $${product?.price}!`;
   };
@@ -143,10 +139,16 @@ const ProductDetail = () => {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return imageUrl;
     }
-    // Use production domain for social media sharing
-    const domain = window.location.hostname === 'localhost' 
-      ? window.location.origin 
-      : 'https://gadgetgenie.org';
+    
+    // Always use production domain for social media sharing
+    const domain = 'https://gadgetgenie.org';
+    
+    // If it's a Supabase storage URL
+    if (imageUrl.includes('/storage/v1/object/public/')) {
+      return `https://ktpxqjyfguxckdzlqwai.supabase.co${imageUrl}`;
+    }
+    
+    // If it's a public folder or lovable-uploads path
     return `${domain}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
   };
 
@@ -155,6 +157,10 @@ const ProductDetail = () => {
     // This edge function will show meta tags to crawlers and redirect real users to the actual page
     const supabaseUrl = 'https://ktpxqjyfguxckdzlqwai.supabase.co';
     return `${supabaseUrl}/functions/v1/og-meta?id=${id}`;
+  };
+  
+  const getProductUrl = () => {
+    return `https://gadgetgenie.org/product/${id}`;
   };
 
   const handleShare = async (platform: string) => {
@@ -238,12 +244,20 @@ const ProductDetail = () => {
         <title>{product.name} - GadgetGenie</title>
         <meta name="description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         
+        {/* Canonical URL */}
+        <link rel="canonical" href={getProductUrl()} />
+        
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="product" />
         <meta property="og:title" content={`${product.name} - GadgetGenie`} />
         <meta property="og:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         <meta property="og:image" content={getAbsoluteImageUrl(product.image)} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:image:secure_url" content={getAbsoluteImageUrl(product.image)} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={product.name} />
+        <meta property="og:url" content={getProductUrl()} />
         <meta property="og:site_name" content="GadgetGenie" />
         <meta property="product:price:amount" content={product.price.toString()} />
         <meta property="product:price:currency" content="USD" />
@@ -254,13 +268,6 @@ const ProductDetail = () => {
         <meta name="twitter:title" content={`${product.name} - GadgetGenie`} />
         <meta name="twitter:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         <meta name="twitter:image" content={getAbsoluteImageUrl(product.image)} />
-        
-        {/* WhatsApp and other messaging apps */}
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={product.name} />
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:secure_url" content={getAbsoluteImageUrl(product.image)} />
       </Helmet>
       <Header />
       
