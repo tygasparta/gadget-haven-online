@@ -11,6 +11,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
 import useDischub from '@/hooks/useDischub';
 import { usePesePay } from '@/hooks/usePesePay';
+import { usePayPal } from '@/hooks/usePayPal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ContactInformationSection from '@/components/checkout/ContactInformationSection';
@@ -27,6 +28,7 @@ const CheckoutDetails = () => {
   const { data: cartItems = [], isLoading: cartLoading, error: cartError } = useCartItems();
   const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   const { initiatePesePayPayment, isProcessing: isPesePayProcessing } = usePesePay();
+  const { initiatePayPalPayment, isProcessing: isPayPalProcessing } = usePayPal();
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
@@ -348,6 +350,79 @@ const CheckoutDetails = () => {
     }
   };
 
+  const handlePayPalPayment = async () => {
+    console.log('Starting PayPal payment process');
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to proceed with payment",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast({
+        title: "Empty Cart",
+        description: "Please add items to your cart before proceeding",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const orderData = {
+        user_id: user.id,
+        total_amount: finalTotal,
+        shipping_method: shippingMethod,
+        payment_method: 'paypal',
+        status: 'pending',
+        shipping_address: shippingMethod === 'shipping' ? formData : null,
+        billing_address: shippingMethod === 'shipping' ? formData : null
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData)
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      console.log('Order created:', order.id);
+
+      const orderItems = cartItems.map(item => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.products?.price || 0
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      console.log('Order items created');
+
+      await initiatePayPalPayment({
+        orderId: order.id,
+        amount: finalTotal,
+        currency: 'USD'
+      }, order.id);
+
+    } catch (error) {
+      console.error('PayPal payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: error instanceof Error ? error.message : "Failed to process payment",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -357,6 +432,8 @@ const CheckoutDetails = () => {
       await handleDischubPayment(dischubCurrency);
     } else if (paymentMethod === 'pesepay') {
       await handlePesePayPayment(pesePayCurrency);
+    } else if (paymentMethod === 'paypal') {
+      await handlePayPalPayment();
     } else if (paymentMethod === 'cod') {
       await handleCashOnDelivery();
     }
@@ -481,6 +558,8 @@ const CheckoutDetails = () => {
               setPesePayCurrency={setPesePayCurrency}
               onInitiatePesePayPayment={handlePesePayPayment}
               isPesePayProcessing={isPesePayProcessing}
+              onInitiatePayPalPayment={handlePayPalPayment}
+              isPayPalProcessing={isPayPalProcessing}
             />
           </div>
 
