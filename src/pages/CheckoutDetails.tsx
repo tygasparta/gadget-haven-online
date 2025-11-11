@@ -11,6 +11,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
 import useDischub from '@/hooks/useDischub';
 import { usePayPal } from '@/hooks/usePayPal';
+import EcoCashService from '@/services/ecocashService';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ContactInformationSection from '@/components/checkout/ContactInformationSection';
@@ -30,6 +31,8 @@ const CheckoutDetails = () => {
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
+  const [ecocashCurrency, setEcocashCurrency] = useState<'USD' | 'ZWL'>('USD');
+  const [isEcocashProcessing, setIsEcocashProcessing] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
   const [formData, setFormData] = useState({
     email: '',
@@ -345,6 +348,112 @@ const CheckoutDetails = () => {
     }
   };
 
+  const handleEcocashPayment = async () => {
+    if (!formData.firstName || !formData.lastName || 
+        (shippingMethod === 'shipping' && (!formData.address || !formData.city))) {
+      toast({
+        title: "Missing Information",
+        description: shippingMethod === 'shipping' 
+          ? "Please fill in all required fields including shipping address"
+          : "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsEcocashProcessing(true);
+      console.log('Starting EcoCash payment process...');
+      
+      const orderData = {
+        user_id: user.id,
+        total_amount: finalTotal,
+        status: 'pending',
+        payment_method: 'ecocash',
+        shipping_method: shippingMethod,
+        shipping_address: shippingMethod === 'shipping' ? {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          address: formData.address,
+          city: formData.city,
+          zipCode: formData.zipCode,
+          country: formData.country
+        } : null,
+        billing_address: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          address: formData.address || 'Shop Collection',
+          city: formData.city || 'Shop Location',
+          zipCode: formData.zipCode || '00000',
+          country: formData.country
+        }
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData)
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw orderError;
+      }
+
+      console.log('Order created successfully:', order);
+
+      const orderItems = cartItems.map(item => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.products.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('Order items creation error:', itemsError);
+        throw itemsError;
+      }
+
+      console.log('Order items created successfully');
+
+      const ecocashService = new EcoCashService();
+      const result = await ecocashService.createPaymentOrder({
+        amount: finalTotal,
+        description: `Order ${order.id} - ${cartItems.length} items`,
+        orderId: order.id,
+        currency: ecocashCurrency
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to initiate EcoCash payment');
+      }
+
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        toast({
+          title: "Payment Initiated",
+          description: result.instructions || "Please complete payment on your EcoCash app",
+        });
+        navigate(`/payment-success?reference=${result.reference}`);
+      }
+
+    } catch (error: any) {
+      console.error('EcoCash checkout error:', error);
+      toast({
+        title: "Checkout Failed",
+        description: error.message || "Failed to process checkout",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEcocashProcessing(false);
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -354,6 +463,8 @@ const CheckoutDetails = () => {
       await handleDischubPayment(dischubCurrency);
     } else if (paymentMethod === 'paypal') {
       await handlePayPalPayment();
+    } else if (paymentMethod === 'ecocash') {
+      await handleEcocashPayment();
     } else if (paymentMethod === 'cod') {
       await handleCashOnDelivery();
     }
@@ -471,11 +582,15 @@ const CheckoutDetails = () => {
               setPhoneNumber={() => {}}
               dischubCurrency={dischubCurrency}
               setDischubCurrency={setDischubCurrency}
+              ecocashCurrency={ecocashCurrency}
+              setEcocashCurrency={setEcocashCurrency}
               totalAmount={finalTotal}
               onInitiateDischubPayment={handleDischubPayment}
               isDischubProcessing={isDischubProcessing}
               onInitiatePayPalPayment={handlePayPalPayment}
               isPayPalProcessing={isPayPalProcessing}
+              onInitiateEcocashPayment={handleEcocashPayment}
+              isEcocashProcessing={isEcocashProcessing}
             />
           </div>
 

@@ -1,10 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Package, Wallet } from 'lucide-react';
+import { CreditCard, Package, Wallet, Smartphone } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import DischubPaymentSection from './DischubPaymentSection';
+import EcoCashPaymentSection from './EcoCashPaymentSection';
 
 interface PaymentMethodSectionProps {
   paymentMethod: string;
@@ -16,12 +17,18 @@ interface PaymentMethodSectionProps {
   // Dischub props
   dischubCurrency: 'USD';
   setDischubCurrency: (currency: 'USD') => void;
+  // EcoCash props
+  ecocashCurrency: 'USD' | 'ZWL';
+  setEcocashCurrency: (currency: 'USD' | 'ZWL') => void;
   totalAmount: number;
   onInitiateDischubPayment: (currency: 'USD') => void;
   isDischubProcessing: boolean;
   // PayPal props
   onInitiatePayPalPayment: () => void;
   isPayPalProcessing: boolean;
+  // EcoCash payment
+  onInitiateEcocashPayment: () => void;
+  isEcocashProcessing: boolean;
 }
 
 const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
@@ -29,11 +36,15 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
   setPaymentMethod,
   dischubCurrency,
   setDischubCurrency,
+  ecocashCurrency,
+  setEcocashCurrency,
   totalAmount,
   onInitiateDischubPayment,
   isDischubProcessing,
   onInitiatePayPalPayment,
-  isPayPalProcessing
+  isPayPalProcessing,
+  onInitiateEcocashPayment,
+  isEcocashProcessing
 }) => {
   console.log('PaymentMethodSection rendering with method:', paymentMethod);
   return (
@@ -83,6 +94,21 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               </div>
             </div>
 
+            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer">
+              <RadioGroupItem value="ecocash" id="ecocash" className="text-green-600" />
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Smartphone className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <label htmlFor="ecocash" className="font-semibold text-gray-800 cursor-pointer">
+                    EcoCash
+                  </label>
+                  <p className="text-sm text-gray-500">Pay with EcoCash Mobile Money</p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all cursor-pointer">
               <RadioGroupItem value="cod" id="cod" className="text-orange-600" />
               <div className="flex items-center space-x-3 flex-1">
@@ -126,6 +152,16 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
                 {isPayPalProcessing ? 'Processing...' : `Pay $${totalAmount.toFixed(2)} with PayPal`}
               </Button>
             </motion.div>
+          )}
+
+          {paymentMethod === 'ecocash' && (
+            <EcoCashPaymentSection
+              totalPrice={totalAmount}
+              currency={ecocashCurrency}
+              onCurrencyChange={setEcocashCurrency}
+              onInitiatePayment={onInitiateEcocashPayment}
+              isProcessing={isEcocashProcessing}
+            />
           )}
 
           {paymentMethod === 'cod' && (
