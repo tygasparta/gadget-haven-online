@@ -33,8 +33,10 @@ serve(async (req) => {
     const reference = `EC-${orderId}-${Date.now()}`;
 
     // Create payment request to EcoCash API
+    // Include API credentials in the request body
     const ecocashPayload = {
       merchantCode,
+      apiKey,
       amount: parseFloat(amount).toFixed(2),
       currency,
       reference,
@@ -44,12 +46,12 @@ serve(async (req) => {
     };
 
     console.log('Sending request to EcoCash API:', apiUrl);
+    console.log('Payload (without apiKey):', { ...ecocashPayload, apiKey: '[REDACTED]' });
 
     const ecocashResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify(ecocashPayload),
     });
