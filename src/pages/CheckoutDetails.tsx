@@ -31,7 +31,6 @@ const CheckoutDetails = () => {
   
   const [paymentMethod, setPaymentMethod] = useState('dischub');
   const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
-  const [ecocashCurrency, setEcocashCurrency] = useState<'USD' | 'ZWL'>('USD');
   const [isEcocashProcessing, setIsEcocashProcessing] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
   const [formData, setFormData] = useState({
@@ -425,7 +424,7 @@ const CheckoutDetails = () => {
         amount: finalTotal,
         description: `Order ${order.id} - ${cartItems.length} items`,
         orderId: order.id,
-        currency: ecocashCurrency
+        currency: 'USD'
       });
 
       if (!result.success) {
@@ -582,8 +581,6 @@ const CheckoutDetails = () => {
               setPhoneNumber={() => {}}
               dischubCurrency={dischubCurrency}
               setDischubCurrency={setDischubCurrency}
-              ecocashCurrency={ecocashCurrency}
-              setEcocashCurrency={setEcocashCurrency}
               totalAmount={finalTotal}
               onInitiateDischubPayment={handleDischubPayment}
               isDischubProcessing={isDischubProcessing}

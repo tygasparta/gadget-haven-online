@@ -4,7 +4,7 @@ export interface EcoCashPaymentData {
   amount: number;
   description: string;
   orderId: string;
-  currency?: 'USD' | 'ZWL';
+  currency?: 'USD';
 }
 
 export interface EcoCashResponse {
@@ -59,15 +59,14 @@ class EcoCashService {
   }
 
   validatePayment(
-    amount: number,
-    currency: 'USD' | 'ZWL' = 'USD'
+    amount: number
   ): { valid: boolean; error?: string } {
     if (amount <= 0) {
       return { valid: false, error: 'Amount must be greater than 0' };
     }
 
-    if (currency === 'USD' && amount < 1) {
-      return { valid: false, error: 'Minimum amount for USD is $1.00' };
+    if (amount < 1) {
+      return { valid: false, error: 'Minimum amount is $1.00' };
     }
 
     if (amount > 10000) {
@@ -77,20 +76,13 @@ class EcoCashService {
     return { valid: true };
   }
 
-  formatCurrency(amount: number, currency: 'USD' | 'ZWL' = 'USD'): string {
+  formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
-  }
-
-  getSupportedCurrencies() {
-    return [
-      { code: 'USD' as const, name: 'US Dollar', symbol: '$' },
-      { code: 'ZWL' as const, name: 'Zimbabwean Dollar', symbol: 'Z$' },
-    ];
   }
 }
 

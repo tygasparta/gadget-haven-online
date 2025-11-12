@@ -45,7 +45,7 @@ serve(async (req) => {
 
     console.log('Sending request to EcoCash API:', apiUrl);
 
-    const ecocashResponse = await fetch(`${apiUrl}/payment/initiate`, {
+    const ecocashResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,13 +54,26 @@ serve(async (req) => {
       body: JSON.stringify(ecocashPayload),
     });
 
+    const responseText = await ecocashResponse.text();
+    console.log('EcoCash API response status:', ecocashResponse.status);
+    console.log('EcoCash API response body:', responseText);
+
     if (!ecocashResponse.ok) {
-      const errorText = await ecocashResponse.text();
-      console.error('EcoCash API error:', errorText);
-      throw new Error(`EcoCash API error: ${errorText}`);
+      console.error('EcoCash API error response:', {
+        status: ecocashResponse.status,
+        statusText: ecocashResponse.statusText,
+        body: responseText
+      });
+      throw new Error(`EcoCash API error (${ecocashResponse.status}): ${responseText || ecocashResponse.statusText}`);
     }
 
-    const ecocashData = await ecocashResponse.json();
+    let ecocashData;
+    try {
+      ecocashData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse EcoCash response:', parseError);
+      throw new Error('Invalid response from EcoCash API');
+    }
     console.log('EcoCash response:', ecocashData);
 
     // Store payment record in database

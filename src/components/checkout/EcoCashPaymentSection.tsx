@@ -5,16 +5,12 @@ import { motion } from 'framer-motion';
 
 interface EcoCashPaymentSectionProps {
   totalPrice: number;
-  currency: 'USD' | 'ZWL';
-  onCurrencyChange: (currency: 'USD' | 'ZWL') => void;
   onInitiatePayment: () => void;
   isProcessing: boolean;
 }
 
 const EcoCashPaymentSection: React.FC<EcoCashPaymentSectionProps> = ({
   totalPrice,
-  currency,
-  onCurrencyChange,
   onInitiatePayment,
   isProcessing,
 }) => {
@@ -32,35 +28,13 @@ const EcoCashPaymentSection: React.FC<EcoCashPaymentSectionProps> = ({
         </p>
 
         <div className="space-y-3">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Select Currency</label>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={currency === 'USD' ? 'default' : 'outline'}
-                onClick={() => onCurrencyChange('USD')}
-                className="flex-1"
-              >
-                USD ($)
-              </Button>
-              <Button
-                type="button"
-                variant={currency === 'ZWL' ? 'default' : 'outline'}
-                onClick={() => onCurrencyChange('ZWL')}
-                className="flex-1"
-              >
-                ZWL (Z$)
-              </Button>
-            </div>
-          </div>
-
-          <div className="pt-3 border-t">
+          <div className="pt-3">
             <div className="flex justify-between items-center mb-4">
               <span className="font-semibold">Total Amount:</span>
               <span className="text-xl font-bold">
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
-                  currency: currency,
+                  currency: 'USD',
                 }).format(totalPrice)}
               </span>
             </div>

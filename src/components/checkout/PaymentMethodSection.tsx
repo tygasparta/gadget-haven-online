@@ -17,9 +17,6 @@ interface PaymentMethodSectionProps {
   // Dischub props
   dischubCurrency: 'USD';
   setDischubCurrency: (currency: 'USD') => void;
-  // EcoCash props
-  ecocashCurrency: 'USD' | 'ZWL';
-  setEcocashCurrency: (currency: 'USD' | 'ZWL') => void;
   totalAmount: number;
   onInitiateDischubPayment: (currency: 'USD') => void;
   isDischubProcessing: boolean;
@@ -36,8 +33,6 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
   setPaymentMethod,
   dischubCurrency,
   setDischubCurrency,
-  ecocashCurrency,
-  setEcocashCurrency,
   totalAmount,
   onInitiateDischubPayment,
   isDischubProcessing,
@@ -157,8 +152,6 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
           {paymentMethod === 'ecocash' && (
             <EcoCashPaymentSection
               totalPrice={totalAmount}
-              currency={ecocashCurrency}
-              onCurrencyChange={setEcocashCurrency}
               onInitiatePayment={onInitiateEcocashPayment}
               isProcessing={isEcocashProcessing}
             />
