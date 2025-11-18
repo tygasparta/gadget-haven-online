@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Zap, Shield, Truck, Clock } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import applePhonesHero from '@/assets/apple-phones-hero.png';
 
 const HeroBanner = () => {
   const navigate = useNavigate();
@@ -24,17 +25,17 @@ const HeroBanner = () => {
   }, {
     id: 2,
     title: "FLASH SALE",
-    subtitle: "SMARTPHONES",
+    subtitle: "APPLE IPHONES",
     description: "Save up to 35%",
-    details: "Latest 5G technology with AI-powered cameras",
+    details: "Latest iPhone models with cutting-edge technology",
     price: "$1400",
     originalPrice: "$1899",
     discount: "35% OFF",
     buttonText: "Shop Now",
     validUntil: "Valid Today Only",
     bgGradient: "from-blue-600 via-cyan-600 to-teal-700",
-    image: "/lovable-uploads/bae4b565-9009-41ae-a0c1-684ecd3ec585.png",
-    category: "phones"
+    image: applePhonesHero,
+    category: "apple-phones"
   }, {
     id: 3,
     title: "FLASH SALE",
@@ -70,6 +71,10 @@ const HeroBanner = () => {
     switch (slide.category) {
       case 'audio':
         navigate('/audio');
+        toast.success(`Browsing ${slide.subtitle} deals!`);
+        break;
+      case 'apple-phones':
+        navigate('/search?q=iphone');
         toast.success(`Browsing ${slide.subtitle} deals!`);
         break;
       case 'phones':
