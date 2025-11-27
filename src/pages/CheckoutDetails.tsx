@@ -443,10 +443,27 @@ const CheckoutDetails = () => {
 
     } catch (error: any) {
       console.error('EcoCash checkout error:', error);
+      
+      // Construct a detailed error message for debugging
+      let errorDescription = error.message || "Failed to process checkout";
+      
+      // If there's additional error data, include it
+      if (error.details) {
+        errorDescription += `\n\nDetails: ${JSON.stringify(error.details)}`;
+      }
+      
       toast({
-        title: "Checkout Failed",
-        description: error.message || "Failed to process checkout",
-        variant: "destructive"
+        title: "EcoCash Payment Failed",
+        description: (
+          <div className="space-y-2">
+            <p>{errorDescription}</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Error details have been logged. Please try again or contact support if the issue persists.
+            </p>
+          </div>
+        ),
+        variant: "destructive",
+        duration: 10000, // Show for longer to allow reading the error
       });
     } finally {
       setIsEcocashProcessing(false);

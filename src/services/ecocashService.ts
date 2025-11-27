@@ -29,9 +29,15 @@ class EcoCashService {
 
       if (error) {
         console.error('EcoCash payment error:', error);
+        
+        // Try to extract more details from the error
+        const errorDetails = error.context || error.details || error;
+        
         return {
           success: false,
-          error: error.message || 'Failed to create payment order',
+          error: `${error.message || 'Failed to create payment order'}${
+            errorDetails ? ` - ${JSON.stringify(errorDetails)}` : ''
+          }`,
         };
       }
 
