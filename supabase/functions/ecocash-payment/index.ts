@@ -66,7 +66,20 @@ serve(async (req) => {
         statusText: ecocashResponse.statusText,
         body: responseText
       });
-      throw new Error(`EcoCash API error (${ecocashResponse.status}): ${responseText || ecocashResponse.statusText}`);
+      
+      // Construct a detailed error message
+      let errorMessage = `EcoCash API error (${ecocashResponse.status}): ${ecocashResponse.statusText}`;
+      
+      if (responseText) {
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage += ` - ${JSON.stringify(errorData)}`;
+        } catch {
+          errorMessage += ` - ${responseText}`;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     let ecocashData;
@@ -109,10 +122,16 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in ecocash-payment function:', error);
+    console.error('Full error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message,
+        details: {
+          name: error.name,
+          stack: error.stack,
+        }
       }),
       {
         status: 400,
