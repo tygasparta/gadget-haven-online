@@ -17,13 +17,10 @@ serve(async (req) => {
     console.log('Creating EcoCash payment:', { amount, description, orderId, currency });
 
     const merchantCode = Deno.env.get('ECOCASH_MERCHANT_CODE');
-    const merchantPin = Deno.env.get('ECOCASH_MERCHANT_PIN');
-    const merchantNumber = Deno.env.get('ECOCASH_MERCHANT_NUMBER');
-    const username = Deno.env.get('ECOCASH_USERNAME');
-    const password = Deno.env.get('ECOCASH_PASSWORD');
+    const apiKey = Deno.env.get('ECOCASH_API_KEY');
     const apiUrl = Deno.env.get('ECOCASH_API_URL');
 
-    if (!merchantCode || !merchantPin || !merchantNumber || !username || !password || !apiUrl) {
+    if (!merchantCode || !apiKey || !apiUrl) {
       throw new Error('EcoCash credentials not configured');
     }
 
@@ -32,34 +29,29 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate unique payment reference (clientCorrelator)
-    const clientCorrelator = `EC-${orderId}-${Date.now()}`;
+    // Generate unique payment reference
+    const reference = `EC-${orderId}-${Date.now()}`;
 
-    // Create payment request to EcoCash API with official structure
+    // Create payment request to EcoCash API
+    // Include API credentials in the request body
     const ecocashPayload = {
-      clientCorrelator,
       merchantCode,
-      merchantPin,
-      merchantNumber,
-      endUserId: "263771234567", // Placeholder - should be customer's mobile number
+      apiKey,
       amount: parseFloat(amount).toFixed(2),
       currency,
+      reference,
       description,
-      notifyUrl: `${supabaseUrl}/functions/v1/ecocash-webhook`,
-      redirectUrl: `https://gadgetgenie.org/payment-success?reference=${clientCorrelator}`,
+      callbackUrl: `${supabaseUrl}/functions/v1/ecocash-webhook`,
+      returnUrl: `https://gadgetgenie.org/payment-success?reference=${reference}`,
     };
 
     console.log('Sending request to EcoCash API:', apiUrl);
-    console.log('Payload (without merchantPin):', { ...ecocashPayload, merchantPin: '[REDACTED]' });
-
-    // Create Basic Auth header
-    const authHeader = 'Basic ' + btoa(`${username}:${password}`);
+    console.log('Payload (without apiKey):', { ...ecocashPayload, apiKey: '[REDACTED]' });
 
     const ecocashResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader,
       },
       body: JSON.stringify(ecocashPayload),
     });
@@ -93,7 +85,7 @@ serve(async (req) => {
         order_id: orderId,
         amount,
         payment_method: 'ecocash',
-        payment_reference: clientCorrelator,
+        payment_reference: reference,
         status: 'pending',
         poll_url: ecocashData.pollUrl || null,
         redirect_url: ecocashData.redirectUrl || null,
@@ -108,7 +100,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        reference: clientCorrelator,
+        reference,
         redirectUrl: ecocashData.redirectUrl,
         pollUrl: ecocashData.pollUrl,
         instructions: ecocashData.instructions,
