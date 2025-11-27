@@ -98,3 +98,9 @@ verify_jwt = false
 
 [functions.paypal-webhook]
 verify_jwt = false
+
+[functions.ecocash-payment]
+verify_jwt = false
+
+[functions.ecocash-webhook]
+verify_jwt = false
