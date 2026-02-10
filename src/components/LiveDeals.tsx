@@ -80,7 +80,7 @@ const LiveDeals = () => {
     <div className="bg-white rounded-lg shadow-sm p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center mr-3">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
             <Clock className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -94,15 +94,15 @@ const LiveDeals = () => {
       <div className="mb-4">
         <p className="text-sm text-gray-600 mb-2">Deals end in:</p>
         <div className="flex space-x-2">
-          <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+          <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
             {String(timeLeft.hours).padStart(2, '0')}
             <div className="text-xs opacity-75">HRS</div>
           </div>
-          <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+          <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
             {String(timeLeft.minutes).padStart(2, '0')}
             <div className="text-xs opacity-75">MIN</div>
           </div>
-          <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+          <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
             {String(timeLeft.seconds).padStart(2, '0')}
             <div className="text-xs opacity-75">SEC</div>
           </div>
@@ -118,13 +118,13 @@ const LiveDeals = () => {
             onClick={() => handleDealClick(deal.id)}
           >
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm font-bold text-red-600">Flash Sale</span>
-                  <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-medium">
+                  <span className="text-sm font-bold text-blue-600">Flash Sale</span>
+                  <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs font-medium">
                     {deal.discount}
                   </span>
                 </div>
@@ -138,14 +138,14 @@ const LiveDeals = () => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(deal.claimed / deal.total) * 100}%` }}
                     ></div>
                   </div>
                 </div>
 
                 <button 
-                  className="w-full bg-gray-800 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-900 transition-colors"
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors"
                   onClick={(e) => handleAddToCart(deal.id, e)}
                 >
                   <ShoppingCart className="w-4 h-4" />
@@ -158,7 +158,7 @@ const LiveDeals = () => {
       </div>
 
       <button 
-        className="w-full mt-4 bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors"
+        className="w-full mt-4 bg-blue-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-800 transition-colors"
         onClick={handleViewAllDeals}
       >
         View All Live Deals

@@ -151,12 +151,12 @@ const Header = () => {
   }, []);
 
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/', gradient: 'from-blue-500 to-purple-600', bgColor: 'bg-blue-50' },
-    { icon: Grid3X3, label: 'Categories', path: '/categories', gradient: 'from-green-500 to-teal-600', bgColor: 'bg-green-50' },
-    { icon: Tag, label: 'Deals', path: '/deals', gradient: 'from-red-500 to-pink-600', bgColor: 'bg-red-50' },
-    { icon: Headphones, label: 'Audio', path: '/audio', gradient: 'from-purple-500 to-indigo-600', bgColor: 'bg-purple-50' },
-    { icon: Smartphone, label: 'Phones', path: '/phones', gradient: 'from-orange-500 to-yellow-600', bgColor: 'bg-orange-50' },
-    { icon: Phone, label: 'Contact', path: '/contact', gradient: 'from-cyan-500 to-blue-600', bgColor: 'bg-cyan-50' }
+    { icon: Home, label: 'Home', path: '/', gradient: 'from-blue-600 to-blue-700', bgColor: 'bg-blue-50' },
+    { icon: Grid3X3, label: 'Categories', path: '/categories', gradient: 'from-blue-500 to-blue-700', bgColor: 'bg-blue-50' },
+    { icon: Tag, label: 'Deals', path: '/deals', gradient: 'from-blue-700 to-blue-800', bgColor: 'bg-blue-50' },
+    { icon: Headphones, label: 'Audio', path: '/audio', gradient: 'from-blue-600 to-blue-800', bgColor: 'bg-blue-50' },
+    { icon: Smartphone, label: 'Phones', path: '/phones', gradient: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50' },
+    { icon: Phone, label: 'Contact', path: '/contact', gradient: 'from-blue-700 to-blue-900', bgColor: 'bg-blue-50' }
   ];
 
   return (
@@ -180,11 +180,11 @@ const Header = () => {
           <div className="flex items-center justify-between">
             {/* Animated Logo - Responsive */}
             <Link to="/" className="flex items-center flex-shrink-0 group" onClick={closeMobileMenu}>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-2 sm:mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl animate-pulse hover:animate-none">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center mr-2 sm:mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
                 <span className="text-white font-bold text-sm sm:text-lg drop-shadow-lg">G</span>
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent truncate group-hover:scale-105 transition-transform duration-300">GadgetGenie</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-blue-700 truncate group-hover:scale-105 transition-transform duration-300">GadgetGenie</h1>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-700 transition-colors duration-300">
                   Your Ultimate Tech Destination
                 </p>
@@ -261,7 +261,7 @@ const Header = () => {
                   {isAdmin && (
                     <Button
                       onClick={handleAdminClick}
-                      className="p-2 hidden sm:flex bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0 shadow-lg animate-pulse hover:animate-none"
+                      className="p-2 hidden sm:flex bg-blue-700 text-white hover:bg-blue-800 border-0 shadow-lg"
                     >
                       <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
                       <span className="ml-2 font-bold text-sm">ADMIN</span>
@@ -310,7 +310,7 @@ const Header = () => {
                 variant="ghost"
                 className={`p-2 md:hidden relative transition-all duration-300 ${
                   isMobileMenuOpen
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-110'
+                    ? 'bg-blue-600 text-white shadow-lg scale-110'
                     : 'hover:bg-gray-100'
                 }`}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -346,10 +346,10 @@ const Header = () => {
         {/* Enhanced Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[40] md:hidden" onClick={closeMobileMenu}>
-            <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 shadow-2xl transform transition-all duration-500 ease-out" onClick={(e) => e.stopPropagation()}>
+            <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-blue-50/30 to-blue-50/20 shadow-2xl transform transition-all duration-500 ease-out" onClick={(e) => e.stopPropagation()}>
               {/* Animated Header */}
-              <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-blue-500 to-purple-600 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+              <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-blue-600 to-blue-800 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-blue-700/20"></div>
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
