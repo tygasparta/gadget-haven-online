@@ -11,28 +11,28 @@ const QuickCategories = () => {
       name: 'Smartphones',
       icon: Smartphone,
       count: 8,
-      color: 'bg-blue-500',
+      color: 'bg-blue-600',
       path: '/products?category=smartphones'
     },
     {
       name: 'Audio',
       icon: Headphones,
       count: 2,
-      color: 'bg-purple-500',
+      color: 'bg-blue-700',
       path: '/products?category=audio'
     },
     {
       name: 'Laptops',
       icon: Laptop,
       count: 4,
-      color: 'bg-green-500',
+      color: 'bg-blue-800',
       path: '/products?category=laptops'
     },
     {
       name: 'Cameras',
       icon: Camera,
       count: 3,
-      color: 'bg-orange-500',
+      color: 'bg-blue-500',
       path: '/products?category=cameras'
     }
   ];
@@ -67,12 +67,12 @@ const QuickCategories = () => {
               <span className="text-xs text-gray-500">{category.count} items</span>
             </div>
             {index === 0 && (
-              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+              <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
                 Hot
               </div>
             )}
             {index === 2 && (
-              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+              <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
                 Hot
               </div>
             )}

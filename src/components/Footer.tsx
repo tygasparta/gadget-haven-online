@@ -4,33 +4,25 @@ import { Separator } from '@/components/ui/separator';
 
 const Footer = () => {
   return (
-    <footer className="hidden md:block bg-gradient-to-r from-gray-900 to-gray-800 text-white py-12 border-t border-gray-700">
+    <footer className="hidden md:block bg-gradient-to-r from-blue-950 to-blue-900 text-white py-12 border-t border-blue-800">
       <div className="container mx-auto px-6">
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* Logo and Description */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
-              {/* Animated Logo */}
               <div className="relative group">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 animate-pulse">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110">
                   <span className="text-white font-bold text-xl">G</span>
                 </div>
-                {/* Glowing effect */}
-                <div className="absolute inset-0 w-10 h-10 bg-gradient-to-br from-blue-500/50 via-purple-500/50 to-pink-500/50 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                {/* Rotating ring */}
-                <div className="absolute inset-0 w-10 h-10 border-2 border-gradient-to-r from-blue-400 to-purple-400 rounded-xl opacity-0 group-hover:opacity-100 animate-spin transition-opacity duration-300"></div>
               </div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h3 className="text-2xl font-bold text-blue-300">
                 GadgetGenie
               </h3>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-blue-300/70 text-sm leading-relaxed">
               Your trusted destination for the latest tech gadgets, electronics, and innovative solutions. Quality products, competitive prices, exceptional service.
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2">
@@ -42,7 +34,7 @@ const Footer = () => {
                 { name: 'Press', path: '/press' }
               ].map(link => (
                 <li key={link.name}>
-                  <a href={link.path} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                  <a href={link.path} className="text-blue-300/70 hover:text-blue-300 transition-colors duration-200 text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -50,7 +42,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Service */}
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Customer Service</h4>
             <ul className="space-y-2">
@@ -62,7 +53,7 @@ const Footer = () => {
                 { name: 'Payment Methods', path: '/payment-methods' }
               ].map(link => (
                 <li key={link.name}>
-                  <a href={link.path} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                  <a href={link.path} className="text-blue-300/70 hover:text-blue-300 transition-colors duration-200 text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -70,7 +61,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Legal & Social */}
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Legal & Connect</h4>
             <ul className="space-y-2">
@@ -82,7 +72,7 @@ const Footer = () => {
                 { name: 'Sell With Us', path: '/sell' }
               ].map(link => (
                 <li key={link.name}>
-                  <a href={link.path} className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                  <a href={link.path} className="text-blue-300/70 hover:text-blue-300 transition-colors duration-200 text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -91,11 +81,10 @@ const Footer = () => {
           </div>
         </div>
 
-        <Separator className="bg-gray-700 mb-6" />
+        <Separator className="bg-blue-800 mb-6" />
 
-        {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-sm text-gray-400">© 2025 GadgetGenie. All rights reserved.</div>
+          <div className="text-sm text-blue-300/70">© 2025 GadgetGenie. All rights reserved.</div>
         </div>
       </div>
     </footer>

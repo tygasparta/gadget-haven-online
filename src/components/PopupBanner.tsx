@@ -147,7 +147,7 @@ const PopupBanner = () => {
         }
         
         .shimmer-text {
-          background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899, #3B82F6);
+          background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa, #1d4ed8);
           background-size: 200% auto;
           color: transparent;
           background-clip: text;
@@ -178,12 +178,12 @@ const PopupBanner = () => {
         onClick={handleBackdropMouseClick}
         onTouchEnd={handleBackdropTouchEnd}
       >
-        <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
+        <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-white to-blue-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
           {/* Animated Background Elements */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-xl float-animation"></div>
-            <div className="absolute bottom-10 right-10 w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl float-animation" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full blur-xl float-animation" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-10 left-10 w-20 h-20 bg-blue-400 rounded-full blur-xl float-animation"></div>
+            <div className="absolute bottom-10 right-10 w-16 h-16 bg-blue-500 rounded-full blur-xl float-animation" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300 rounded-full blur-xl float-animation" style={{ animationDelay: '2s' }}></div>
           </div>
 
           {/* Enhanced Close Button */}
@@ -203,7 +203,7 @@ const PopupBanner = () => {
             <div className="flex-1 p-8 lg:p-12">
               <div className="max-w-md">
                 <div className="flex items-center gap-2 mb-4 group">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold text-lg blink-animation">G</span>
                   </div>
                   <h1 className="text-2xl font-bold shimmer-text">
@@ -213,7 +213,7 @@ const PopupBanner = () => {
 
                 <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
                   Tech Magic
-                  <span className="block text-3xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <span className="block text-3xl text-blue-600">
                     Awaits You! ✨
                   </span>
                 </h2>
@@ -233,7 +233,7 @@ const PopupBanner = () => {
                     <span className="text-sm font-medium text-gray-700">Latest Phones</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-                    <Headphones className="w-4 h-4 text-purple-500" />
+                    <Headphones className="w-4 h-4 text-blue-600" />
                     <span className="text-sm font-medium text-gray-700">Premium Audio</span>
                   </div>
                 </div>
@@ -242,7 +242,7 @@ const PopupBanner = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     onClick={handleShopNow}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                     <ShoppingCart className="w-5 h-5 mr-2 relative z-10" />
@@ -251,7 +251,7 @@ const PopupBanner = () => {
                   <Button
                     onClick={handleDealsClick}
                     variant="outline"
-                    className="border-2 border-purple-200 hover:border-purple-300 px-8 py-3 rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105 group"
+                    className="border-2 border-blue-200 hover:border-blue-300 px-8 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 group"
                   >
                     <span className="group-hover:animate-pulse">View Deals</span>
                   </Button>
@@ -342,7 +342,7 @@ const PopupBanner = () => {
           <div className="md:hidden p-4 sm:p-6 relative z-10">
             <div className="text-center mb-4 sm:mb-6">
               <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm sm:text-base blink-animation">G</span>
                 </div>
                 <h1 className="text-lg sm:text-xl font-bold shimmer-text">
@@ -423,7 +423,7 @@ const PopupBanner = () => {
             <div className="space-y-3">
               <Button
                 onClick={handleShopNow}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base touch-manipulation"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base touch-manipulation"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                 <ShoppingCart className="w-4 h-4 mr-2 relative z-10" />
@@ -432,7 +432,7 @@ const PopupBanner = () => {
               <Button
                 onClick={handleDealsClick}
                 variant="outline"
-                className="w-full border-2 border-purple-200 hover:border-purple-300 py-3 rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base touch-manipulation"
+                className="w-full border-2 border-blue-200 hover:border-blue-300 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base touch-manipulation"
               >
                 View Deals
               </Button>

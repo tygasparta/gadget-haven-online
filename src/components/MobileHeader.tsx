@@ -36,10 +36,10 @@ const MobileHeader = () => {
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo */}
           <Link to="/" className="flex items-center group">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-2 transform group-hover:scale-110 transition-all duration-300 shadow-lg animate-pulse hover:animate-none">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center mr-2 transform group-hover:scale-110 transition-all duration-300 shadow-lg">
               <span className="text-white font-bold text-sm drop-shadow-lg">G</span>
             </div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-lg font-bold text-blue-700">
               GadgetGenie
             </h1>
           </Link>
@@ -83,7 +83,7 @@ const MobileHeader = () => {
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
                   {cartCount}
                 </span>
               )}
