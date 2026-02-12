@@ -86,7 +86,7 @@ const Index = () => {
         })}
       </script>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative animate-fade-in">
+      <div className="min-h-screen bg-background relative animate-fade-in">
         {/* Conditional Header */}
         {isMobile ? <MobileHeader /> : <Header />}
         <CartSidebar />
