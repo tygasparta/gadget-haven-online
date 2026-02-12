@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import EnhancedPreloader from '@/components/EnhancedPreloader';
 import Header from '@/components/Header';
 import MobileHeader from '@/components/MobileHeader';
 import Sidebar from '@/components/Sidebar';
@@ -21,7 +20,6 @@ import MobileNavigation from '@/components/MobileNavigation';
 import MobileQuickCategories from '@/components/MobileQuickCategories';
 import MobileTopDeals from '@/components/MobileTopDeals';
 import TabletOptimizedBanners from '@/components/TabletOptimizedBanners';
-import PopupBanner from '@/components/PopupBanner';
 import { useProducts, useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -30,19 +28,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const Index = () => {
   const navigate = useNavigate();
   const { storeSettings } = useStoreSettings();
-  const [showPreloader, setShowPreloader] = useState(true);
   const isMobile = useIsMobile();
   const isTablet = !isMobile && window.innerWidth < 1024;
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: flashSaleProducts = [], isLoading: flashLoading } = useFlashSaleProducts();
   const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowPreloader(false);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Transform products to match the expected format
   const transformProduct = (product: any) => ({
@@ -70,10 +60,6 @@ const Index = () => {
       discount: "NEW"
     }));
 
-  if (showPreloader) {
-    return <EnhancedPreloader />;
-  }
-
   return (
     <>
       {/* SEO structured data for homepage */}
@@ -99,9 +85,6 @@ const Index = () => {
           }
         })}
       </script>
-
-      {/* Popup Banner */}
-      <PopupBanner />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 relative animate-fade-in">
         {/* Conditional Header */}
@@ -146,7 +129,7 @@ const Index = () => {
                   </button>
                   <button 
                     onClick={() => navigate('/deals')} 
-                    className="flex-1 sm:flex-none bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-blue-700 to-blue-900 hover:from-blue-800 hover:to-blue-950 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
                   >
                     🔥 View Deals
                   </button>
