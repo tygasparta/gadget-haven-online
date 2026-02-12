@@ -58,7 +58,8 @@ const HeroBanner = () => {
   };
 
   return (
-    <div className="relative h-[300px] sm:h-[360px] md:h-[400px] lg:h-[440px] overflow-hidden rounded-2xl mb-6 shadow-2xl">
+    <div className="relative bg-white rounded-2xl p-3 mb-6 shadow-sm">
+      <div className="relative h-[280px] sm:h-[340px] md:h-[380px] lg:h-[420px] overflow-hidden rounded-xl">
       {slides.map((slide, index) => (
         <div 
           key={slide.id} 
@@ -142,6 +143,7 @@ const HeroBanner = () => {
             }`}
           />
         ))}
+      </div>
       </div>
     </div>
   );
