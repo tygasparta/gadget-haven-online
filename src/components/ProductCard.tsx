@@ -239,7 +239,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Enhanced price with savings */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-2xl font-bold text-blue-600">${product.price}</span>
+            <span className="text-2xl font-bold text-indigo-600">${product.price}</span>
             {discountPercentage > 0 && (
               <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">
                 Save {discountPercentage}%

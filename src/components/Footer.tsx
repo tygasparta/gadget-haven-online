@@ -4,21 +4,21 @@ import { Separator } from '@/components/ui/separator';
 
 const Footer = () => {
   return (
-    <footer className="hidden md:block bg-gradient-to-r from-blue-950 to-blue-900 text-white py-12 border-t border-blue-800">
+    <footer className="hidden md:block bg-gradient-to-r from-slate-900 to-indigo-950 text-white py-12 border-t border-indigo-800">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
               <div className="relative group">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110">
                   <span className="text-white font-bold text-xl">G</span>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-blue-300">
+              <h3 className="text-2xl font-bold text-indigo-300">
                 GadgetGenie
               </h3>
             </div>
-            <p className="text-blue-300/70 text-sm leading-relaxed">
+            <p className="text-white/70 text-sm leading-relaxed">
               Your trusted destination for the latest tech gadgets, electronics, and innovative solutions. Quality products, competitive prices, exceptional service.
             </p>
           </div>
@@ -34,7 +34,7 @@ const Footer = () => {
                 { name: 'Press', path: '/press' }
               ].map(link => (
                 <li key={link.name}>
-                  <a href={link.path} className="text-blue-300/70 hover:text-blue-300 transition-colors duration-200 text-sm">
+                  <a href={link.path} className="text-white/70 hover:text-white transition-colors duration-200 text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -53,7 +53,7 @@ const Footer = () => {
                 { name: 'Payment Methods', path: '/payment-methods' }
               ].map(link => (
                 <li key={link.name}>
-                  <a href={link.path} className="text-blue-300/70 hover:text-blue-300 transition-colors duration-200 text-sm">
+                  <a href={link.path} className="text-white/70 hover:text-white transition-colors duration-200 text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -72,7 +72,7 @@ const Footer = () => {
                 { name: 'Sell With Us', path: '/sell' }
               ].map(link => (
                 <li key={link.name}>
-                  <a href={link.path} className="text-blue-300/70 hover:text-blue-300 transition-colors duration-200 text-sm">
+                  <a href={link.path} className="text-white/70 hover:text-white transition-colors duration-200 text-sm">
                     {link.name}
                   </a>
                 </li>
@@ -81,10 +81,10 @@ const Footer = () => {
           </div>
         </div>
 
-        <Separator className="bg-blue-800 mb-6" />
+        <Separator className="bg-indigo-700 mb-6" />
 
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-sm text-blue-300/70">© 2025 GadgetGenie. All rights reserved.</div>
+          <div className="text-sm text-white/70">© 2025 GadgetGenie. All rights reserved.</div>
         </div>
       </div>
     </footer>
