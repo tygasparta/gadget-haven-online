@@ -67,36 +67,25 @@ const HeroBanner = () => {
             index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
           }`}
         >
-          <div className="h-full bg-blue-700 relative overflow-hidden">
-            {/* Abstract gradient shapes - like the reference */}
-            <div className="absolute inset-0">
-              {/* Large circle top-left */}
-              <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full bg-blue-500/40 blur-3xl" />
-              {/* Circle bottom-right */}
-              <div className="absolute -bottom-32 -right-32 w-[400px] h-[400px] rounded-full bg-blue-400/30 blur-3xl" />
-              {/* Mid accent */}
-              <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full bg-blue-600/50 blur-2xl" />
-              {/* Small bright accent */}
-              <div className="absolute top-10 right-1/3 w-[200px] h-[200px] rounded-full bg-blue-300/20 blur-2xl" />
-            </div>
+          <div className="h-full bg-gradient-to-r from-gray-100 to-gray-50 relative overflow-hidden">
 
             <div className="relative z-10 h-full flex items-center">
               <div className="w-full px-6 sm:px-10 md:px-14">
                 <div className="max-w-7xl mx-auto">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center h-full">
                     {/* Text Content */}
-                    <div className="text-white py-8">
+                    <div className="py-8">
                       <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-4">
-                        <span className="text-blue-200">{slide.title}</span>
+                        <span className="text-gray-500">{slide.title}</span>
                         <br />
-                        <span className="text-white">{slide.subtitle}</span>
+                        <span className="text-foreground">{slide.subtitle}</span>
                       </h1>
-                      <p className="text-base sm:text-lg text-blue-100/80 mb-8 max-w-md">
+                      <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-md">
                         {slide.description}
                       </p>
                       <Button 
                         size="lg"
-                        className="bg-white text-blue-700 hover:bg-blue-50 px-10 py-5 text-lg font-bold rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 py-5 text-lg font-bold rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
                         onClick={() => handleShopNow(slide)}
                       >
                         {slide.buttonText}
@@ -125,10 +114,10 @@ const HeroBanner = () => {
       ))}
 
       {/* Navigation Arrows */}
-      <button onClick={prevSlide} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-3 transition-all duration-200 z-20 hover:scale-110">
+      <button onClick={prevSlide} className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 backdrop-blur-sm text-foreground rounded-full p-3 transition-all duration-200 z-20 hover:scale-110">
         <ChevronLeft className="w-5 h-5" />
       </button>
-      <button onClick={nextSlide} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-3 transition-all duration-200 z-20 hover:scale-110">
+      <button onClick={nextSlide} className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 backdrop-blur-sm text-foreground rounded-full p-3 transition-all duration-200 z-20 hover:scale-110">
         <ChevronRight className="w-5 h-5" />
       </button>
 
@@ -139,7 +128,7 @@ const HeroBanner = () => {
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`transition-all duration-300 rounded-full ${
-              index === currentSlide ? 'w-8 h-3 bg-white' : 'w-3 h-3 bg-white/50 hover:bg-white/75'
+              index === currentSlide ? 'w-8 h-3 bg-primary' : 'w-3 h-3 bg-gray-400/50 hover:bg-gray-400/75'
             }`}
           />
         ))}

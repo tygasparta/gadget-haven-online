@@ -258,32 +258,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        {/* Compact countdown timer */}
-        {product.countdownTimer && (
-          <div className="mb-3 p-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-blue-600 font-medium flex items-center">
-                <Zap className="w-3 h-3 mr-1" />
-                Sale Ends:
-              </span>
-              <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-mono font-bold">
-                {product.countdownTimer}
-              </span>
-            </div>
-            <div className="w-full bg-blue-200 rounded-full h-1.5">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-1.5 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-            </div>
-          </div>
-        )}
-
-        {/* Enhanced add to cart button */}
-        <Button 
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-          onClick={handleAddToCart}
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Add to Cart
-        </Button>
       </div>
     </div>
   );
