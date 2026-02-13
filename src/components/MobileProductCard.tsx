@@ -107,12 +107,6 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
           <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
         </Button>
 
-        {/* Flash Sale Timer */}
-        {isFlash && countdownTimer && (
-          <div className="absolute bottom-3 left-3 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold">
-            {countdownTimer}
-          </div>
-        )}
       </div>
 
       {/* Product Info */}
@@ -151,14 +145,6 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
           </div>
         </div>
 
-        {/* Add to Cart Button */}
-        <Button
-          onClick={handleAddToCart}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl py-2 transition-all duration-300"
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Add to Cart
-        </Button>
       </div>
     </div>
   );

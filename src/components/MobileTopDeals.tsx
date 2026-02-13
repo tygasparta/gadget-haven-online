@@ -116,13 +116,6 @@ const MobileTopDeals = () => {
                   )}
                 </div>
                 
-                <Button
-                  size="sm"
-                  onClick={(e) => handleAddToCart(product.id, e)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                </Button>
               </div>
             </div>
           </div>

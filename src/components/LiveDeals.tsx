@@ -90,24 +90,6 @@ const LiveDeals = () => {
         </div>
       </div>
 
-      {/* Countdown Timer */}
-      <div className="mb-4">
-        <p className="text-sm text-gray-600 mb-2">Deals end in:</p>
-        <div className="flex space-x-2">
-          <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
-            {String(timeLeft.hours).padStart(2, '0')}
-            <div className="text-xs opacity-75">HRS</div>
-          </div>
-          <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
-            {String(timeLeft.minutes).padStart(2, '0')}
-            <div className="text-xs opacity-75">MIN</div>
-          </div>
-          <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
-            {String(timeLeft.seconds).padStart(2, '0')}
-            <div className="text-xs opacity-75">SEC</div>
-          </div>
-        </div>
-      </div>
 
       {/* Deals */}
       <div className="space-y-4">
@@ -144,13 +126,6 @@ const LiveDeals = () => {
                   </div>
                 </div>
 
-                <button 
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors"
-                  onClick={(e) => handleAddToCart(deal.id, e)}
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span className="text-sm font-medium">Add to Cart</span>
-                </button>
               </div>
             </div>
           </div>
