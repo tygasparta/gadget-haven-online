@@ -9,8 +9,7 @@ const Sidebar = () => {
 
   const categories = [
     { 
-      name: 'Smartphones', 
-      icon: '📱', 
+      name: 'Smartphones', icon: '📱',
       items: [
         { name: 'iPhone', path: '/products?category=smartphones&brand=apple' },
         { name: 'Samsung', path: '/products?category=smartphones&brand=samsung' },
@@ -20,8 +19,7 @@ const Sidebar = () => {
       path: '/products?category=smartphones'
     },
     { 
-      name: 'Laptops & Computers', 
-      icon: '💻', 
+      name: 'Laptops & Computers', icon: '💻',
       items: [
         { name: 'MacBooks', path: '/products?category=laptops&brand=apple' },
         { name: 'Gaming Laptops', path: '/products?category=laptops&type=gaming' },
@@ -30,8 +28,7 @@ const Sidebar = () => {
       path: '/products?category=laptops'
     },
     { 
-      name: 'Audio & Headphones', 
-      icon: '🎧', 
+      name: 'Audio & Headphones', icon: '🎧',
       items: [
         { name: 'Wireless', path: '/products?category=audio&type=wireless' },
         { name: 'Gaming', path: '/products?category=audio&type=gaming' },
@@ -40,8 +37,7 @@ const Sidebar = () => {
       path: '/products?category=audio'
     },
     { 
-      name: 'Gaming', 
-      icon: '🎮', 
+      name: 'Gaming', icon: '🎮',
       items: [
         { name: 'Consoles', path: '/products?category=gaming&type=consoles' },
         { name: 'Games', path: '/products?category=gaming&type=games' },
@@ -50,8 +46,7 @@ const Sidebar = () => {
       path: '/products?category=gaming'
     },
     { 
-      name: 'Electronics', 
-      icon: '⚡', 
+      name: 'Electronics', icon: '⚡',
       items: [
         { name: 'TVs', path: '/products?category=electronics&type=tv' },
         { name: 'Cameras', path: '/products?category=electronics&type=cameras' },
@@ -60,8 +55,7 @@ const Sidebar = () => {
       path: '/products?category=electronics'
     },
     { 
-      name: 'Power & Cables', 
-      icon: '🔌', 
+      name: 'Power & Cables', icon: '🔌',
       items: [
         { name: 'Power Banks', path: '/products?category=accessories&type=power-banks' },
         { name: 'Chargers', path: '/products?category=accessories&type=chargers' },
@@ -70,8 +64,7 @@ const Sidebar = () => {
       path: '/products?category=accessories'
     },
     { 
-      name: 'Smart Home', 
-      icon: '🏠', 
+      name: 'Smart Home', icon: '🏠',
       items: [
         { name: 'Security', path: '/products?category=smart-home&type=security' },
         { name: 'Lighting', path: '/products?category=smart-home&type=lighting' },
@@ -80,8 +73,7 @@ const Sidebar = () => {
       path: '/products?category=smart-home'
     },
     { 
-      name: 'Cameras', 
-      icon: '📷', 
+      name: 'Cameras', icon: '📷',
       items: [
         { name: 'DSLR', path: '/products?category=cameras&type=dslr' },
         { name: 'Action Cams', path: '/products?category=cameras&type=action' },
@@ -93,26 +85,22 @@ const Sidebar = () => {
 
   const toggleCategory = (index: number) => {
     setExpandedCategories(prev => 
-      prev.includes(index) 
-        ? prev.filter(i => i !== index)
-        : [...prev, index]
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
   };
 
   const handleCategoryClick = (path: string) => {
-    console.log('Navigating to:', path);
     navigate(path);
   };
 
   const handleSubItemClick = (path: string) => {
-    console.log('Navigating to sub-item:', path);
     navigate(path);
   };
 
   return (
     <div className="w-64 bg-white shadow-sm hidden lg:block">
       <div className="p-4">
-        <h3 className="font-semibold text-blue-900 mb-4">Shop by Department</h3>
+        <h3 className="font-semibold text-indigo-900 mb-4">Shop by Department</h3>
         <nav className="space-y-2">
           {categories.map((category, index) => (
             <div key={index} className="group">
@@ -121,14 +109,11 @@ const Sidebar = () => {
                 onClick={() => toggleCategory(index)}
               >
                 <div 
-                  className="flex items-center flex-1 hover:text-blue-600 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCategoryClick(category.path);
-                  }}
+                  className="flex items-center flex-1 hover:text-indigo-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleCategoryClick(category.path); }}
                 >
                   <span className="text-lg mr-3">{category.icon}</span>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600">{category.name}</span>
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">{category.name}</span>
                 </div>
                 {expandedCategories.includes(index) ? (
                   <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
@@ -137,13 +122,12 @@ const Sidebar = () => {
                 )}
               </div>
               
-              {/* Subcategories */}
               {expandedCategories.includes(index) && (
                 <div className="ml-6 mt-2 space-y-1 animate-fade-in">
                   {category.items.map((item, itemIndex) => (
                     <div
                       key={itemIndex}
-                      className="text-sm text-gray-600 hover:text-blue-600 cursor-pointer py-1 px-2 rounded hover:bg-blue-50 transition-colors"
+                      className="text-sm text-gray-600 hover:text-indigo-600 cursor-pointer py-1 px-2 rounded hover:bg-indigo-50 transition-colors"
                       onClick={() => handleSubItemClick(item.path)}
                     >
                       {item.name}
@@ -156,7 +140,6 @@ const Sidebar = () => {
         </nav>
       </div>
 
-      {/* Flash Deals Sidebar */}
       <div className="mx-4 mb-4 bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-4 text-white shadow-lg">
         <h4 className="font-bold mb-2">Flash Deals</h4>
         <p className="text-sm mb-3 opacity-90">Up to 50% off selected items</p>
@@ -168,12 +151,11 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* New Arrivals Sidebar */}
-      <div className="mx-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white shadow-lg">
+      <div className="mx-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg p-4 text-white shadow-lg">
         <h4 className="font-bold mb-2">New Arrivals</h4>
         <p className="text-sm mb-3 opacity-90">Latest tech products</p>
         <button 
-          className="bg-white text-blue-500 px-4 py-2 rounded font-semibold text-sm hover:bg-gray-100 transition-colors w-full"
+          className="bg-white text-indigo-500 px-4 py-2 rounded font-semibold text-sm hover:bg-gray-100 transition-colors w-full"
           onClick={() => navigate('/categories?featured=new')}
         >
           Explore Now
