@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +45,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       setImageLoading(true);
       console.log('Loading image for product:', product.id);
       
-      // Try to get the main image from product_galleries table
       const { data: galleryData, error } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -58,7 +56,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         console.log('Found main gallery image:', galleryData.image_url);
         setProductImage(galleryData.image_url);
       } else {
-        // Fallback: try to get the first image from gallery
         const { data: firstImage, error: firstError } = await supabase
           .from('product_galleries')
           .select('image_url')
@@ -71,12 +68,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           console.log('Found first gallery image:', firstImage.image_url);
           setProductImage(firstImage.image_url);
         } else {
-          // If product.image is a full URL, use it directly
           if (product.image && product.image.includes('http')) {
             console.log('Using product image URL:', product.image);
             setProductImage(product.image);
           } else {
-            // Use generic placeholder as last resort
             console.log('No images found, using placeholder');
             setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
           }
@@ -114,7 +109,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleAddToWishlist = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation to product detail
+    e.stopPropagation();
     
     if (!user) {
       toast.error('Please log in to add items to wishlist');
@@ -130,19 +125,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation to product detail
-    // For now, just navigate to product detail page
+    e.stopPropagation();
     navigate(`/product/${product.id}`);
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 group relative overflow-hidden transform hover:-translate-y-1">
+    <div className="bg-white rounded-xl border border-gray-200 hover:border-sky-300 hover:shadow-xl transition-all duration-300 group relative overflow-hidden transform hover:-translate-y-1">
       {/* Enhanced discount badge */}
       {product.discount && (
         <div className="absolute top-3 left-3 z-10">
           {product.isFlash ? (
             <div className="flex flex-col space-y-1">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
+              <div className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
                 <Zap className="w-3 h-3 mr-1" />
                 FLASH
               </div>
@@ -151,7 +145,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </span>
             </div>
           ) : product.discount === "NEW" ? (
-            <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+            <span className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
               {product.discount}
             </span>
           ) : (
@@ -178,18 +172,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           onClick={handleQuickView}
           className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
         >
-          <Eye className="w-4 h-4 text-gray-600 hover:text-blue-500" />
+          <Eye className="w-4 h-4 text-gray-600 hover:text-sky-500" />
         </button>
       </div>
 
-      {/* Product image with enhanced styling - clickable */}
+      {/* Product image */}
       <div 
         className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl cursor-pointer"
         onClick={handleProductClick}
       >
         {imageLoading ? (
           <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <img
@@ -208,38 +202,31 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       </div>
 
-      {/* Enhanced product info */}
+      {/* Product info */}
       <div className="p-5">
         <h3 
-          className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors text-sm leading-relaxed cursor-pointer"
+          className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors text-sm leading-relaxed cursor-pointer"
           onClick={handleProductClick}
           title={product.name}
         >
           {product.name.length > 50 ? `${product.name.substring(0, 50)}...` : product.name}
         </h3>
         
-        {/* Brand display */}
         {product.brand && (
-          <p className="text-xs text-gray-500 mb-2 font-medium">
-            {product.brand}
-          </p>
+          <p className="text-xs text-gray-500 mb-2 font-medium">{product.brand}</p>
         )}
 
-        {/* Enhanced rating */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
             <div className="flex">{renderStars(product.rating)}</div>
             <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
           </div>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-            {product.rating}/5
-          </span>
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">{product.rating}/5</span>
         </div>
 
-        {/* Enhanced price with savings */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-2xl font-bold text-indigo-600">${product.price}</span>
+            <span className="text-2xl font-bold text-sky-600">${product.price}</span>
             {discountPercentage > 0 && (
               <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">
                 Save {discountPercentage}%
@@ -248,16 +235,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
           {product.originalPrice && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500 line-through">
-                ${product.originalPrice}
-              </span>
-              <span className="text-xs text-green-600 font-medium">
-                You save ${product.originalPrice - product.price}
-              </span>
+              <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
+              <span className="text-xs text-green-600 font-medium">You save ${product.originalPrice - product.price}</span>
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -88,22 +88,22 @@ const Header = () => {
   }, []);
 
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/', gradient: 'from-indigo-600 to-indigo-700', bgColor: 'bg-indigo-50' },
-    { icon: Grid3X3, label: 'Categories', path: '/categories', gradient: 'from-indigo-500 to-indigo-700', bgColor: 'bg-indigo-50' },
-    { icon: Tag, label: 'Deals', path: '/deals', gradient: 'from-indigo-700 to-indigo-800', bgColor: 'bg-indigo-50' },
-    { icon: Headphones, label: 'Audio', path: '/audio', gradient: 'from-indigo-600 to-indigo-800', bgColor: 'bg-indigo-50' },
-    { icon: Smartphone, label: 'Phones', path: '/phones', gradient: 'from-indigo-500 to-indigo-600', bgColor: 'bg-indigo-50' },
-    { icon: Phone, label: 'Contact', path: '/contact', gradient: 'from-indigo-700 to-indigo-900', bgColor: 'bg-indigo-50' }
+    { icon: Home, label: 'Home', path: '/', gradient: 'from-sky-600 to-sky-700', bgColor: 'bg-sky-50' },
+    { icon: Grid3X3, label: 'Categories', path: '/categories', gradient: 'from-sky-500 to-sky-700', bgColor: 'bg-sky-50' },
+    { icon: Tag, label: 'Deals', path: '/deals', gradient: 'from-sky-700 to-sky-800', bgColor: 'bg-sky-50' },
+    { icon: Headphones, label: 'Audio', path: '/audio', gradient: 'from-sky-600 to-sky-800', bgColor: 'bg-sky-50' },
+    { icon: Smartphone, label: 'Phones', path: '/phones', gradient: 'from-sky-500 to-sky-600', bgColor: 'bg-sky-50' },
+    { icon: Phone, label: 'Contact', path: '/contact', gradient: 'from-sky-700 to-sky-900', bgColor: 'bg-sky-50' }
   ];
 
   return (
     <>
       {/* Top banner */}
-      <div className="bg-indigo-600 text-white py-2 px-4 text-xs sm:text-sm text-center">
+      <div className="bg-sky-600 text-white py-2 px-4 text-xs sm:text-sm text-center">
         <span className="block sm:inline">✨ Welcome to our electronics store - Your tech dreams await!</span>
         <div className="hidden lg:float-right lg:block">
-          <Link to="/help" className="mr-4 hover:text-indigo-200 transition-colors cursor-pointer">Help Centre</Link>
-          <Link to="/track-order" className="hover:text-indigo-200 transition-colors cursor-pointer">Track Order</Link>
+          <Link to="/help" className="mr-4 hover:text-sky-200 transition-colors cursor-pointer">Help Centre</Link>
+          <Link to="/track-order" className="hover:text-sky-200 transition-colors cursor-pointer">Track Order</Link>
         </div>
       </div>
       
@@ -112,11 +112,11 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center flex-shrink-0 group" onClick={closeMobileMenu}>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-lg flex items-center justify-center mr-2 sm:mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-sky-600 to-sky-800 rounded-lg flex items-center justify-center mr-2 sm:mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
                 <span className="text-white font-bold text-sm sm:text-lg drop-shadow-lg">G</span>
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold text-indigo-700 truncate group-hover:scale-105 transition-transform duration-300">GadgetGenie</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-sky-700 truncate group-hover:scale-105 transition-transform duration-300">GadgetGenie</h1>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-700 transition-colors duration-300">Your Ultimate Tech Destination</p>
               </div>
             </Link>
@@ -127,13 +127,13 @@ const Header = () => {
                 <Input
                   type="text"
                   placeholder="Search for smartphones, electronics, gadgets..."
-                  className="w-full pl-4 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500"
+                  className="w-full pl-4 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-sky-500"
                   value={searchTerm}
                   onChange={handleSearchInputChange}
                   onFocus={() => searchTerm.length > 2 && setShowSearchResults(true)}
                   onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                 />
-                <Button type="submit" className="absolute right-1 top-1 bottom-1 px-4 bg-indigo-500 hover:bg-indigo-600">
+                <Button type="submit" className="absolute right-1 top-1 bottom-1 px-4 bg-sky-500 hover:bg-sky-600">
                   <Search className="w-5 h-5" />
                 </Button>
               </form>
@@ -150,12 +150,12 @@ const Header = () => {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{product.name}</p>
                         <p className="text-sm text-gray-500">{product.category}</p>
-                        <p className="text-sm font-semibold text-indigo-600">${product.price}</p>
+                        <p className="text-sm font-semibold text-sky-600">${product.price}</p>
                       </div>
                     </div>
                   ))}
                   <div className="p-2 border-t border-gray-100">
-                    <button onClick={handleSearch} className="w-full text-center text-indigo-600 hover:text-indigo-700 font-medium py-2">
+                    <button onClick={handleSearch} className="w-full text-center text-sky-600 hover:text-sky-700 font-medium py-2">
                       View all results for "{searchTerm}"
                     </button>
                   </div>
@@ -173,7 +173,7 @@ const Header = () => {
                   </Button>
                   
                   {isAdmin && (
-                    <Button onClick={handleAdminClick} className="p-2 hidden sm:flex bg-indigo-700 text-white hover:bg-indigo-800 border-0 shadow-lg">
+                    <Button onClick={handleAdminClick} className="p-2 hidden sm:flex bg-sky-700 text-white hover:bg-sky-800 border-0 shadow-lg">
                       <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
                       <span className="ml-2 font-bold text-sm">ADMIN</span>
                     </Button>
@@ -187,7 +187,7 @@ const Header = () => {
                     <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="ml-2 hidden lg:inline">Cart</span>
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-indigo-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-sky-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
                         {cartCount}
                       </span>
                     )}
@@ -219,7 +219,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 className={`p-2 md:hidden relative transition-all duration-300 ${
-                  isMobileMenuOpen ? 'bg-indigo-600 text-white shadow-lg scale-110' : 'hover:bg-gray-100'
+                  isMobileMenuOpen ? 'bg-sky-600 text-white shadow-lg scale-110' : 'hover:bg-gray-100'
                 }`}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
@@ -234,7 +234,7 @@ const Header = () => {
           <div className="mt-3 md:hidden">
             <form onSubmit={handleSearch} className="relative">
               <Input type="text" placeholder="Search for products..." className="w-full pl-4 pr-12 py-2 border-2 border-gray-200 rounded-lg" value={searchTerm} onChange={handleSearchInputChange} />
-              <Button type="submit" className="absolute right-1 top-1 bottom-1 px-3 bg-indigo-500 hover:bg-indigo-600">
+              <Button type="submit" className="absolute right-1 top-1 bottom-1 px-3 bg-sky-500 hover:bg-sky-600">
                 <Search className="w-4 h-4" />
               </Button>
             </form>
@@ -244,9 +244,9 @@ const Header = () => {
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[40] md:hidden" onClick={closeMobileMenu}>
-            <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-indigo-50/30 to-indigo-50/20 shadow-2xl transform transition-all duration-500 ease-out" onClick={(e) => e.stopPropagation()}>
-              <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-indigo-700/20"></div>
+            <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-sky-50/30 to-sky-50/20 shadow-2xl transform transition-all duration-500 ease-out" onClick={(e) => e.stopPropagation()}>
+              <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-sky-600 to-sky-800 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-sky-700/20"></div>
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
@@ -293,7 +293,7 @@ const Header = () => {
                     </div>
                     <div className="ml-4 flex-1">
                       <span className="text-gray-800 font-semibold text-lg group-hover:text-gray-900 transition-colors">{item.label}</span>
-                      <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-300 mt-1"></div>
+                      <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-sky-500 to-sky-600 transition-all duration-300 mt-1"></div>
                     </div>
                     <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
                       <Star className="w-5 h-5" />
@@ -320,58 +320,67 @@ const Header = () => {
                         </Button>
                       )}
                       
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 border border-pink-200/50 rounded-2xl group" onClick={handleWishlistClick}>
-                        <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border border-sky-200/50 rounded-2xl group" onClick={handleWishlistClick}>
+                        <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-cyan-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                           <Heart className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-gray-800 font-semibold">Wishlist</span>
+                        <span className="text-gray-800 font-semibold">My Wishlist</span>
                       </Button>
                       
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 text-red-600 hover:text-red-700 border border-red-200/50 rounded-2xl group" onClick={handleLogout}>
-                        <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 border border-amber-200/50 rounded-2xl group" onClick={handleCartClick}>
+                        <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                          <ShoppingCart className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-gray-800 font-semibold">My Cart</span>
+                        {cartCount > 0 && (
+                          <span className="ml-auto bg-sky-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                            {cartCount}
+                          </span>
+                        )}
+                      </Button>
+                      
+                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-gray-50 to-slate-50 hover:from-red-50 hover:to-pink-50 border border-gray-200/50 rounded-2xl group" onClick={handleLogout}>
+                        <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-600 group-hover:from-red-500 group-hover:to-pink-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-all">
                           <LogOut className="w-5 h-5 text-white" />
                         </div>
-                        <span className="font-semibold">Logout</span>
+                        <span className="text-gray-800 font-semibold group-hover:text-red-600 transition-colors">Sign Out</span>
                       </Button>
                     </>
                   ) : (
-                    <Link to="/auth" onClick={closeMobileMenu}>
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200/50 rounded-2xl group">
-                        <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                          <User className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-gray-800 font-semibold">Login / Sign Up</span>
-                      </Button>
-                    </Link>
+                    <>
+                      <Link to="/auth" onClick={closeMobileMenu}>
+                        <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border border-sky-200/50 rounded-2xl group">
+                          <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-cyan-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="text-gray-800 font-semibold">Sign In / Register</span>
+                        </Button>
+                      </Link>
+                    </>
                   )}
-                </div>
-
-                <div className="mt-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200/50">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-2">
-                        <Zap className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-xs font-medium text-gray-600">Fast Delivery</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mb-2">
-                        <Gift className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-xs font-medium text-gray-600">Best Deals</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center mb-2">
-                        <Star className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-xs font-medium text-gray-600">Top Rated</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {/* Desktop Navigation */}
+        <div className="hidden md:block border-t border-gray-100 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-center space-x-8 py-2">
+              {menuItems.map(item => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-sky-600 transition-colors py-1"
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
       </header>
     </>
   );

@@ -34,10 +34,10 @@ const MobileHeader = () => {
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center group">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-lg flex items-center justify-center mr-2 transform group-hover:scale-110 transition-all duration-300 shadow-lg">
+            <div className="w-8 h-8 bg-gradient-to-br from-sky-600 to-sky-800 rounded-lg flex items-center justify-center mr-2 transform group-hover:scale-110 transition-all duration-300 shadow-lg">
               <span className="text-white font-bold text-sm drop-shadow-lg">G</span>
             </div>
-            <h1 className="text-lg font-bold text-indigo-700">
+            <h1 className="text-lg font-bold text-sky-700">
               GadgetGenie
             </h1>
           </Link>
@@ -60,7 +60,7 @@ const MobileHeader = () => {
             <Button variant="ghost" size="sm" onClick={handleCartClick} className="p-2 relative">
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-indigo-600 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 bg-sky-600 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
                   {cartCount}
                 </span>
               )}
@@ -82,7 +82,7 @@ const MobileHeader = () => {
               <Button 
                 type="submit" 
                 size="sm"
-                className="absolute right-1 top-1 bottom-1 px-3 bg-indigo-500 hover:bg-indigo-600 rounded-lg"
+                className="absolute right-1 top-1 bottom-1 px-3 bg-sky-500 hover:bg-sky-600 rounded-lg"
               >
                 <Search className="w-4 h-4" />
               </Button>

@@ -5,12 +5,12 @@ import { Link } from 'react-router-dom';
 
 const MobileQuickCategories = () => {
   const categories = [
-    { icon: Smartphone, label: 'Phones', path: '/phones', color: 'from-blue-500 to-blue-600' },
-    { icon: Headphones, label: 'Audio', path: '/audio', color: 'from-purple-500 to-purple-600' },
-    { icon: Laptop, label: 'Laptops', path: '/categories', color: 'from-green-500 to-green-600' },
-    { icon: Watch, label: 'Watches', path: '/categories', color: 'from-orange-500 to-orange-600' },
-    { icon: Camera, label: 'Cameras', path: '/categories', color: 'from-pink-500 to-pink-600' },
-    { icon: Gamepad2, label: 'Gaming', path: '/categories', color: 'from-indigo-500 to-indigo-600' },
+    { icon: Smartphone, label: 'Phones', path: '/phones', color: 'from-sky-500 to-sky-600' },
+    { icon: Headphones, label: 'Audio', path: '/audio', color: 'from-sky-600 to-sky-700' },
+    { icon: Laptop, label: 'Laptops', path: '/categories', color: 'from-sky-500 to-sky-600' },
+    { icon: Watch, label: 'Watches', path: '/categories', color: 'from-sky-600 to-sky-700' },
+    { icon: Camera, label: 'Cameras', path: '/categories', color: 'from-sky-500 to-sky-600' },
+    { icon: Gamepad2, label: 'Gaming', path: '/categories', color: 'from-sky-600 to-sky-700' },
   ];
 
   return (

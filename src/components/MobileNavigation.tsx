@@ -33,11 +33,11 @@ const MobileNavigation = () => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-indigo-100 z-[50] shadow-2xl h-16">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700"></div>
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-sky-100 z-[50] shadow-2xl h-16">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-600 via-sky-500 to-sky-700"></div>
       
       <div className="flex items-center justify-around py-1 px-2 h-full relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-50/30 via-transparent to-transparent pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-sky-50/30 via-transparent to-transparent pointer-events-none"></div>
         
         {navItems.map((item) => (
           <Link
@@ -45,17 +45,17 @@ const MobileNavigation = () => {
             to={item.path}
             className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-110 group ${
               isActive(item.path)
-                ? 'text-indigo-600 bg-indigo-50 shadow-lg scale-105'
+                ? 'text-sky-600 bg-sky-50 shadow-lg scale-105'
                 : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
             }`}
           >
             {isActive(item.path) && (
-              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-indigo-600 rounded-full"></div>
+              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-sky-600 rounded-full"></div>
             )}
             
             <div className={`relative mb-1 p-1 rounded-lg transition-all duration-300 ${
               isActive(item.path) 
-                ? 'bg-indigo-600 shadow-lg' 
+                ? 'bg-sky-600 shadow-lg' 
                 : 'group-hover:bg-gray-100'
             }`}>
               <item.icon className={`w-4 h-4 transition-all duration-300 ${
@@ -63,7 +63,7 @@ const MobileNavigation = () => {
               }`} />
               
               {isActive(item.path) && (
-                <div className="absolute inset-0 bg-indigo-600 rounded-xl animate-ping opacity-30"></div>
+                <div className="absolute inset-0 bg-sky-600 rounded-xl animate-ping opacity-30"></div>
               )}
             </div>
             
@@ -79,15 +79,15 @@ const MobileNavigation = () => {
           onClick={handleCartClick}
           className="relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-110 text-gray-600 hover:text-gray-800 hover:bg-gray-50 group"
         >
-          <div className="relative mb-1 p-1 rounded-lg transition-all duration-300 group-hover:bg-indigo-600 group-hover:shadow-lg">
+          <div className="relative mb-1 p-1 rounded-lg transition-all duration-300 group-hover:bg-sky-600 group-hover:shadow-lg">
             <ShoppingBag className="w-4 h-4 transition-all duration-300 group-hover:text-white" />
             
             {cartCount > 0 && (
               <>
-                <Badge className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-4 h-4 flex items-center justify-center font-bold shadow-lg animate-pulse text-[10px]">
+                <Badge className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-4 h-4 flex items-center justify-center font-bold shadow-lg animate-pulse text-[10px]">
                   {cartCount}
                 </Badge>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-400 rounded-full animate-ping opacity-30"></div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-sky-400 rounded-full animate-ping opacity-30"></div>
               </>
             )}
           </div>

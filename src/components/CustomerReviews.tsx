@@ -105,7 +105,7 @@ const CustomerReviews = () => {
         {reviews.map((review) => (
           <div key={review.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
                   {review.name.split(' ').map(n => n[0]).join('')}
                 </span>
@@ -142,8 +142,8 @@ const CustomerReviews = () => {
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>{review.date}</span>
                   <button 
-                    className={`flex items-center gap-1 hover:text-blue-600 transition-colors ${
-                      likedReviews.includes(review.id) ? 'text-blue-600' : ''
+                    className={`flex items-center gap-1 hover:text-sky-600 transition-colors ${
+                      likedReviews.includes(review.id) ? 'text-sky-600' : ''
                     }`}
                     onClick={() => handleLikeReview(review.id)}
                   >
@@ -157,7 +157,7 @@ const CustomerReviews = () => {
         ))}
       </div>
 
-      <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl text-center">
+      <div className="mt-4 p-3 bg-gradient-to-r from-sky-50 to-sky-100 rounded-xl text-center">
         <p className="text-sm font-medium text-gray-700">
           ⭐ {calculateAverageRating()}/5 average rating from {getTotalReviews().toLocaleString()}+ reviews
         </p>

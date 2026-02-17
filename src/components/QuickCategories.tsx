@@ -7,43 +7,14 @@ const QuickCategories = () => {
   const navigate = useNavigate();
 
   const categories = [
-    {
-      name: 'Smartphones',
-      icon: Smartphone,
-      count: 8,
-      color: 'bg-indigo-600',
-      path: '/products?category=smartphones'
-    },
-    {
-      name: 'Audio',
-      icon: Headphones,
-      count: 2,
-      color: 'bg-indigo-600',
-      path: '/products?category=audio'
-    },
-    {
-      name: 'Laptops',
-      icon: Laptop,
-      count: 4,
-      color: 'bg-indigo-600',
-      path: '/products?category=laptops'
-    },
-    {
-      name: 'Cameras',
-      icon: Camera,
-      count: 3,
-      color: 'bg-indigo-600',
-      path: '/products?category=cameras'
-    }
+    { name: 'Smartphones', icon: Smartphone, count: 8, color: 'bg-sky-600', path: '/products?category=smartphones' },
+    { name: 'Audio', icon: Headphones, count: 2, color: 'bg-sky-600', path: '/products?category=audio' },
+    { name: 'Laptops', icon: Laptop, count: 4, color: 'bg-sky-600', path: '/products?category=laptops' },
+    { name: 'Cameras', icon: Camera, count: 3, color: 'bg-sky-600', path: '/products?category=cameras' }
   ];
 
-  const handleCategoryClick = (path: string) => {
-    navigate(path);
-  };
-
-  const handleAllCategoriesClick = () => {
-    navigate('/categories');
-  };
+  const handleCategoryClick = (path: string) => { navigate(path); };
+  const handleAllCategoriesClick = () => { navigate('/categories'); };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4">
@@ -54,11 +25,7 @@ const QuickCategories = () => {
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         {categories.map((category, index) => (
-          <div
-            key={index}
-            className="relative group cursor-pointer"
-            onClick={() => handleCategoryClick(category.path)}
-          >
+          <div key={index} className="relative group cursor-pointer" onClick={() => handleCategoryClick(category.path)}>
             <div className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
               <div className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
                 <category.icon className="w-6 h-6 text-white" />
@@ -67,21 +34,17 @@ const QuickCategories = () => {
               <span className="text-xs text-gray-500">{category.count} items</span>
             </div>
             {index === 0 && (
-              <div className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded-full">
-                Hot
-              </div>
+              <div className="absolute -top-2 -right-2 bg-sky-600 text-white text-xs px-2 py-1 rounded-full">Hot</div>
             )}
             {index === 2 && (
-              <div className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded-full">
-                Hot
-              </div>
+              <div className="absolute -top-2 -right-2 bg-sky-600 text-white text-xs px-2 py-1 rounded-full">Hot</div>
             )}
           </div>
         ))}
       </div>
 
       <button 
-        className="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-600 transition-colors"
+        className="w-full bg-sky-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-sky-600 transition-colors"
         onClick={handleAllCategoriesClick}
       >
         All Categories

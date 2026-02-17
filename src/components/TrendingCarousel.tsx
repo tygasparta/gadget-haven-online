@@ -81,7 +81,7 @@ const TrendingCarousel = () => {
                 <span className="text-xs text-green-600 font-medium">{product.discount}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-bold text-blue-600">${product.price}</span>
+                <span className="text-sm font-bold text-sky-600">${product.price}</span>
                 <span className="text-xs text-gray-400 line-through">${product.originalPrice}</span>
               </div>
             </div>

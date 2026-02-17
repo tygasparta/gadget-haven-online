@@ -77,10 +77,10 @@ const FeaturedBrands = () => {
       <div className="text-center mb-6 sm:mb-8">
         <div className="relative inline-block">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 animate-fade-in animation-delay-200 relative">
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse">
+            <span className="bg-gradient-to-r from-sky-600 via-sky-500 to-sky-700 bg-clip-text text-transparent animate-pulse">
               Trusted Brands
             </span>
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 rounded-lg blur-sm -z-10 animate-pulse"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-sky-600/20 via-sky-500/20 to-sky-700/20 rounded-lg blur-sm -z-10 animate-pulse"></div>
           </h2>
         </div>
         <p className="text-base sm:text-lg text-gray-600 animate-fade-in animation-delay-400">
