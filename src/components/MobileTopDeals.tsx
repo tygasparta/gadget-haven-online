@@ -14,7 +14,6 @@ const MobileTopDeals = () => {
   const { mutate: addToCart } = useAddToCart();
   const navigate = useNavigate();
 
-  // Get flash sale products for top deals
   const topDeals = products
     .filter(product => product.is_flash_sale || product.discount_percentage > 0)
     .slice(0, 4);
@@ -22,10 +21,7 @@ const MobileTopDeals = () => {
   const handleAddToCart = (productId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+    if (!user) { navigate('/auth'); return; }
     addToCart({ productId });
   };
 
@@ -48,12 +44,7 @@ const MobileTopDeals = () => {
     <div className="md:hidden bg-white rounded-2xl shadow-lg p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-800">Top Deals</h3>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-blue-600 hover:text-blue-700"
-          onClick={handleSeeAll}
-        >
+        <Button variant="ghost" size="sm" className="text-sky-600 hover:text-sky-700" onClick={handleSeeAll}>
           See all
         </Button>
       </div>
@@ -72,35 +63,21 @@ const MobileTopDeals = () => {
             )}
             
             <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                }}
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover"
+                onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"; }}
               />
             </div>
             
             <div className="space-y-2">
-              <h4 
-                className="text-sm font-medium text-gray-800 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
-                onClick={(e) => handleProductClick(product.id, e)}
-              >
+              <h4 className="text-sm font-medium text-gray-800 line-clamp-2 cursor-pointer hover:text-sky-600 transition-colors"
+                onClick={(e) => handleProductClick(product.id, e)}>
                 {product.name}
               </h4>
               
               <div className="flex items-center mb-2">
                 <div className="flex items-center">
                   {Array.from({ length: 5 }, (_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-3 h-3 ${
-                        i < Math.floor(product.rating || 0) 
-                          ? 'text-yellow-400 fill-current' 
-                          : 'text-gray-300'
-                      }`}
-                    />
+                    <Star key={i} className={`w-3 h-3 ${i < Math.floor(product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
                   ))}
                 </div>
                 <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
@@ -108,14 +85,11 @@ const MobileTopDeals = () => {
               
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-lg font-bold text-blue-600">${product.price}</span>
+                  <span className="text-lg font-bold text-sky-600">${product.price}</span>
                   {product.original_price && product.original_price > product.price && (
-                    <span className="text-xs text-gray-500 line-through">
-                      ${product.original_price}
-                    </span>
+                    <span className="text-xs text-gray-500 line-through">${product.original_price}</span>
                   )}
                 </div>
-                
               </div>
             </div>
           </div>

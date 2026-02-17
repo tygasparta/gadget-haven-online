@@ -40,10 +40,10 @@ const ProductSection: React.FC<ProductSectionProps> = ({
         };
       case "blue":
         return {
-          border: "border-blue-500",
-          text: "text-blue-600",
-          bg: "hover:bg-blue-50",
-          gradient: "from-blue-500 to-blue-600"
+          border: "border-sky-500",
+          text: "text-sky-600",
+          bg: "hover:bg-sky-50",
+          gradient: "from-sky-500 to-sky-600"
         };
       case "green":
         return {
@@ -54,10 +54,10 @@ const ProductSection: React.FC<ProductSectionProps> = ({
         };
       default:
         return {
-          border: "border-blue-500",
-          text: "text-blue-600",
-          bg: "hover:bg-blue-50",
-          gradient: "from-blue-500 to-blue-600"
+          border: "border-sky-500",
+          text: "text-sky-600",
+          bg: "hover:bg-sky-50",
+          gradient: "from-sky-500 to-sky-600"
         };
     }
   };
@@ -88,7 +88,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
               <h2 className="text-lg sm:text-3xl font-bold text-gray-800 flex flex-col sm:flex-row sm:items-center gap-2">
                 <span className="truncate">{title}</span>
                 {title === "Flash Sale ⚡" && (
-                  <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold animate-pulse shadow-lg whitespace-nowrap">
+                  <span className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold animate-pulse shadow-lg whitespace-nowrap">
                     ⚡ LIMITED TIME
                   </span>
                 )}

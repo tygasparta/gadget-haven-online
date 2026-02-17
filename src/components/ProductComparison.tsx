@@ -91,7 +91,7 @@ const ProductComparison: React.FC = () => {
             <p className="text-gray-600 mb-4">Select products to compare side by side</p>
             <Button 
               onClick={() => setShowProductSelector(true)}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-sky-600 hover:bg-sky-700"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Product to Compare
@@ -141,7 +141,7 @@ const ProductComparison: React.FC = () => {
                   <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-1">
-                      <span className="text-lg font-bold text-blue-600">${product.price}</span>
+                      <span className="text-lg font-bold text-sky-600">${product.price}</span>
                       {product.original_price && product.original_price > product.price && (
                         <span className="text-sm text-gray-400 line-through">
                           ${product.original_price}
@@ -158,7 +158,7 @@ const ProductComparison: React.FC = () => {
                   </div>
                   <Button
                     onClick={() => handleAddToCart(product.id)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm"
+                    className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 text-sm"
                   >
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     Add to Cart
@@ -203,7 +203,7 @@ const ProductComparison: React.FC = () => {
                   <td className="border border-gray-200 p-3 font-medium bg-gray-50">Price</td>
                   {selectedProducts.map((product) => (
                     <td key={product.id} className="border border-gray-200 p-3">
-                      <span className="font-bold text-blue-600">${product.price}</span>
+                      <span className="font-bold text-sky-600">${product.price}</span>
                     </td>
                   ))}
                 </tr>
@@ -267,14 +267,14 @@ const ProductComparison: React.FC = () => {
                       />
                       <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-blue-600">${product.price}</span>
+                        <span className="text-lg font-bold text-sky-600">${product.price}</span>
                         <Button
                           onClick={() => {
                             addProductToComparison(product as ComparisonProduct);
                             setShowProductSelector(false);
                           }}
                           disabled={selectedProducts.find(p => p.id === product.id) !== undefined}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm"
+                          className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 text-sm"
                         >
                           {selectedProducts.find(p => p.id === product.id) ? 'Added' : 'Compare'}
                         </Button>

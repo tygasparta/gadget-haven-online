@@ -147,7 +147,7 @@ const PopupBanner = () => {
         }
         
         .shimmer-text {
-          background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa, #1d4ed8);
+          background: linear-gradient(90deg, #0369a1, #0284c7, #38bdf8, #0369a1);
           background-size: 200% auto;
           color: transparent;
           background-clip: text;
@@ -178,12 +178,12 @@ const PopupBanner = () => {
         onClick={handleBackdropMouseClick}
         onTouchEnd={handleBackdropTouchEnd}
       >
-        <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-white to-blue-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
+        <Card className="relative w-full max-w-4xl mx-auto bg-gradient-to-br from-sky-50 via-white to-sky-50 border-0 shadow-2xl modal-content overflow-hidden max-h-[95vh] overflow-y-auto">
           {/* Animated Background Elements */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-10 left-10 w-20 h-20 bg-blue-400 rounded-full blur-xl float-animation"></div>
-            <div className="absolute bottom-10 right-10 w-16 h-16 bg-blue-500 rounded-full blur-xl float-animation" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300 rounded-full blur-xl float-animation" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-10 left-10 w-20 h-20 bg-sky-400 rounded-full blur-xl float-animation"></div>
+            <div className="absolute bottom-10 right-10 w-16 h-16 bg-sky-500 rounded-full blur-xl float-animation" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-sky-300 rounded-full blur-xl float-animation" style={{ animationDelay: '2s' }}></div>
           </div>
 
           {/* Enhanced Close Button */}
@@ -203,7 +203,7 @@ const PopupBanner = () => {
             <div className="flex-1 p-8 lg:p-12">
               <div className="max-w-md">
                 <div className="flex items-center gap-2 mb-4 group">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 bg-gradient-to-br from-sky-600 to-sky-800 rounded-lg flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold text-lg blink-animation">G</span>
                   </div>
                   <h1 className="text-2xl font-bold shimmer-text">
@@ -213,7 +213,7 @@ const PopupBanner = () => {
 
                 <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
                   Tech Magic
-                  <span className="block text-3xl text-blue-600">
+                  <span className="block text-3xl text-sky-600">
                     Awaits You! ✨
                   </span>
                 </h2>
@@ -229,11 +229,11 @@ const PopupBanner = () => {
                     <span className="text-sm font-medium text-gray-700">Flash Deals</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-                    <Smartphone className="w-4 h-4 text-blue-500" />
+                    <Smartphone className="w-4 h-4 text-sky-500" />
                     <span className="text-sm font-medium text-gray-700">Latest Phones</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-                    <Headphones className="w-4 h-4 text-blue-600" />
+                    <Headphones className="w-4 h-4 text-sky-600" />
                     <span className="text-sm font-medium text-gray-700">Premium Audio</span>
                   </div>
                 </div>
@@ -242,7 +242,7 @@ const PopupBanner = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     onClick={handleShopNow}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
+                    className="bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                     <ShoppingCart className="w-5 h-5 mr-2 relative z-10" />
@@ -251,7 +251,7 @@ const PopupBanner = () => {
                   <Button
                     onClick={handleDealsClick}
                     variant="outline"
-                    className="border-2 border-blue-200 hover:border-blue-300 px-8 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 group"
+                    className="border-2 border-sky-200 hover:border-sky-300 px-8 py-3 rounded-xl hover:bg-sky-50 transition-all duration-300 hover:scale-105 group"
                   >
                     <span className="group-hover:animate-pulse">View Deals</span>
                   </Button>
@@ -261,21 +261,21 @@ const PopupBanner = () => {
                 <div className="flex gap-2 mt-6">
                   <button
                     onClick={() => handleCategoryClick('phones')}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline-offset-4 hover:underline transition-all duration-300 hover:scale-105"
+                    className="text-sm text-sky-600 hover:text-sky-800 underline-offset-4 hover:underline transition-all duration-300 hover:scale-105"
                   >
                     Phones
                   </button>
                   <span className="text-gray-400">•</span>
                   <button
                     onClick={() => handleCategoryClick('audio')}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline-offset-4 hover:underline transition-all duration-300 hover:scale-105"
+                    className="text-sm text-sky-600 hover:text-sky-800 underline-offset-4 hover:underline transition-all duration-300 hover:scale-105"
                   >
                     Audio
                   </button>
                   <span className="text-gray-400">•</span>
                   <button
                     onClick={() => handleCategoryClick('deals')}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline-offset-4 hover:underline transition-all duration-300 hover:scale-105"
+                    className="text-sm text-sky-600 hover:text-sky-800 underline-offset-4 hover:underline transition-all duration-300 hover:scale-105"
                   >
                     Flash Sales
                   </button>
@@ -342,7 +342,7 @@ const PopupBanner = () => {
           <div className="md:hidden p-4 sm:p-6 relative z-10">
             <div className="text-center mb-4 sm:mb-6">
               <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-lg">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-sky-600 to-sky-800 rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm sm:text-base blink-animation">G</span>
                 </div>
                 <h1 className="text-lg sm:text-xl font-bold shimmer-text">
@@ -414,7 +414,7 @@ const PopupBanner = () => {
                 <span className="text-xs font-medium text-gray-700">Flash Deals</span>
               </div>
               <div className="flex items-center gap-1 bg-white/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm hover:shadow-md transition-all duration-300">
-                <Smartphone className="w-3 h-3 text-blue-500" />
+                <Smartphone className="w-3 h-3 text-sky-500" />
                 <span className="text-xs font-medium text-gray-700">New Arrivals</span>
               </div>
             </div>
@@ -423,7 +423,7 @@ const PopupBanner = () => {
             <div className="space-y-3">
               <Button
                 onClick={handleShopNow}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base touch-manipulation"
+                className="w-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group text-sm sm:text-base touch-manipulation"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                 <ShoppingCart className="w-4 h-4 mr-2 relative z-10" />
@@ -432,7 +432,7 @@ const PopupBanner = () => {
               <Button
                 onClick={handleDealsClick}
                 variant="outline"
-                className="w-full border-2 border-blue-200 hover:border-blue-300 py-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base touch-manipulation"
+                className="w-full border-2 border-sky-200 hover:border-sky-300 py-3 rounded-xl hover:bg-sky-50 transition-all duration-300 hover:scale-105 text-sm sm:text-base touch-manipulation"
               >
                 View Deals
               </Button>

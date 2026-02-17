@@ -37,7 +37,7 @@ const LiveDeals = () => {
     <div className="bg-white rounded-lg shadow-sm p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
+          <div className="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center mr-3">
             <Clock className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -55,19 +55,19 @@ const LiveDeals = () => {
             onClick={() => handleDealClick(deal.id)}
           >
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm font-bold text-indigo-600">Flash Sale</span>
-                  <span className="bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded text-xs font-medium">
+                  <span className="text-sm font-bold text-sky-600">Flash Sale</span>
+                  <span className="bg-sky-100 text-sky-600 px-2 py-0.5 rounded text-xs font-medium">
                     {deal.discount}
                   </span>
                 </div>
                 <h4 className="font-medium text-sm text-gray-900 mb-2">{deal.name}</h4>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-indigo-600">${deal.price}</span>
+                  <span className="text-sm font-bold text-sky-600">${deal.price}</span>
                   <span className="text-xs text-gray-400 line-through">${deal.originalPrice}</span>
                 </div>
               </div>
@@ -77,7 +77,7 @@ const LiveDeals = () => {
       </div>
 
       <button 
-        className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+        className="w-full mt-4 bg-sky-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-sky-700 transition-colors"
         onClick={handleViewAllDeals}
       >
         View All Live Deals

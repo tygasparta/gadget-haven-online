@@ -100,7 +100,7 @@ const Sidebar = () => {
   return (
     <div className="w-64 bg-white shadow-sm hidden lg:block">
       <div className="p-4">
-        <h3 className="font-semibold text-indigo-900 mb-4">Shop by Department</h3>
+        <h3 className="font-semibold text-sky-900 mb-4">Shop by Department</h3>
         <nav className="space-y-2">
           {categories.map((category, index) => (
             <div key={index} className="group">
@@ -109,11 +109,11 @@ const Sidebar = () => {
                 onClick={() => toggleCategory(index)}
               >
                 <div 
-                  className="flex items-center flex-1 hover:text-indigo-600 transition-colors"
+                  className="flex items-center flex-1 hover:text-sky-600 transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleCategoryClick(category.path); }}
                 >
                   <span className="text-lg mr-3">{category.icon}</span>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">{category.name}</span>
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-sky-600">{category.name}</span>
                 </div>
                 {expandedCategories.includes(index) ? (
                   <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
@@ -127,7 +127,7 @@ const Sidebar = () => {
                   {category.items.map((item, itemIndex) => (
                     <div
                       key={itemIndex}
-                      className="text-sm text-gray-600 hover:text-indigo-600 cursor-pointer py-1 px-2 rounded hover:bg-indigo-50 transition-colors"
+                      className="text-sm text-gray-600 hover:text-sky-600 cursor-pointer py-1 px-2 rounded hover:bg-sky-50 transition-colors"
                       onClick={() => handleSubItemClick(item.path)}
                     >
                       {item.name}
@@ -151,11 +151,11 @@ const Sidebar = () => {
         </button>
       </div>
 
-      <div className="mx-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg p-4 text-white shadow-lg">
+      <div className="mx-4 bg-gradient-to-r from-sky-500 to-sky-600 rounded-lg p-4 text-white shadow-lg">
         <h4 className="font-bold mb-2">New Arrivals</h4>
         <p className="text-sm mb-3 opacity-90">Latest tech products</p>
         <button 
-          className="bg-white text-indigo-500 px-4 py-2 rounded font-semibold text-sm hover:bg-gray-100 transition-colors w-full"
+          className="bg-white text-sky-500 px-4 py-2 rounded font-semibold text-sm hover:bg-gray-100 transition-colors w-full"
           onClick={() => navigate('/categories?featured=new')}
         >
           Explore Now
