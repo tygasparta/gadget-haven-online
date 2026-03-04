@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Search, ShoppingCart, Menu, X, User, Heart } from 'lucide-react';
+import { Search, ShoppingCart, User, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ const MobileHeader = () => {
   const { user } = useAuthContext();
   const { data: cartItems = [] } = useCartItems();
   const navigate = useNavigate();
-  const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -21,7 +19,6 @@ const MobileHeader = () => {
     if (searchTerm.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
       setSearchTerm('');
-      setShowSearch(false);
     }
   };
 
@@ -32,63 +29,55 @@ const MobileHeader = () => {
   return (
     <div className="md:hidden">
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="flex items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center group">
-            <div className="w-8 h-8 bg-gradient-to-br from-sky-600 to-sky-800 rounded-lg flex items-center justify-center mr-2 transform group-hover:scale-110 transition-all duration-300 shadow-lg">
-              <span className="text-white font-bold text-sm drop-shadow-lg">G</span>
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <Link to="/" className="flex items-center">
+            <div className="w-7 h-7 bg-primary rounded flex items-center justify-center mr-2">
+              <span className="text-primary-foreground font-bold text-xs">G</span>
             </div>
-            <h1 className="text-lg font-bold text-sky-700">
-              GadgetGenie
-            </h1>
+            <h1 className="text-base font-bold text-primary">GadgetGenie</h1>
           </Link>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowSearch(!showSearch)} className="p-2">
-              <Search className="w-5 h-5" />
-            </Button>
-            
+          <div className="flex items-center space-x-1">
             {user ? (
-              <Button variant="ghost" size="sm" onClick={() => navigate('/wishlist')} className="p-2">
+              <button onClick={() => navigate('/wishlist')} className="p-2 text-gray-600">
                 <Heart className="w-5 h-5" />
-              </Button>
+              </button>
             ) : (
-              <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} className="p-2">
+              <button onClick={() => navigate('/auth')} className="p-2 text-gray-600">
                 <User className="w-5 h-5" />
-              </Button>
+              </button>
             )}
             
-            <Button variant="ghost" size="sm" onClick={handleCartClick} className="p-2 relative">
+            <button onClick={handleCartClick} className="p-2 text-gray-600 relative">
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-sky-600 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
+                <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">
                   {cartCount}
                 </span>
               )}
-            </Button>
+            </button>
           </div>
         </div>
 
-        {showSearch && (
-          <div className="px-4 pb-3 border-t border-gray-100 bg-gray-50">
-            <form onSubmit={handleSearch} className="relative">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                className="w-full pl-4 pr-12 py-2 bg-white border-gray-200 rounded-xl"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoFocus
-              />
-              <Button 
-                type="submit" 
-                size="sm"
-                className="absolute right-1 top-1 bottom-1 px-3 bg-sky-500 hover:bg-sky-600 rounded-lg"
-              >
-                <Search className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
-        )}
+        {/* Search bar always visible */}
+        <div className="px-3 pb-2.5">
+          <form onSubmit={handleSearch} className="relative flex">
+            <Input
+              type="text"
+              placeholder="Search for products, brands..."
+              className="w-full pl-3 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-l-sm rounded-r-none text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button 
+              type="submit" 
+              size="sm"
+              className="rounded-l-none rounded-r-sm px-3 bg-primary hover:bg-primary/90"
+            >
+              <Search className="w-4 h-4" />
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

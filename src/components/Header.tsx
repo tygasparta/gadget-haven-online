@@ -87,75 +87,86 @@ const Header = () => {
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
+  const navTabs = [
+    { label: 'New Arrivals', path: '/categories?featured=new' },
+    { label: 'Fire Sale', path: '/deals', highlight: 'red' },
+    { label: 'Brands Store', path: '/products' },
+    { label: 'Categories', path: '/categories' },
+    { label: 'Clearance', path: '/deals' },
+  ];
+
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/', gradient: 'from-sky-600 to-sky-700', bgColor: 'bg-sky-50' },
-    { icon: Grid3X3, label: 'Categories', path: '/categories', gradient: 'from-sky-500 to-sky-700', bgColor: 'bg-sky-50' },
-    { icon: Tag, label: 'Deals', path: '/deals', gradient: 'from-sky-700 to-sky-800', bgColor: 'bg-sky-50' },
-    { icon: Headphones, label: 'Audio', path: '/audio', gradient: 'from-sky-600 to-sky-800', bgColor: 'bg-sky-50' },
-    { icon: Smartphone, label: 'Phones', path: '/phones', gradient: 'from-sky-500 to-sky-600', bgColor: 'bg-sky-50' },
-    { icon: Phone, label: 'Contact', path: '/contact', gradient: 'from-sky-700 to-sky-900', bgColor: 'bg-sky-50' }
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: Grid3X3, label: 'Categories', path: '/categories' },
+    { icon: Tag, label: 'Deals', path: '/deals' },
+    { icon: Headphones, label: 'Audio', path: '/audio' },
+    { icon: Smartphone, label: 'Phones', path: '/phones' },
+    { icon: Phone, label: 'Contact', path: '/contact' }
   ];
 
   return (
     <>
-      {/* Top banner */}
-      <div className="bg-sky-600 text-white py-2 px-4 text-xs sm:text-sm text-center">
-        <span className="block sm:inline">✨ Welcome to our electronics store - Your tech dreams await!</span>
-        <div className="hidden lg:float-right lg:block">
-          <Link to="/help" className="mr-4 hover:text-sky-200 transition-colors cursor-pointer">Help Centre</Link>
-          <Link to="/track-order" className="hover:text-sky-200 transition-colors cursor-pointer">Track Order</Link>
+      {/* Top utility bar */}
+      <div className="bg-white border-b border-gray-200 hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between py-1.5 text-xs text-gray-500">
+          <span></span>
+          <div className="flex items-center space-x-4">
+            <Link to="/help" className="hover:text-primary transition-colors">Help Centre</Link>
+            <span className="text-gray-300">|</span>
+            <Link to="/sell-with-us" className="hover:text-primary transition-colors">Sell on GadgetGenie</Link>
+          </div>
         </div>
       </div>
-      
+
       {/* Main header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo */}
             <Link to="/" className="flex items-center flex-shrink-0 group" onClick={closeMobileMenu}>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-sky-600 to-sky-800 rounded-lg flex items-center justify-center mr-2 sm:mr-3 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-                <span className="text-white font-bold text-sm sm:text-lg drop-shadow-lg">G</span>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center mr-2 sm:mr-3 shadow-sm">
+                <span className="text-primary-foreground font-bold text-sm sm:text-lg">G</span>
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold text-sky-700 truncate group-hover:scale-105 transition-transform duration-300">GadgetGenie</h1>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-700 transition-colors duration-300">Your Ultimate Tech Destination</p>
+                <h1 className="text-lg sm:text-2xl font-bold text-primary truncate">GadgetGenie</h1>
               </div>
             </Link>
 
             {/* Search bar - Desktop */}
-            <div className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden md:block relative">
-              <form onSubmit={handleSearch} className="relative">
+            <div className="flex-1 max-w-2xl hidden md:block relative">
+              <form onSubmit={handleSearch} className="relative flex">
                 <Input
                   type="text"
-                  placeholder="Search for smartphones, electronics, gadgets..."
-                  className="w-full pl-4 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:border-sky-500"
+                  placeholder="Search for products, brands..."
+                  className="w-full pl-4 pr-4 py-2.5 border border-gray-300 rounded-l-sm rounded-r-none focus:border-primary focus:ring-0"
                   value={searchTerm}
                   onChange={handleSearchInputChange}
                   onFocus={() => searchTerm.length > 2 && setShowSearchResults(true)}
                   onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                 />
-                <Button type="submit" className="absolute right-1 top-1 bottom-1 px-4 bg-sky-500 hover:bg-sky-600">
+                <Button type="submit" className="rounded-l-none rounded-r-sm px-5 bg-primary hover:bg-primary/90">
                   <Search className="w-5 h-5" />
                 </Button>
               </form>
               
               {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg mt-1 shadow-lg z-[100] max-h-80 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-sm mt-1 shadow-lg z-[100] max-h-80 overflow-y-auto">
                   {searchResults.map(product => (
                     <div
                       key={product.id}
                       className="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                       onClick={() => { navigate(`/product/${product.id}`); setShowSearchResults(false); setSearchTerm(''); }}
                     >
-                      <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded-lg mr-3" onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"; }} />
+                      <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded mr-3" onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"; }} />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-sm text-gray-500">{product.category}</p>
-                        <p className="text-sm font-semibold text-sky-600">${product.price}</p>
+                        <p className="font-medium text-gray-900 truncate text-sm">{product.name}</p>
+                        <p className="text-xs text-gray-500">{product.category}</p>
+                        <p className="text-sm font-semibold text-primary">${product.price}</p>
                       </div>
                     </div>
                   ))}
                   <div className="p-2 border-t border-gray-100">
-                    <button onClick={handleSearch} className="w-full text-center text-sky-600 hover:text-sky-700 font-medium py-2">
+                    <button onClick={handleSearch} className="w-full text-center text-primary hover:text-primary/80 font-medium py-2 text-sm">
                       View all results for "{searchTerm}"
                     </button>
                   </div>
@@ -163,224 +174,189 @@ const Header = () => {
               )}
             </div>
 
-            {/* Right side icons */}
-            <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
+            {/* Right side actions */}
+            <div className="flex items-center space-x-1 sm:space-x-3">
               {user ? (
                 <>
-                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleAccountClick}>
-                    <User className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Account</span>
-                  </Button>
+                  <Link to="/dashboard" className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2">
+                    <User className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5">Account</span>
+                  </Link>
                   
                   {isAdmin && (
-                    <Button onClick={handleAdminClick} className="p-2 hidden sm:flex bg-sky-700 text-white hover:bg-sky-800 border-0 shadow-lg">
-                      <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
-                      <span className="ml-2 font-bold text-sm">ADMIN</span>
-                    </Button>
+                    <button onClick={handleAdminClick} className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2">
+                      <Settings className="w-5 h-5" />
+                      <span className="text-[10px] mt-0.5">Admin</span>
+                    </button>
                   )}
                   
-                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={handleWishlistClick}>
-                    <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Wishlist</span>
-                  </Button>
-                  <Button variant="ghost" className="p-2 relative" onClick={handleCartClick}>
-                    <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Cart</span>
+                  <button onClick={handleWishlistClick} className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2">
+                    <Heart className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5">Wishlist</span>
+                  </button>
+
+                  <button onClick={handleCartClick} className="flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2 relative">
+                    <ShoppingCart className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5 hidden sm:block">Cart</span>
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-sky-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs flex items-center justify-center">
+                      <span className="absolute -top-1 -right-0 bg-primary text-primary-foreground rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">
                         {cartCount}
                       </span>
                     )}
-                  </Button>
-                  <Button variant="ghost" className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 hidden sm:flex" onClick={handleLogout}>
-                    <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Logout</span>
-                  </Button>
+                  </button>
+
+                  <button onClick={handleLogout} className="hidden sm:flex flex-col items-center text-gray-600 hover:text-red-500 transition-colors px-2">
+                    <LogOut className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5">Logout</span>
+                  </button>
                 </>
               ) : (
                 <>
-                  <Link to="/auth">
-                    <Button variant="ghost" className="p-2 hidden sm:flex">
-                      <User className="w-5 h-5 sm:w-6 sm:h-6" />
-                      <span className="ml-2 hidden lg:inline">Login</span>
-                    </Button>
+                  <Link to="/auth" className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2">
+                    <User className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5">Login</span>
                   </Link>
-                  <Button variant="ghost" className="p-2 hidden sm:flex" onClick={() => navigate('/auth')}>
-                    <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Wishlist</span>
-                  </Button>
-                  <Button variant="ghost" className="p-2 relative" onClick={() => navigate('/auth')}>
-                    <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <span className="ml-2 hidden lg:inline">Cart</span>
-                  </Button>
+                  <Link to="/auth" className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2">
+                    <Heart className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5">Wishlist</span>
+                  </Link>
+                  <button onClick={() => navigate('/auth')} className="flex flex-col items-center text-gray-600 hover:text-primary transition-colors px-2 relative">
+                    <ShoppingCart className="w-5 h-5" />
+                    <span className="text-[10px] mt-0.5 hidden sm:block">Cart</span>
+                  </button>
                 </>
               )}
               
               <Button
                 variant="ghost"
-                className={`p-2 md:hidden relative transition-all duration-300 ${
-                  isMobileMenuOpen ? 'bg-sky-600 text-white shadow-lg scale-110' : 'hover:bg-gray-100'
-                }`}
+                className="p-2 md:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <div className="relative">
-                  {isMobileMenuOpen ? <X className="w-5 h-5 transform rotate-180 transition-transform duration-300" /> : <Menu className="w-5 h-5 transition-transform duration-300" />}
-                </div>
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
             </div>
           </div>
 
           {/* Mobile search */}
           <div className="mt-3 md:hidden">
-            <form onSubmit={handleSearch} className="relative">
-              <Input type="text" placeholder="Search for products..." className="w-full pl-4 pr-12 py-2 border-2 border-gray-200 rounded-lg" value={searchTerm} onChange={handleSearchInputChange} />
-              <Button type="submit" className="absolute right-1 top-1 bottom-1 px-3 bg-sky-500 hover:bg-sky-600">
+            <form onSubmit={handleSearch} className="relative flex">
+              <Input type="text" placeholder="Search for products, brands..." className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-l-sm rounded-r-none" value={searchTerm} onChange={handleSearchInputChange} />
+              <Button type="submit" className="rounded-l-none rounded-r-sm px-3 bg-primary hover:bg-primary/90">
                 <Search className="w-4 h-4" />
               </Button>
             </form>
           </div>
         </div>
 
+        {/* Navigation tabs - Takealot style */}
+        <div className="hidden md:block border-t border-gray-200 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-center divide-x divide-gray-200">
+              {navTabs.map(tab => (
+                <Link
+                  key={tab.path + tab.label}
+                  to={tab.path}
+                  className={`px-6 py-2 text-sm font-medium transition-colors ${
+                    tab.highlight === 'red' 
+                      ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                      : 'text-gray-600 hover:text-primary hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[40] md:hidden" onClick={closeMobileMenu}>
-            <div className="fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-white via-sky-50/30 to-sky-50/20 shadow-2xl transform transition-all duration-500 ease-out" onClick={(e) => e.stopPropagation()}>
-              <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-sky-600 to-sky-800 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-sky-700/20"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">G</span>
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold">Menu</h2>
-                        <p className="text-white/80 text-sm">Explore & Shop</p>
-                      </div>
+          <div className="fixed inset-0 bg-black/50 z-[40] md:hidden" onClick={closeMobileMenu}>
+            <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="p-4 border-b border-gray-200 bg-primary text-primary-foreground">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">G</span>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={closeMobileMenu} className="hover:bg-white/20 text-white p-2 rounded-lg">
-                      <X className="w-6 h-6" />
-                    </Button>
+                    <h2 className="text-lg font-bold">Menu</h2>
                   </div>
-                  
-                  {user && (
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-white">Welcome back!</p>
-                          <p className="text-white/70 text-sm truncate">{user.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <Button variant="ghost" size="sm" onClick={closeMobileMenu} className="hover:bg-white/20 text-white p-2">
+                    <X className="w-5 h-5" />
+                  </Button>
                 </div>
+                
+                {user && (
+                  <div className="mt-3 bg-white/10 rounded-lg p-2">
+                    <div className="flex items-center space-x-2">
+                      <User className="w-4 h-4 text-white/80" />
+                      <p className="text-white/80 text-sm truncate">{user.email}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="flex flex-col p-4 space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
-                {menuItems.map((item, index) => (
+              <div className="flex flex-col p-3 space-y-1 max-h-[calc(100vh-120px)] overflow-y-auto">
+                {menuItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`group flex items-center p-4 rounded-2xl transition-all duration-300 hover:scale-105 transform ${item.bgColor} hover:shadow-lg border border-gray-200/50`}
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
                     onClick={closeMobileMenu}
-                    style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className={`w-12 h-12 bg-gradient-to-r ${item.gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                      <item.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <span className="text-gray-800 font-semibold text-lg group-hover:text-gray-900 transition-colors">{item.label}</span>
-                      <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-sky-500 to-sky-600 transition-all duration-300 mt-1"></div>
-                    </div>
-                    <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
-                      <Star className="w-5 h-5" />
-                    </div>
+                    <item.icon className="w-5 h-5 text-gray-500 mr-3" />
+                    <span className="text-gray-700 font-medium">{item.label}</span>
                   </Link>
                 ))}
 
-                <div className="pt-4 border-t border-gray-200/50 space-y-3">
+                <div className="pt-3 border-t border-gray-200 space-y-1">
                   {user ? (
                     <>
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200/50 rounded-2xl group" onClick={handleAccountClick}>
-                        <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                          <User className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-gray-800 font-semibold">My Account</span>
-                      </Button>
+                      <button className="w-full flex items-center p-3 rounded-lg hover:bg-gray-50" onClick={handleAccountClick}>
+                        <User className="w-5 h-5 text-gray-500 mr-3" />
+                        <span className="text-gray-700 font-medium">My Account</span>
+                      </button>
                       
                       {isAdmin && (
-                        <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100 border border-red-200/50 rounded-2xl group" onClick={handleAdminClick}>
-                          <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                            <Settings className="w-5 h-5 text-white" />
-                          </div>
-                          <span className="text-gray-800 font-semibold">Admin Panel</span>
-                        </Button>
+                        <button className="w-full flex items-center p-3 rounded-lg hover:bg-gray-50" onClick={handleAdminClick}>
+                          <Settings className="w-5 h-5 text-gray-500 mr-3" />
+                          <span className="text-gray-700 font-medium">Admin Panel</span>
+                        </button>
                       )}
                       
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border border-sky-200/50 rounded-2xl group" onClick={handleWishlistClick}>
-                        <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-cyan-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                          <Heart className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-gray-800 font-semibold">My Wishlist</span>
-                      </Button>
+                      <button className="w-full flex items-center p-3 rounded-lg hover:bg-gray-50" onClick={handleWishlistClick}>
+                        <Heart className="w-5 h-5 text-gray-500 mr-3" />
+                        <span className="text-gray-700 font-medium">My Wishlist</span>
+                      </button>
                       
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 border border-amber-200/50 rounded-2xl group" onClick={handleCartClick}>
-                        <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                          <ShoppingCart className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-gray-800 font-semibold">My Cart</span>
+                      <button className="w-full flex items-center p-3 rounded-lg hover:bg-gray-50" onClick={handleCartClick}>
+                        <ShoppingCart className="w-5 h-5 text-gray-500 mr-3" />
+                        <span className="text-gray-700 font-medium">My Cart</span>
                         {cartCount > 0 && (
-                          <span className="ml-auto bg-sky-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                          <span className="ml-auto bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                             {cartCount}
                           </span>
                         )}
-                      </Button>
+                      </button>
                       
-                      <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-gray-50 to-slate-50 hover:from-red-50 hover:to-pink-50 border border-gray-200/50 rounded-2xl group" onClick={handleLogout}>
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-600 group-hover:from-red-500 group-hover:to-pink-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-all">
-                          <LogOut className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-gray-800 font-semibold group-hover:text-red-600 transition-colors">Sign Out</span>
-                      </Button>
+                      <button className="w-full flex items-center p-3 rounded-lg hover:bg-red-50" onClick={handleLogout}>
+                        <LogOut className="w-5 h-5 text-red-500 mr-3" />
+                        <span className="text-red-600 font-medium">Sign Out</span>
+                      </button>
                     </>
                   ) : (
-                    <>
-                      <Link to="/auth" onClick={closeMobileMenu}>
-                        <Button variant="ghost" className="w-full justify-start p-4 h-auto bg-gradient-to-r from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border border-sky-200/50 rounded-2xl group">
-                          <div className="w-10 h-10 bg-gradient-to-r from-sky-500 to-cyan-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <span className="text-gray-800 font-semibold">Sign In / Register</span>
-                        </Button>
-                      </Link>
-                    </>
+                    <Link to="/auth" onClick={closeMobileMenu}>
+                      <button className="w-full flex items-center p-3 rounded-lg hover:bg-gray-50">
+                        <User className="w-5 h-5 text-gray-500 mr-3" />
+                        <span className="text-gray-700 font-medium">Sign In / Register</span>
+                      </button>
+                    </Link>
                   )}
                 </div>
               </div>
             </div>
           </div>
         )}
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:block border-t border-gray-100 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center space-x-8 py-2">
-              {menuItems.map(item => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-sky-600 transition-colors py-1"
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
       </header>
     </>
   );
