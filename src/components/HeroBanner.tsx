@@ -1,40 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import applePhonesHero from '@/assets/apple-phones-hero.png';
 
 const HeroBanner = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Full-width image banners like Takealot
   const slides = [
     {
       id: 1,
-      title: "Huge Saving on",
-      subtitle: "Premium Audio",
-      description: "Sale up to 40% off on selected items*",
-      buttonText: "Shop Now",
       image: "/lovable-uploads/52c3999f-568f-4f5e-a01d-1fcc63b47bbc.png",
-      category: "audio"
+      path: "/audio",
+      alt: "Premium Audio Sale"
     },
     {
       id: 2,
-      title: "Huge Saving on",
-      subtitle: "Apple iPhones",
-      description: "Sale up to 35% off on selected items*",
-      buttonText: "Shop Now",
-      image: applePhonesHero,
-      category: "apple-phones"
+      image: "/lovable-uploads/d6dc68dd-5909-4e9d-b3a5-eb760a7d932b.png",
+      path: "/deals",
+      alt: "Gaming Gear Sale"
     },
     {
       id: 3,
-      title: "Huge Saving on",
-      subtitle: "Gaming Gear",
-      description: "Sale up to 50% off on selected items*",
-      buttonText: "Shop Now",
-      image: "/lovable-uploads/d6dc68dd-5909-4e9d-b3a5-eb760a7d932b.png",
-      category: "gaming"
+      image: "/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png",
+      path: "/products",
+      alt: "Shop Electronics"
     }
   ];
 
@@ -48,91 +38,54 @@ const HeroBanner = () => {
   const nextSlide = () => setCurrentSlide(prev => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
 
-  const handleShopNow = (slide: any) => {
-    switch (slide.category) {
-      case 'audio': navigate('/audio'); toast.success(`Browsing ${slide.subtitle} deals!`); break;
-      case 'apple-phones': navigate('/search?q=iphone'); toast.success(`Browsing ${slide.subtitle} deals!`); break;
-      case 'gaming': navigate('/deals'); toast.success(`Browsing ${slide.subtitle} deals!`); break;
-      default: navigate('/deals'); toast.success("Browsing all deals!");
-    }
-  };
-
   return (
-    <div className="relative bg-white rounded-2xl p-3 mb-6 shadow-sm">
-      <div className="relative h-[280px] sm:h-[340px] md:h-[380px] lg:h-[420px] overflow-hidden rounded-xl">
-      {slides.map((slide, index) => (
-        <div 
-          key={slide.id} 
-          className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-            index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-          }`}
-        >
-          <div className="h-full bg-gradient-to-r from-gray-100 to-gray-50 relative overflow-hidden">
-
-            <div className="relative z-10 h-full flex items-center">
-              <div className="w-full px-6 sm:px-10 md:px-14">
-                <div className="max-w-7xl mx-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center h-full">
-                    {/* Text Content */}
-                    <div className="py-8">
-                      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-4">
-                        <span className="text-gray-500">{slide.title}</span>
-                        <br />
-                        <span className="text-foreground">{slide.subtitle}</span>
-                      </h1>
-                      <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-md">
-                        {slide.description}
-                      </p>
-                      <Button 
-                        size="lg"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 py-5 text-lg font-bold rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
-                        onClick={() => handleShopNow(slide)}
-                      >
-                        {slide.buttonText}
-                      </Button>
-                    </div>
-
-                    {/* Product Image */}
-                    <div className="hidden lg:flex justify-center items-center">
-                      <div className="relative">
-                        <img 
-                          src={slide.image} 
-                          alt={slide.subtitle} 
-                          className="w-full max-w-lg h-80 object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500" 
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=500&fit=crop";
-                          }} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Navigation Arrows */}
-      <button onClick={prevSlide} className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 backdrop-blur-sm text-foreground rounded-full p-3 transition-all duration-200 z-20 hover:scale-110">
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <button onClick={nextSlide} className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 backdrop-blur-sm text-foreground rounded-full p-3 transition-all duration-200 z-20 hover:scale-110">
-        <ChevronRight className="w-5 h-5" />
-      </button>
-
-      {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`transition-all duration-300 rounded-full ${
-              index === currentSlide ? 'w-8 h-3 bg-primary' : 'w-3 h-3 bg-gray-400/50 hover:bg-gray-400/75'
+    <div className="relative mb-4">
+      <div className="relative w-full aspect-[1292/300] overflow-hidden rounded-sm bg-gray-100">
+        {slides.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-500 cursor-pointer ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
-          />
+            onClick={() => navigate(slide.path)}
+          >
+            <img 
+              src={slide.image} 
+              alt={slide.alt}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1292&h=300&fit=crop";
+              }}
+            />
+          </div>
         ))}
-      </div>
+
+        {/* Navigation arrows */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); prevSlide(); }} 
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 transition-all z-10 shadow-sm"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); nextSlide(); }} 
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 transition-all z-10 shadow-sm"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        {/* Dots */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={(e) => { e.stopPropagation(); setCurrentSlide(index); }}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                index === currentSlide ? 'bg-white shadow-md' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
