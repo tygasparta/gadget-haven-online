@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     }
 
     // Get the site URL from environment or use default
-    const siteUrl = Deno.env.get('SITE_URL') || 'https://gadgetgenie.org'
+    const siteUrl = 'https://gadgetgenie.org'
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     
     // Convert image URL to absolute URL

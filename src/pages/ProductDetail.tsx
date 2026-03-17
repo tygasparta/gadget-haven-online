@@ -153,8 +153,9 @@ const ProductDetail = () => {
   };
 
   const getShareUrl = () => {
-    // Using real domain - note: social media previews won't work without server-side rendering
-    return `https://gadgetgenie.org/product/${id}`;
+    // Use the og-meta edge function URL for social sharing - it serves proper meta tags to crawlers
+    // and automatically redirects real users to the actual product page
+    return `https://ktpxqjyfguxckdzlqwai.supabase.co/functions/v1/og-meta?id=${id}`;
   };
   
   const getProductUrl = () => {
