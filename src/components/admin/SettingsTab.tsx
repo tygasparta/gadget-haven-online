@@ -287,6 +287,10 @@ const SettingsTab: React.FC = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="banners" className="space-y-6">
+          <BannerManagement />
+        </TabsContent>
+
         <TabsContent value="notifications" className="space-y-6">
           <Card className="bg-white/5 backdrop-blur-sm border-white/20">
             <CardHeader className="border-b border-white/10">
