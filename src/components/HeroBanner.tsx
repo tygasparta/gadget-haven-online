@@ -1,39 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+
+interface BannerSlide {
+  id: string;
+  image: string;
+  path: string;
+  alt: string;
+}
+
+const DEFAULT_SLIDES: BannerSlide[] = [
+  { id: '1', image: '/lovable-uploads/52c3999f-568f-4f5e-a01d-1fcc63b47bbc.png', path: '/audio', alt: 'Premium Audio Sale' },
+  { id: '2', image: '/lovable-uploads/d6dc68dd-5909-4e9d-b3a5-eb760a7d932b.png', path: '/deals', alt: 'Gaming Gear Sale' },
+  { id: '3', image: '/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png', path: '/products', alt: 'Shop Electronics' },
+];
 
 const HeroBanner = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
-  
-  // Full-width image banners like Takealot
-  const slides = [
-    {
-      id: 1,
-      image: "/lovable-uploads/52c3999f-568f-4f5e-a01d-1fcc63b47bbc.png",
-      path: "/audio",
-      alt: "Premium Audio Sale"
-    },
-    {
-      id: 2,
-      image: "/lovable-uploads/d6dc68dd-5909-4e9d-b3a5-eb760a7d932b.png",
-      path: "/deals",
-      alt: "Gaming Gear Sale"
-    },
-    {
-      id: 3,
-      image: "/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png",
-      path: "/products",
-      alt: "Shop Electronics"
-    }
-  ];
+  const [slides, setSlides] = useState<BannerSlide[]>(DEFAULT_SLIDES);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('admin_settings')
+          .select('value')
+          .eq('key', 'desktop_banners')
+          .single();
+
+        if (!error && data?.value) {
+          const banners = data.value as unknown as BannerSlide[];
+          if (Array.isArray(banners) && banners.length > 0) {
+            setSlides(banners);
+          }
+        }
+      } catch (e) {
+        // Use defaults on error
+      }
+    };
+    fetchBanners();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const nextSlide = () => setCurrentSlide(prev => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
@@ -60,7 +75,6 @@ const HeroBanner = () => {
           </div>
         ))}
 
-        {/* Navigation arrows */}
         <button 
           onClick={(e) => { e.stopPropagation(); prevSlide(); }} 
           className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 transition-all z-10 shadow-sm"
@@ -74,7 +88,6 @@ const HeroBanner = () => {
           <ChevronRight className="w-5 h-5" />
         </button>
 
-        {/* Dots */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
           {slides.map((_, index) => (
             <button

@@ -28,8 +28,10 @@ import {
   Activity,
   Users,
   ShoppingCart,
-  Package
+  Package,
+  Image
 } from 'lucide-react';
+import BannerManagement from './BannerManagement';
 
 const SettingsTab: React.FC = () => {
   const { toast } = useToast();
@@ -161,13 +163,20 @@ const SettingsTab: React.FC = () => {
       </div>
 
       <Tabs defaultValue="store" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm">
+        <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-sm">
           <TabsTrigger 
             value="store" 
             className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-purple-600"
           >
             <Store className="w-4 h-4" />
             <span className="hidden sm:inline">Store</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="banners" 
+            className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-purple-600"
+          >
+            <Image className="w-4 h-4" />
+            <span className="hidden sm:inline">Banners</span>
           </TabsTrigger>
           <TabsTrigger 
             value="notifications" 
@@ -276,6 +285,10 @@ const SettingsTab: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="banners" className="space-y-6">
+          <BannerManagement />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
