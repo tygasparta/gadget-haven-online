@@ -106,18 +106,6 @@ const Header = () => {
 
   return (
     <>
-      {/* Top utility bar */}
-      <div className="bg-white border-b border-gray-200 hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between py-1.5 text-xs text-gray-500">
-          <span></span>
-          <div className="flex items-center space-x-4">
-            <Link to="/help" className="hover:text-primary transition-colors">Help Centre</Link>
-            <span className="text-gray-300">|</span>
-            <Link to="/sell-with-us" className="hover:text-primary transition-colors">Sell on GadgetGenie</Link>
-          </div>
-        </div>
-      </div>
-
       {/* Main header */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3">
