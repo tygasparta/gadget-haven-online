@@ -129,7 +129,7 @@ const ProductDetail = () => {
     return brandLogos[brandName] || null;
   };
 
-  // Share functionality
+  // Share functionality - use clean production URL
   const getShareText = () => {
     return `Check out this amazing product: ${product?.name} - Only $${product?.price}!`;
   };
@@ -140,30 +140,32 @@ const ProductDetail = () => {
       return imageUrl;
     }
     
-    // Always use production domain for social media sharing
     const domain = 'https://gadgetgenie.org';
     
-    // If it's a Supabase storage URL
     if (imageUrl.includes('/storage/v1/object/public/')) {
       return `https://ktpxqjyfguxckdzlqwai.supabase.co${imageUrl}`;
     }
     
-    // If it's a public folder or lovable-uploads path
     return `${domain}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
   };
 
+  // Clean production URL for sharing
   const getShareUrl = () => {
-    // Use the og-meta edge function URL for social sharing - it serves proper meta tags to crawlers
-    // and automatically redirects real users to the actual product page
-    return `https://ktpxqjyfguxckdzlqwai.supabase.co/functions/v1/og-meta?id=${id}`;
+    return `https://gadgetgenie.org/product/${id}`;
   };
   
   const getProductUrl = () => {
     return `https://gadgetgenie.org/product/${id}`;
   };
 
+  // For platforms that support og-meta (Facebook, WhatsApp preview cards)
+  const getOgMetaUrl = () => {
+    return `https://ktpxqjyfguxckdzlqwai.supabase.co/functions/v1/og-meta?id=${id}`;
+  };
+
   const handleShare = async (platform: string) => {
-    const url = getShareUrl(); // Use the SEO-friendly URL
+    const cleanUrl = getShareUrl();
+    const ogUrl = getOgMetaUrl();
     const text = getShareText();
     const imageUrl = getAbsoluteImageUrl(product?.image || galleryImages[0]);
     
@@ -174,7 +176,7 @@ const ProductDetail = () => {
             await navigator.share({
               title: product?.name,
               text: text,
-              url: url,
+              url: cleanUrl,
               files: imageUrl ? [await fetch(imageUrl).then(r => r.blob()).then(blob => new File([blob], "product.jpg", { type: "image/jpeg" }))].filter(Boolean) : undefined
             });
             toast.success('Shared successfully!');
@@ -187,7 +189,7 @@ const ProductDetail = () => {
         break;
       case 'copy':
         try {
-          await navigator.clipboard.writeText(url);
+          await navigator.clipboard.writeText(cleanUrl);
           toast.success('Link copied to clipboard!');
           setShowShareModal(false);
         } catch (error) {
@@ -195,13 +197,16 @@ const ProductDetail = () => {
         }
         break;
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        // Facebook uses og-meta URL for proper preview, which redirects to clean URL
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ogUrl)}`, '_blank');
         break;
       case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        // Twitter: use og-meta URL for preview card
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(ogUrl)}`, '_blank');
         break;
       case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+        // WhatsApp: include clean URL in message text, but link the og-meta URL for preview
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + cleanUrl + '\n' + ogUrl)}`, '_blank');
         break;
       default:
         break;
