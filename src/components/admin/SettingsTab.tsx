@@ -28,8 +28,10 @@ import {
   Activity,
   Users,
   ShoppingCart,
-  Package
+  Package,
+  Image
 } from 'lucide-react';
+import BannerManagement from './BannerManagement';
 
 const SettingsTab: React.FC = () => {
   const { toast } = useToast();
