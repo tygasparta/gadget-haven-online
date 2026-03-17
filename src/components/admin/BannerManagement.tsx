@@ -15,9 +15,9 @@ export interface BannerSlide {
 }
 
 const DEFAULT_SLIDES: BannerSlide[] = [
-  { id: '1', image: '/lovable-uploads/52c3999f-568f-4f5e-a01d-1fcc63b47bbc.png', path: '/audio', alt: 'Premium Audio Sale' },
-  { id: '2', image: '/lovable-uploads/d6dc68dd-5909-4e9d-b3a5-eb760a7d932b.png', path: '/deals', alt: 'Gaming Gear Sale' },
-  { id: '3', image: '/lovable-uploads/ec6b5870-e30a-464d-bb91-870607d474b9.png', path: '/products', alt: 'Shop Electronics' },
+  { id: '1', image: '/banners/audio-banner.jpg', path: '/audio', alt: 'Premium Audio Collection' },
+  { id: '2', image: '/banners/phones-banner.jpg', path: '/phones', alt: 'Latest Smartphones' },
+  { id: '3', image: '/banners/electronics-banner.jpg', path: '/deals', alt: 'Electronics Mega Deals' },
 ];
 
 const BannerManagement: React.FC = () => {
