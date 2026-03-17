@@ -164,8 +164,7 @@ const ProductDetail = () => {
   };
 
   const handleShare = async (platform: string) => {
-    const cleanUrl = getShareUrl();
-    const ogUrl = getOgMetaUrl();
+    const url = getShareUrl();
     const text = getShareText();
     const imageUrl = getAbsoluteImageUrl(product?.image || galleryImages[0]);
     
@@ -176,7 +175,7 @@ const ProductDetail = () => {
             await navigator.share({
               title: product?.name,
               text: text,
-              url: cleanUrl,
+              url: url,
               files: imageUrl ? [await fetch(imageUrl).then(r => r.blob()).then(blob => new File([blob], "product.jpg", { type: "image/jpeg" }))].filter(Boolean) : undefined
             });
             toast.success('Shared successfully!');
@@ -189,7 +188,7 @@ const ProductDetail = () => {
         break;
       case 'copy':
         try {
-          await navigator.clipboard.writeText(cleanUrl);
+          await navigator.clipboard.writeText(url);
           toast.success('Link copied to clipboard!');
           setShowShareModal(false);
         } catch (error) {
@@ -197,16 +196,13 @@ const ProductDetail = () => {
         }
         break;
       case 'facebook':
-        // Facebook uses og-meta URL for proper preview, which redirects to clean URL
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ogUrl)}`, '_blank');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
         break;
       case 'twitter':
-        // Twitter: use og-meta URL for preview card
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(ogUrl)}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
         break;
       case 'whatsapp':
-        // WhatsApp: include clean URL in message text, but link the og-meta URL for preview
-        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + cleanUrl + '\n' + ogUrl)}`, '_blank');
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`, '_blank');
         break;
       default:
         break;
