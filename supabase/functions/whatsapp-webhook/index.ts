@@ -559,7 +559,7 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     boxBlock,
     descBlock,
     ``,
-    `🌐 ${WEBSITE_URL}/product/${product.id}`
+    ``
   ].filter(l => l !== false && l !== null && l !== undefined).join("\n");
 
   if (product.image && (product.image.startsWith("http://") || product.image.startsWith("https://"))) {
