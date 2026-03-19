@@ -627,7 +627,6 @@ async function sendDeals(phone: string, userName: string | null) {
     `Hey ${name}! 🎯\n\n` +
     `🏷️ Up to *${deals[0].discount_percentage}% OFF*\n` +
     `⏰ Limited-time offers\n\n` +
-    `` +
     `Tap to view any deal 👇`,
     "View All Deals",
     [{
