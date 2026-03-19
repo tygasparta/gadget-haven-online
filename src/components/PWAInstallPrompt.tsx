@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -10,6 +11,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const PWAInstallPrompt = () => {
+  const isMobile = useIsMobile();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -58,7 +60,7 @@ const PWAInstallPrompt = () => {
   };
 
   // Don't show if already installed or user dismissed
-  if (isInstalled || !showInstallPrompt || localStorage.getItem('pwa-install-dismissed')) {
+  if (isMobile || isInstalled || !showInstallPrompt || localStorage.getItem('pwa-install-dismissed')) {
     return null;
   }
 
