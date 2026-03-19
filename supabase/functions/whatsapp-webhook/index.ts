@@ -548,9 +548,7 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     : "";
 
   const message = [
-    THICK,
     `📱 *${product.name}*`,
-    THICK,
     ``,
     brandLine,
     ``,
@@ -561,7 +559,6 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     boxBlock,
     descBlock,
     ``,
-    DOT,
     `🌐 ${WEBSITE_URL}/product/${product.id}`
   ].filter(l => l !== false && l !== null && l !== undefined).join("\n");
 
