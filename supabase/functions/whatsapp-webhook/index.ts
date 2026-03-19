@@ -517,31 +517,38 @@ serve(async (req) => {
 
   // POST: Process incoming messages
   if (req.method === "POST") {
+    let body: any;
     try {
-      const body = await req.json();
-      console.log("Webhook payload:", JSON.stringify(body, null, 2));
+      body = await req.json();
+    } catch (e) {
+      console.error("Failed to parse webhook body:", e);
+      return new Response("OK", { status: 200 });
+    }
 
-      const msgData = extractMessageData(body);
+    console.log("Webhook received from:", req.headers.get("user-agent"));
+    console.log("Webhook payload:", JSON.stringify(body, null, 2));
 
-      if (!msgData) {
-        // Could be a status update, not a message — acknowledge
-        return new Response("OK", { status: 200 });
-      }
+    const msgData = extractMessageData(body);
 
-      console.log("Processing message:", JSON.stringify(msgData));
+    if (!msgData) {
+      console.log("No message data extracted (status update or empty)");
+      return new Response("OK", { status: 200 });
+    }
 
+    console.log("Processing message:", JSON.stringify(msgData));
+
+    // Process in background-safe way but still await to ensure completion
+    try {
       if (msgData.type === "interactive") {
         await processInteractiveReply(msgData.phone, msgData.replyId!, msgData.replyTitle!);
       } else {
         await processMessage(msgData.phone, msgData.text!, msgData.messageId);
       }
-
-      return new Response("OK", { status: 200 });
     } catch (error) {
-      console.error("Error processing webhook:", error);
-      // Always return 200 to prevent Meta from retrying
-      return new Response("OK", { status: 200 });
+      console.error("Error processing message:", error);
     }
+
+    return new Response("OK", { status: 200 });
   }
 
   return new Response("Method not allowed", { status: 405 });
