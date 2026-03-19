@@ -95,21 +95,13 @@ Deno.serve(async (req) => {
     <meta name="twitter:image" content="${imageUrl}">
     <meta name="twitter:image:alt" content="${product.name}">
     
-    <!-- WhatsApp -->
-    <meta property="og:type" content="website">
-    
-    <!-- Redirect to actual product page after meta tags are read -->
-    <meta http-equiv="refresh" content="0;url=${productUrl}">
-    <script>
-        window.location.href = '${productUrl}';
-    </script>
 </head>
 <body>
     <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
         <div style="text-align: center;">
             <h1>${product.name}</h1>
-            <p>Redirecting to product page...</p>
-            <a href="${productUrl}">Click here if not redirected automatically</a>
+            <p>$${product.price}</p>
+            <a href="${productUrl}">View product</a>
         </div>
     </div>
 </body>
