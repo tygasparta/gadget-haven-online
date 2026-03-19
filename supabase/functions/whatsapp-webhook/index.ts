@@ -526,7 +526,6 @@ serve(async (req) => {
     }
 
     console.log("Webhook received from:", req.headers.get("user-agent"));
-    console.log("Webhook payload:", JSON.stringify(body, null, 2));
 
     const msgData = extractMessageData(body);
 
@@ -537,17 +536,23 @@ serve(async (req) => {
 
     console.log("Processing message:", JSON.stringify(msgData));
 
-    // Process in background-safe way but still await to ensure completion
-    try {
-      if (msgData.type === "interactive") {
-        await processInteractiveReply(msgData.phone, msgData.replyId!, msgData.replyTitle!);
-      } else {
-        await processMessage(msgData.phone, msgData.text!, msgData.messageId);
-      }
-    } catch (error) {
-      console.error("Error processing message:", error);
-    }
+    // Use EdgeRuntime.waitUntil to process in background — return 200 immediately to Meta
+    EdgeRuntime.waitUntil(
+      (async () => {
+        try {
+          if (msgData.type === "interactive") {
+            await processInteractiveReply(msgData.phone, msgData.replyId!, msgData.replyTitle!);
+          } else {
+            await processMessage(msgData.phone, msgData.text!, msgData.messageId);
+          }
+          console.log("✅ Message processed successfully for", msgData.phone);
+        } catch (error) {
+          console.error("Error processing message:", error);
+        }
+      })()
+    );
 
+    // Return immediately so Meta doesn't timeout
     return new Response("OK", { status: 200 });
   }
 
