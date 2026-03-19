@@ -21,6 +21,7 @@ function getSupabase() {
 async function sendWhatsAppMessage(phone: string, messageBody: any) {
   const ACCESS_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
   const PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+  console.log("DEBUG token prefix:", ACCESS_TOKEN?.substring(0, 20), "phone_id:", PHONE_NUMBER_ID);
 
   if (!ACCESS_TOKEN || !PHONE_NUMBER_ID) {
     console.error("WhatsApp credentials not configured");
