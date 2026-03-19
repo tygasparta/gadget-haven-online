@@ -87,7 +87,7 @@ serve(async (req) => {
 
     console.log("Sending WhatsApp message:", JSON.stringify(messageBody, null, 2));
 
-    const response = await fetch(`https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`, {
+    const response = await fetch(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${ACCESS_TOKEN}`,
