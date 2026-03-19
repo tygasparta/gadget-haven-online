@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-console.log("GadgetGenie WhatsApp Bot v2.0 starting...");
+console.log("GadgetGenie WhatsApp Bot v3.0 starting...");
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -178,6 +178,7 @@ CAPABILITIES (tell users about these):
 - Search products (type "search <product name>")
 - View hot deals (type "deals")
 - Track orders (type "track <order-id>")
+- Subscribe to daily deals (type "subscribe")
 - Get help (type "help")
 
 RULES:
@@ -249,6 +250,115 @@ async function getProductContext(): Promise<string> {
   return context;
 }
 
+// ===== PRODUCT RECOMMENDATIONS =====
+
+async function sendProductRecommendations(phone: string, currentProductId: number, category: string | null) {
+  if (!category) return;
+  
+  const supabase = getSupabase();
+  const { data: similar } = await supabase
+    .from("products")
+    .select("id, name, price, brand, discount_percentage, stock")
+    .eq("category", category)
+    .neq("id", currentProductId)
+    .is("deleted_at", null)
+    .gt("stock", 0)
+    .order("is_featured", { ascending: false })
+    .limit(5);
+
+  if (!similar || similar.length === 0) return;
+
+  const rows = similar.map(p => {
+    const priceText = p.discount_percentage && p.discount_percentage > 0
+      ? `$${p.price} (-${p.discount_percentage}%)`
+      : `$${p.price}`;
+    return {
+      id: `prod_${p.id}`,
+      title: p.name.substring(0, 24),
+      description: `${priceText} • ${p.brand || ""}`.substring(0, 72)
+    };
+  });
+
+  await sendList(
+    phone,
+    `💡 *You Might Also Like*\n━━━━━━━━━━━━━━━━━━━━\n\n🎯 ${similar.length} similar product${similar.length > 1 ? "s" : ""} in *${category}*`,
+    "View Similar",
+    [{
+      title: `More in ${category}`,
+      rows: rows
+    }]
+  );
+}
+
+// ===== SUBSCRIPTION MANAGEMENT =====
+
+async function handleSubscribe(phone: string) {
+  const supabase = getSupabase();
+  
+  const { data: existing } = await supabase
+    .from("whatsapp_subscriptions")
+    .select("id, subscribed_deals")
+    .eq("phone_number", phone)
+    .single();
+
+  if (existing?.subscribed_deals) {
+    await sendText(phone,
+      `✅ *Already Subscribed!*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `You're already receiving daily deals! 🎉\n\n` +
+      `Type *unsubscribe* to stop notifications.`
+    );
+    return;
+  }
+
+  if (existing) {
+    await supabase
+      .from("whatsapp_subscriptions")
+      .update({ subscribed_deals: true, updated_at: new Date().toISOString() })
+      .eq("id", existing.id);
+  } else {
+    await supabase
+      .from("whatsapp_subscriptions")
+      .insert({ phone_number: phone, subscribed_deals: true });
+  }
+
+  await sendText(phone,
+    `🔔 *Subscribed to Daily Deals!*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `You'll receive our best deals every day! 🎉\n\n` +
+    `🏷️ Flash sales & exclusive discounts\n` +
+    `📱 New product arrivals\n` +
+    `🔥 Limited-time offers\n\n` +
+    `Type *unsubscribe* anytime to stop.`
+  );
+}
+
+async function handleUnsubscribe(phone: string) {
+  const supabase = getSupabase();
+
+  const { data: existing } = await supabase
+    .from("whatsapp_subscriptions")
+    .select("id, subscribed_deals")
+    .eq("phone_number", phone)
+    .single();
+
+  if (!existing || !existing.subscribed_deals) {
+    await sendText(phone,
+      `ℹ️ You're not currently subscribed to daily deals.\n\nType *subscribe* to start receiving deals!`
+    );
+    return;
+  }
+
+  await supabase
+    .from("whatsapp_subscriptions")
+    .update({ subscribed_deals: false, updated_at: new Date().toISOString() })
+    .eq("id", existing.id);
+
+  await sendText(phone,
+    `🔕 *Unsubscribed*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `You won't receive daily deal notifications anymore.\n\n` +
+    `Type *subscribe* anytime to re-enable! 💡`
+  );
+}
+
 // ===== BOT MENUS & FLOWS =====
 
 async function sendMainMenu(phone: string) {
@@ -275,6 +385,7 @@ async function sendMoreOptions(phone: string) {
       rows: [
         { id: "menu_search", title: "🔍 Search Products", description: "Find products by name or keyword" },
         { id: "menu_track", title: "📦 Track My Order", description: "Check your order status" },
+        { id: "menu_subscribe", title: "🔔 Daily Deals", description: "Subscribe to daily deal alerts" },
         { id: "menu_help", title: "💬 Help & Support", description: "Get assistance from our team" },
         { id: "menu_website", title: "🌐 Visit Website", description: "Browse our full catalog online" }
       ]
@@ -298,7 +409,6 @@ async function sendCategories(phone: string) {
     return;
   }
 
-  // Get product count per category
   const categoryRows = categories.slice(0, 10).map((cat) => {
     const count = (products || []).filter(p => p.category === cat).length;
     return {
@@ -452,6 +562,9 @@ async function sendProductDetail(phone: string, productId: number) {
       { id: "menu_main", title: "🏠 Main Menu" }
     ]
   );
+
+  // Send product recommendations from same category
+  await sendProductRecommendations(phone, productId, product.category);
 }
 
 async function sendDeals(phone: string) {
@@ -500,6 +613,8 @@ async function sendHelp(phone: string) {
     `   Example: _track abc12345_\n\n` +
     `🛍️ *Browse:* Type _browse_ or _shop_\n\n` +
     `🔥 *Deals:* Type _deals_ or _offers_\n\n` +
+    `🔔 *Subscribe:* Type _subscribe_ for daily deals\n` +
+    `🔕 *Unsubscribe:* Type _unsubscribe_ to stop\n\n` +
     `━━━━━━━━━━━━━━━━━━━━\n` +
     `📞 *Contact Sales:* wa.me/${SALES_WHATSAPP}\n` +
     `🌐 *Website:* ${WEBSITE_URL}\n` +
@@ -575,7 +690,6 @@ async function sendOrderStatus(phone: string, orderId: string) {
   const orderDate = new Date(order.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   const lastUpdate = new Date(order.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-  // Get order items with product names
   const { data: items } = await supabase
     .from("order_items")
     .select("quantity, price, product_id")
@@ -755,6 +869,16 @@ async function processMessage(phone: string, messageText: string, messageId: str
     return;
   }
 
+  // Subscribe / Unsubscribe
+  if (["subscribe", "notify me", "daily deals", "alerts", "notifications"].includes(text)) {
+    await handleSubscribe(phone);
+    return;
+  }
+  if (["unsubscribe", "stop", "stop notifications", "no deals", "opt out"].includes(text)) {
+    await handleUnsubscribe(phone);
+    return;
+  }
+
   // Order tracking triggers
   if (["track", "order", "tracking", "my order", "order status", "where is my order"].includes(text)) {
     await sendOrderTrackingPrompt(phone);
@@ -796,7 +920,7 @@ async function processMessage(phone: string, messageText: string, messageId: str
     return;
   }
 
-  // Buy/purchase intent - direct to sales
+  // Buy/purchase intent
   if (["buy", "purchase", "order", "checkout"].includes(text)) {
     await sendText(phone,
       `🛒 *Ready to Purchase?*\n\n` +
@@ -822,7 +946,7 @@ async function processMessage(phone: string, messageText: string, messageId: str
     return;
   }
 
-  // ===== AI FALLBACK for unrecognized messages =====
+  // ===== AI FALLBACK =====
   console.log("Using AI for unrecognized message:", text);
 
   const context = await getProductContext();
@@ -836,7 +960,6 @@ async function processMessage(phone: string, messageText: string, messageId: str
       { id: "menu_main", title: "🏠 Menu" }
     ]);
   } else {
-    // Fallback if AI is unavailable
     await sendText(phone, `🤔 I'm not sure about that.\nLet me show you what I can do!`);
     await sendMainMenu(phone);
   }
@@ -855,6 +978,7 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
     "menu_track": () => sendOrderTrackingPrompt(phone),
     "menu_search": () => sendSearchPrompt(phone),
     "menu_website": () => sendWebsiteLink(phone),
+    "menu_subscribe": () => handleSubscribe(phone),
   };
 
   if (handlers[replyId]) {

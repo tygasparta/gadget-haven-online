@@ -697,6 +697,30 @@ export type Database = {
           },
         ]
       }
+      whatsapp_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          phone_number: string
+          subscribed_deals: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone_number: string
+          subscribed_deals?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone_number?: string
+          subscribed_deals?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       wishlists: {
         Row: {
           created_at: string
