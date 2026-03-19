@@ -14,10 +14,6 @@ const STORE_TAGLINE = "Your Smart Shopping Assistant 🧞‍♂️";
 const SALES_WHATSAPP = "263776337910";
 const WEBSITE_URL = "https://gadget-haven-online.lovable.app";
 
-// ── Design tokens ──
-const LINE = `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`;
-const THICK = `══════════════════════`;
-const DOT = `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈`;
 
 function getSupabase() {
   return createClient(
@@ -298,7 +294,7 @@ async function sendProductRecommendations(phone: string, currentProductId: numbe
   const name = firstName(userName);
   await sendList(
     phone,
-    `✨ *Picked for you, ${name}*\n${DOT}\n\n` +
+    `✨ *Picked for you, ${name}*\n\n` +
     `🎯 ${similar.length} similar product${similar.length > 1 ? "s" : ""}\n    in *${category}*\n\n` +
     `_Customers who viewed this also\nliked these items_ 👇`,
     "View Similar",
@@ -323,7 +319,7 @@ async function handleSubscribe(phone: string, userName: string | null) {
 
   if (existing?.subscribed_deals) {
     await sendText(phone,
-      `✅ *Already Subscribed, ${name}!*\n${DOT}\n\n` +
+      `✅ *Already Subscribed, ${name}!*\n\n` +
       `You're already on the VIP deals list! 🎉\n\n` +
       `Type *unsubscribe* to opt out.`
     );
@@ -342,12 +338,11 @@ async function handleSubscribe(phone: string, userName: string | null) {
   }
 
   await sendText(phone,
-    `🎉 *Welcome to VIP Deals, ${name}!*\n${THICK}\n\n` +
+    `🎉 *Welcome to VIP Deals, ${name}!*\n\n` +
     `You'll now receive daily curated deals:\n\n` +
     `  🏷️  Flash sales & exclusives\n` +
     `  📱  New arrivals first\n` +
     `  🔥  Limited-time steals\n\n` +
-    `${DOT}\n` +
     `_Type *unsubscribe* anytime to stop._`
   );
 }
@@ -375,7 +370,7 @@ async function handleUnsubscribe(phone: string, userName: string | null) {
     .eq("id", existing.id);
 
   await sendText(phone,
-    `🔕 *Unsubscribed, ${name}*\n${DOT}\n\n` +
+    `🔕 *Unsubscribed, ${name}*\n\n` +
     `No more daily deal alerts.\n` +
     `We'll miss you! 💛\n\n` +
     `_Type *subscribe* to rejoin anytime._`
@@ -389,12 +384,9 @@ async function sendMainMenu(phone: string, userName: string | null) {
   const greeting = timeGreeting();
 
   const header = 
-    `${THICK}\n` +
-    `      🧞‍♂️  *${STORE_NAME}*\n` +
-    `${THICK}\n\n` +
+    `🧞‍♂️ *${STORE_NAME}*\n\n` +
     `${greeting}, *${name}*! 👋\n\n` +
-    `I'm your personal shopping\nassistant. How can I help today?\n\n` +
-    `${DOT}\n` +
+    `I'm your personal shopping assistant. How can I help today?\n\n` +
     `💡 _Tip: Ask me anything naturally!_\n` +
     `    _"Do you have iPhones?"_\n` +
     `    _"What's on sale today?"_`;
@@ -409,7 +401,7 @@ async function sendMainMenu(phone: string, userName: string | null) {
 async function sendMoreOptions(phone: string, userName: string | null) {
   const name = firstName(userName);
   await sendList(phone,
-    `⚡ *More Options*\n${DOT}\n\nWhat would you like to do, ${name}?`,
+    `⚡ *More Options*\n\nWhat would you like to do, ${name}?`,
     "Choose Option",
     [{
       title: "Services",
@@ -451,7 +443,7 @@ async function sendCategories(phone: string) {
 
   await sendList(
     phone,
-    `🛍️ *Shop by Category*\n${THICK}\n\n` +
+    `🛍️ *Shop by Category*\n\n` +
     `Browse our curated collections.\nTap any category to explore! 👇\n\n` +
     `📦 ${categories.length} categories available`,
     "View Categories",
@@ -494,7 +486,7 @@ async function sendProductsByCategory(phone: string, category: string) {
 
   await sendList(
     phone,
-    `🛍️ *${category}*\n${THICK}\n\n` +
+    `🛍️ *${category}*\n\n` +
     `📦 ${products.length} product${products.length > 1 ? 's' : ''} found\n\n` +
     `Tap any item to see full details,\nspecs & pricing 👇`,
     "Browse Products",
@@ -542,7 +534,7 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     const specs = product.specifications.slice(0, 6).map((s: any) =>
       `  ◦ ${s.key || s.name}: *${s.value}*`
     ).join("\n");
-    specsBlock = `\n\n📋 *Specifications*\n${DOT}\n${specs}`;
+    specsBlock = `\n\n📋 *Specifications*\n${specs}`;
   }
 
   let boxBlock = "";
@@ -556,9 +548,7 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     : "";
 
   const message = [
-    THICK,
     `📱 *${product.name}*`,
-    THICK,
     ``,
     brandLine,
     ``,
@@ -569,7 +559,6 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     boxBlock,
     descBlock,
     ``,
-    DOT,
     `🌐 ${WEBSITE_URL}/product/${product.id}`
   ].filter(l => l !== false && l !== null && l !== undefined).join("\n");
 
@@ -634,11 +623,10 @@ async function sendDeals(phone: string, userName: string | null) {
 
   await sendList(
     phone,
-    `🔥 *Today's Hot Deals*\n${THICK}\n\n` +
+    `🔥 *Today's Hot Deals*\n\n` +
     `Hey ${name}! 🎯\n\n` +
     `🏷️ Up to *${deals[0].discount_percentage}% OFF*\n` +
     `⏰ Limited-time offers\n\n` +
-    `${DOT}\n` +
     `Tap to view any deal 👇`,
     "View All Deals",
     [{
@@ -651,9 +639,7 @@ async function sendDeals(phone: string, userName: string | null) {
 async function sendHelp(phone: string, userName: string | null) {
   const name = firstName(userName);
   await sendText(phone,
-    `${THICK}\n` +
-    `💬 *Help & Support*\n` +
-    `${THICK}\n\n` +
+    `💬 *Help & Support*\n\n` +
     `Hi ${name}! Here's everything I can do:\n\n` +
     `🔍 *Search*\n` +
     `    _search Samsung Galaxy_\n\n` +
@@ -663,10 +649,8 @@ async function sendHelp(phone: string, userName: string | null) {
     `🔥 *Deals* — Type _deals_\n` +
     `🔔 *Subscribe* — Type _subscribe_\n` +
     `🔕 *Unsubscribe* — Type _unsubscribe_\n\n` +
-    `${DOT}\n` +
     `📞 *Sales:* wa.me/${SALES_WHATSAPP}\n` +
     `🌐 *Web:* ${WEBSITE_URL}\n` +
-    `${DOT}\n` +
     `🔄 14-day returns · 🚚 Delivery\n` +
     `💳 EcoCash · PayPal · Bank Transfer\n\n` +
     `💡 _Or just chat — I'm AI-powered!_ 🧞‍♂️`
@@ -699,7 +683,7 @@ async function sendWebsiteLink(phone: string) {
 async function sendOrderTrackingPrompt(phone: string, userName: string | null) {
   const name = firstName(userName);
   await sendText(phone,
-    `📦 *Track Your Order*\n${THICK}\n\n` +
+    `📦 *Track Your Order*\n\n` +
     `Hey ${name}, send your order ID:\n\n` +
     `👉 *track <order-id>*\n\n` +
     `_Example: track abc12345-6789_\n\n` +
@@ -719,7 +703,7 @@ async function sendOrderStatus(phone: string, orderId: string, userName: string 
 
   if (!order) {
     await sendText(phone,
-      `❌ *Order Not Found*\n${DOT}\n\n` +
+      `❌ *Order Not Found*\n\n` +
       `Sorry ${name}, no order with ID:\n_${orderId}_\n\n` +
       `Double-check and try again.`
     );
@@ -758,9 +742,7 @@ async function sendOrderStatus(phone: string, orderId: string, userName: string 
   }
 
   await sendText(phone,
-    `${THICK}\n` +
-    `📦 *Order Tracking*\n` +
-    `${THICK}\n\n` +
+    `📦 *Order Tracking*\n\n` +
     `Hey ${name}! Here's your order:\n\n` +
     `📋 *ID:* _${order.id.substring(0, 8)}..._\n` +
     `📅 *Placed:* ${orderDate}\n\n` +
@@ -770,7 +752,7 @@ async function sendOrderStatus(phone: string, orderId: string, userName: string 
     (order.payment_method ? `\n💳 *Pay:* ${order.payment_method}` : "") +
     (order.shipping_method ? `\n🚚 *Ship:* ${order.shipping_method}` : "") +
     itemsBlock +
-    `\n\n${DOT}\n🕐 _Last updated: ${lastUpdate}_`
+    `\n\n🕐 _Last updated: ${lastUpdate}_`
   );
 
   await sendButtons(phone, `What's next, ${name}?`, [
@@ -785,7 +767,7 @@ async function sendOrderStatus(phone: string, orderId: string, userName: string 
 async function sendSearchPrompt(phone: string, userName: string | null) {
   const name = firstName(userName);
   await sendText(phone,
-    `🔍 *Product Search*\n${THICK}\n\n` +
+    `🔍 *Product Search*\n\n` +
     `${name}, type *search* + keyword:\n\n` +
     `  _search iPhone_\n` +
     `  _search Samsung Galaxy_\n` +
@@ -809,7 +791,7 @@ async function searchProducts(phone: string, query: string, userName: string | n
 
   if (!products || products.length === 0) {
     await sendText(phone,
-      `🔍 No results for "*${query}*"\n${DOT}\n\n` +
+      `🔍 No results for "*${query}*"\n\n` +
       `Sorry ${name}! Try:\n` +
       `  ◦ A different keyword\n` +
       `  ◦ Brand name (Samsung, Apple)\n` +
@@ -839,7 +821,7 @@ async function searchProducts(phone: string, query: string, userName: string | n
 
   await sendList(
     phone,
-    `🔍 *"${query}"*\n${THICK}\n\n` +
+    `🔍 *"${query}"*\n\n` +
     `Found *${products.length}* result${products.length > 1 ? "s" : ""} for you, ${name}! 🎯`,
     "View Results",
     [{
@@ -996,7 +978,7 @@ async function processMessage(phone: string, messageText: string, messageId: str
   if (["buy", "purchase", "order", "checkout"].includes(text)) {
     const name = firstName(userName);
     await sendText(phone,
-      `🛒 *Ready to Purchase, ${name}?*\n${DOT}\n\n` +
+      `🛒 *Ready to Purchase, ${name}?*\n\n` +
       `Browse products and tap *Buy Now*\non any item to chat with sales!\n\n` +
       `Or contact us directly 👇`
     );
