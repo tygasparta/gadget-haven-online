@@ -343,7 +343,6 @@ async function handleSubscribe(phone: string, userName: string | null) {
     `  🏷️  Flash sales & exclusives\n` +
     `  📱  New arrivals first\n` +
     `  🔥  Limited-time steals\n\n` +
-    `` +
     `_Type *unsubscribe* anytime to stop._`
   );
 }
