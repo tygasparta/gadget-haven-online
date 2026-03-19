@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   BarChart3, 
   Package, 
@@ -11,7 +10,10 @@ import {
   AlertTriangle,
   Settings,
   Plus,
-  Menu
+  Menu,
+  X,
+  MessageSquare,
+  Store
 } from 'lucide-react';
 
 interface MobileAdminNavigationProps {
@@ -30,100 +32,104 @@ const MobileAdminNavigation: React.FC<MobileAdminNavigationProps> = ({
   onToggleMenu
 }) => {
   const navigationItems = [
-    { id: 'overview', label: 'Overview', icon: BarChart3, color: 'from-blue-500 to-blue-600' },
-    { id: 'products', label: 'Products', icon: Package, color: 'from-purple-500 to-purple-600' },
-    { id: 'orders', label: 'Orders', icon: ShoppingCart, color: 'from-green-500 to-green-600' },
-    { id: 'users', label: 'Users', icon: Users, color: 'from-orange-500 to-orange-600' },
-    { id: 'analytics', label: 'Analytics', icon: TrendingUp, color: 'from-pink-500 to-pink-600' },
-    { id: 'bulk-upload', label: 'Upload', icon: Upload, color: 'from-indigo-500 to-indigo-600' },
-    { id: 'stock', label: 'Stock', icon: AlertTriangle, color: 'from-red-500 to-red-600' },
-    { id: 'settings', label: 'Settings', icon: Settings, color: 'from-gray-500 to-gray-600' }
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'products', label: 'Products', icon: Package },
+    { id: 'orders', label: 'Orders', icon: ShoppingCart },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+    { id: 'bulk-upload', label: 'Upload', icon: Upload },
+    { id: 'stock', label: 'Stock', icon: AlertTriangle },
+    { id: 'whatsapp-bot', label: 'WhatsApp Bot', icon: MessageSquare },
+    { id: 'settings', label: 'Settings', icon: Settings }
   ];
+
+  const bottomNavItems = navigationItems.slice(0, 4);
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
-        <Button
-          onClick={onToggleMenu}
-          variant="outline"
-          size="sm"
-          className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
-        >
-          <Menu className="w-4 h-4" />
-        </Button>
+      {/* Mobile Top Bar */}
+      <div className="sticky top-0 z-50 md:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button onClick={onToggleMenu} variant="ghost" size="icon" className="text-foreground">
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+              <Store className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="font-semibold text-foreground text-sm">Admin</span>
+          </div>
+        </div>
       </div>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Drawer */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onToggleMenu} />
-          <div className="absolute left-0 top-0 h-full w-80 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 shadow-xl">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-white mb-6">Admin Menu</h2>
-              <div className="space-y-3">
-                {navigationItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <Button
-                      key={item.id}
-                      onClick={() => {
-                        onTabChange(item.id);
-                        onToggleMenu();
-                      }}
-                      variant={isActive ? "default" : "ghost"}
-                      className={`w-full justify-start text-left ${
-                        isActive 
-                          ? `bg-gradient-to-r ${item.color} text-white shadow-lg` 
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 mr-3" />
-                      {item.label}
-                    </Button>
-                  );
-                })}
+          <div className="absolute inset-0 bg-black/40" onClick={onToggleMenu} />
+          <div className="absolute left-0 top-0 h-full w-72 bg-card shadow-xl border-r border-border">
+            <div className="p-5 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+                  <Store className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-foreground text-sm">Gadget Genie</h2>
+                  <p className="text-xs text-muted-foreground">Admin Panel</p>
+                </div>
               </div>
             </div>
+            <nav className="p-3 space-y-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { onTabChange(item.id); onToggleMenu(); }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
+                  >
+                    <Icon className="w-[18px] h-[18px]" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
       )}
 
-      {/* Floating Action Button for Add Product */}
-      <div className="fixed bottom-6 right-6 z-30 md:hidden">
+      {/* FAB */}
+      <div className="fixed bottom-20 right-4 z-30 md:hidden">
         <Button
           onClick={onAddProduct}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+          className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg"
         >
-          <Plus className="w-6 h-6 text-white" />
+          <Plus className="w-5 h-5 text-primary-foreground" />
         </Button>
       </div>
 
-      {/* Bottom Navigation Bar for Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-sm border-t border-white/20 md:hidden z-20">
-        <div className="flex justify-around items-center py-2">
-          {navigationItems.slice(0, 4).map((item) => {
+      {/* Bottom Nav */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-20 safe-area-pb">
+        <div className="flex justify-around items-center py-1.5">
+          {bottomNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
-              <Button
+              <button
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
-                variant="ghost"
-                size="sm"
-                className={`flex flex-col items-center space-y-1 p-2 ${
-                  isActive 
-                    ? 'text-blue-400' 
-                    : 'text-gray-400 hover:text-white'
+                className={`flex flex-col items-center py-1.5 px-3 rounded-lg transition-colors ${
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span className="text-xs">{item.label}</span>
-                {isActive && (
-                  <div className="w-1 h-1 bg-blue-400 rounded-full" />
-                )}
-              </Button>
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
+                {isActive && <div className="w-1 h-1 bg-primary rounded-full mt-0.5" />}
+              </button>
             );
           })}
         </div>

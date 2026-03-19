@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
@@ -11,7 +11,9 @@ import {
   TrendingUp,
   Eye,
   AlertTriangle,
-  UserPlus
+  UserPlus,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useNavigate } from 'react-router-dom';
@@ -30,34 +32,23 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
   const queryClient = useQueryClient();
 
   const handleReviewLowStock = () => {
-    console.log('Review Low Stock clicked');
     if (onTabChange) {
       onTabChange('products');
-      toast({
-        title: "Low Stock Review",
-        description: "Switched to Products tab to review low stock items",
-      });
+      toast({ title: "Low Stock Review", description: "Switched to Products tab to review low stock items" });
     }
   };
 
   const handleProcessPendingOrders = () => {
-    console.log('Process Pending Orders clicked');
     if (onTabChange) {
       onTabChange('orders');
-      toast({
-        title: "Processing Orders",
-        description: "Switched to Orders tab to process pending orders",
-      });
+      toast({ title: "Processing Orders", description: "Switched to Orders tab to process pending orders" });
     }
   };
 
   const handleWelcomeNewCustomers = async () => {
-    console.log('Welcome New Customers clicked');
     try {
-      // Get new users from the last 24 hours
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      
       const { data: newUsers, error } = await supabase
         .from('profiles')
         .select('id, email, full_name')
@@ -65,227 +56,169 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
         .limit(10);
 
       if (error) {
-        console.error('Error fetching new users:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch new customers",
-          variant: "destructive"
-        });
+        toast({ title: "Error", description: "Failed to fetch new customers", variant: "destructive" });
         return;
       }
 
       if (newUsers && newUsers.length > 0) {
-        // Create welcome notifications for new customers
         const notifications = newUsers.map(user => ({
           user_id: user.id,
           title: 'Welcome to Gadget Genie!',
-          message: `Hello ${user.full_name || 'valued customer'}! Thank you for joining us. Explore our amazing deals and products. Enjoy exclusive offers and premium support!`,
+          message: `Hello ${user.full_name || 'valued customer'}! Thank you for joining us.`,
           type: 'welcome'
         }));
-
-        const { error: notificationError } = await supabase
-          .from('notifications')
-          .insert(notifications);
-
+        const { error: notificationError } = await supabase.from('notifications').insert(notifications);
         if (notificationError) {
-          console.error('Error creating notifications:', notificationError);
-          toast({
-            title: "Partial Success",
-            description: `Found ${newUsers.length} new customers, but couldn't send all welcome messages`,
-            variant: "destructive"
-          });
+          toast({ title: "Partial Success", description: `Found ${newUsers.length} new customers, but couldn't send all welcome messages`, variant: "destructive" });
         } else {
-          toast({
-            title: "Welcome Messages Sent!",
-            description: `Successfully sent welcome messages to ${newUsers.length} new customers`,
-          });
+          toast({ title: "Welcome Messages Sent!", description: `Successfully sent welcome messages to ${newUsers.length} new customers` });
         }
       } else {
-        toast({
-          title: "No New Customers",
-          description: "No new customers found in the last 24 hours",
-        });
+        toast({ title: "No New Customers", description: "No new customers found in the last 24 hours" });
       }
     } catch (error) {
-      console.error('Error in handleWelcomeNewCustomers:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process welcome messages",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleViewAllOrders = () => {
-    if (onTabChange) {
-      onTabChange('orders');
-    }
-  };
-
-  const handleViewProducts = () => {
-    if (onTabChange) {
-      onTabChange('products');
-    }
-  };
-
-  const handleViewUsers = () => {
-    if (onTabChange) {
-      onTabChange('users');
-    }
-  };
-
-  const handleViewAnalytics = () => {
-    if (onTabChange) {
-      onTabChange('analytics');
+      toast({ title: "Error", description: "Failed to process welcome messages", variant: "destructive" });
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!analytics) {
-    return (
-      <div className="text-center text-gray-400 py-8">
-        No analytics data available
-      </div>
-    );
+    return <div className="text-center text-muted-foreground py-8">No analytics data available</div>;
   }
+
+  const statCards = [
+    {
+      label: 'Total Revenue',
+      value: `$${analytics.totalRevenue.toLocaleString()}`,
+      change: `+${analytics.revenueGrowth}%`,
+      isPositive: true,
+      icon: DollarSign,
+      onClick: () => onTabChange?.('analytics'),
+      accent: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+      iconBg: 'bg-emerald-100 text-emerald-600',
+    },
+    {
+      label: 'Total Orders',
+      value: analytics.totalOrders,
+      change: `+${analytics.orderGrowth}%`,
+      isPositive: true,
+      icon: ShoppingCart,
+      onClick: () => onTabChange?.('orders'),
+      accent: 'text-primary bg-accent border-border',
+      iconBg: 'bg-accent text-primary',
+    },
+    {
+      label: 'Total Users',
+      value: analytics.totalUsers,
+      change: `+${analytics.userGrowth}%`,
+      isPositive: true,
+      icon: Users,
+      onClick: () => onTabChange?.('users'),
+      accent: 'text-violet-600 bg-violet-50 border-violet-100',
+      iconBg: 'bg-violet-100 text-violet-600',
+    },
+    {
+      label: 'Total Products',
+      value: analytics.totalProducts,
+      change: 'Active',
+      isPositive: true,
+      icon: Package,
+      onClick: () => onTabChange?.('products'),
+      accent: 'text-amber-600 bg-amber-50 border-amber-100',
+      iconBg: 'bg-amber-100 text-amber-600',
+    },
+    {
+      label: 'Conversion Rate',
+      value: `${analytics.conversionRate.toFixed(1)}%`,
+      change: 'Avg: $195',
+      isPositive: true,
+      icon: TrendingUp,
+      onClick: () => onTabChange?.('analytics'),
+      accent: 'text-rose-600 bg-rose-50 border-rose-100',
+      iconBg: 'bg-rose-100 text-rose-600',
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <Card className="bg-gradient-to-br from-emerald-500 to-green-700 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25" onClick={handleViewAnalytics}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-emerald-100 text-sm font-medium">Total Revenue</p>
-                <p className="text-3xl font-bold">${analytics.totalRevenue.toLocaleString()}</p>
-                <p className="text-emerald-200 text-sm mt-1 flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  +{analytics.revenueGrowth}%
-                </p>
-              </div>
-              <DollarSign className="w-12 h-12 text-emerald-200" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-800 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25" onClick={handleViewAllOrders}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm font-medium">Total Orders</p>
-                <p className="text-3xl font-bold">{analytics.totalOrders}</p>
-                <p className="text-blue-200 text-sm mt-1 flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  +{analytics.orderGrowth}%
-                </p>
-              </div>
-              <ShoppingCart className="w-12 h-12 text-blue-200" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-violet-500 to-purple-800 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-violet-500/25" onClick={handleViewUsers}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-violet-100 text-sm font-medium">Total Users</p>
-                <p className="text-3xl font-bold">{analytics.totalUsers}</p>
-                <p className="text-violet-200 text-sm mt-1 flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  +{analytics.userGrowth}%
-                </p>
-              </div>
-              <Users className="w-12 h-12 text-violet-200" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-orange-500 to-red-700 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-orange-500/25" onClick={handleViewProducts}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm font-medium">Total Products</p>
-                <p className="text-3xl font-bold">{analytics.totalProducts}</p>
-                <p className="text-orange-200 text-sm mt-1">Active inventory</p>
-              </div>
-              <Package className="w-12 h-12 text-orange-200" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-pink-500 to-rose-700 border-none text-white cursor-pointer hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-pink-500/25" onClick={handleViewAnalytics}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-pink-100 text-sm font-medium">Conversion Rate</p>
-                <p className="text-3xl font-bold">{analytics.conversionRate.toFixed(1)}%</p>
-                <p className="text-pink-200 text-sm mt-1 flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  Avg: $195
-                </p>
-              </div>
-              <TrendingUp className="w-12 h-12 text-pink-200" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {statCards.map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <Card
+              key={i}
+              className="cursor-pointer hover:shadow-md transition-all duration-200 border"
+              onClick={stat.onClick}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`p-2.5 rounded-xl ${stat.iconBg}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-medium text-emerald-600 flex items-center gap-0.5">
+                    {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    {stat.change}
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleViewAnalytics}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-300">Today's Sales</p>
-                <p className="text-2xl font-bold text-green-400">
-                  ${analytics.todaysSales.toLocaleString()}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-green-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border cursor-pointer hover:shadow-md transition-all" onClick={() => onTabChange?.('analytics')}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Today's Sales</p>
+              <p className="text-xl font-bold text-emerald-600">${analytics.todaysSales.toLocaleString()}</p>
+            </div>
+            <div className="p-2 rounded-lg bg-emerald-50">
+              <DollarSign className="w-5 h-5 text-emerald-600" />
             </div>
           </CardContent>
         </Card>
-
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleProcessPendingOrders}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-300">Pending Orders</p>
-                <p className="text-2xl font-bold text-yellow-400">{analytics.pendingOrders}</p>
-              </div>
-              <ShoppingCart className="w-8 h-8 text-yellow-400" />
+        <Card className="border cursor-pointer hover:shadow-md transition-all" onClick={handleProcessPendingOrders}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Pending Orders</p>
+              <p className="text-xl font-bold text-amber-600">{analytics.pendingOrders}</p>
+            </div>
+            <div className="p-2 rounded-lg bg-amber-50">
+              <ShoppingCart className="w-5 h-5 text-amber-600" />
             </div>
           </CardContent>
         </Card>
-
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleReviewLowStock}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-300">Low Stock Items</p>
-                <p className="text-2xl font-bold text-red-400">{analytics.lowStockItems}</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+        <Card className="border cursor-pointer hover:shadow-md transition-all" onClick={handleReviewLowStock}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Low Stock Items</p>
+              <p className="text-xl font-bold text-destructive">{analytics.lowStockItems}</p>
+            </div>
+            <div className="p-2 rounded-lg bg-red-50">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
             </div>
           </CardContent>
         </Card>
-
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white cursor-pointer hover:bg-white/20 transition-colors" onClick={handleViewUsers}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-300">New Customers</p>
-                <p className="text-2xl font-bold text-blue-400">{analytics.newCustomersToday}</p>
-              </div>
-              <UserPlus className="w-8 h-8 text-blue-400" />
+        <Card className="border cursor-pointer hover:shadow-md transition-all" onClick={() => onTabChange?.('users')}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">New Customers</p>
+              <p className="text-xl font-bold text-primary">{analytics.newCustomersToday}</p>
+            </div>
+            <div className="p-2 rounded-lg bg-accent">
+              <UserPlus className="w-5 h-5 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -294,123 +227,100 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ onTabChange }) => {
       {/* Detailed Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold">Recent Orders</h3>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 border-blue-500"
-                onClick={handleViewAllOrders}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                View All
-              </Button>
-            </div>
-            <div className="space-y-4">
-              {analytics.recentOrders.map((order) => (
-                <div key={order.id} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                  <div>
-                    <p className="font-medium">#ORD-{order.id.slice(-8)}</p>
-                    <p className="text-sm text-gray-300">User: {order.user_id.slice(-8)}</p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">${Number(order.total_amount).toFixed(2)}</p>
-                    <Badge 
-                      variant={order.status === 'completed' ? 'default' : 'secondary'}
-                      className={
-                        order.status === 'completed' ? 'bg-green-600' : 
-                        order.status === 'shipped' ? 'bg-blue-600' : 'bg-orange-600'
-                      }
-                    >
-                      {order.status}
-                    </Badge>
-                  </div>
+        <Card className="border">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-lg font-semibold text-foreground">Recent Orders</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onTabChange?.('orders')}
+              className="text-xs"
+            >
+              <Eye className="w-3.5 h-3.5 mr-1.5" />
+              View All
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {analytics.recentOrders.map((order) => (
+              <div key={order.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="font-medium text-foreground text-sm">#ORD-{order.id.slice(-8)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </p>
                 </div>
-              ))}
-              {analytics.recentOrders.length === 0 && (
-                <p className="text-gray-400 text-center py-4">No recent orders</p>
-              )}
-            </div>
+                <div className="text-right flex items-center gap-2">
+                  <p className="font-semibold text-foreground text-sm">${Number(order.total_amount).toFixed(2)}</p>
+                  <Badge
+                    variant="secondary"
+                    className={
+                      order.status === 'completed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                      order.status === 'shipped' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                      'bg-amber-100 text-amber-700 border-amber-200'
+                    }
+                  >
+                    {order.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            {analytics.recentOrders.length === 0 && (
+              <p className="text-muted-foreground text-center py-6 text-sm">No recent orders</p>
+            )}
           </CardContent>
         </Card>
 
         {/* Quick Actions & Alerts */}
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-bold mb-4">Quick Actions & Alerts</h3>
-            <div className="space-y-4">
-              {analytics.lowStockItems > 0 && (
-                <div className="flex items-center p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-red-400 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium text-red-400">Low Stock Alert</p>
-                    <p className="text-sm text-gray-300">
-                      {analytics.lowStockItems} products are running low on stock
-                    </p>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-red-600 hover:bg-red-700 border-red-500 text-white"
-                    onClick={handleReviewLowStock}
-                  >
-                    Review
-                  </Button>
+        <Card className="border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-foreground">Alerts & Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {analytics.lowStockItems > 0 && (
+              <div className="flex items-center p-3 bg-red-50 border border-red-100 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-destructive mr-3 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-destructive text-sm">Low Stock Alert</p>
+                  <p className="text-xs text-muted-foreground">{analytics.lowStockItems} products running low</p>
                 </div>
-              )}
-              
-              {analytics.pendingOrders > 0 && (
-                <div className="flex items-center p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-                  <ShoppingCart className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium text-yellow-400">Pending Orders</p>
-                    <p className="text-sm text-gray-300">
-                      {analytics.pendingOrders} orders need your attention
-                    </p>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-yellow-600 hover:bg-yellow-700 border-yellow-500 text-white"
-                    onClick={handleProcessPendingOrders}
-                  >
-                    Process
-                  </Button>
-                </div>
-              )}
+                <Button size="sm" variant="outline" className="text-xs border-red-200 text-destructive hover:bg-red-50" onClick={handleReviewLowStock}>
+                  Review
+                </Button>
+              </div>
+            )}
 
-              {analytics.newCustomersToday > 0 && (
-                <div className="flex items-center p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-                  <UserPlus className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium text-green-400">New Customers</p>
-                    <p className="text-sm text-gray-300">
-                      {analytics.newCustomersToday} new customers joined today
-                    </p>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-green-600 hover:bg-green-700 border-green-500 text-white"
-                    onClick={handleWelcomeNewCustomers}
-                  >
-                    Welcome
-                  </Button>
+            {analytics.pendingOrders > 0 && (
+              <div className="flex items-center p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                <ShoppingCart className="w-5 h-5 text-amber-600 mr-3 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-amber-700 text-sm">Pending Orders</p>
+                  <p className="text-xs text-muted-foreground">{analytics.pendingOrders} orders need attention</p>
                 </div>
-              )}
+                <Button size="sm" variant="outline" className="text-xs border-amber-200 text-amber-700 hover:bg-amber-50" onClick={handleProcessPendingOrders}>
+                  Process
+                </Button>
+              </div>
+            )}
 
-              {analytics.lowStockItems === 0 && analytics.pendingOrders === 0 && analytics.newCustomersToday === 0 && (
-                <div className="text-center py-8 text-gray-400">
-                  <p>All systems running smoothly!</p>
-                  <p className="text-sm mt-2">No immediate actions required.</p>
+            {analytics.newCustomersToday > 0 && (
+              <div className="flex items-center p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                <UserPlus className="w-5 h-5 text-emerald-600 mr-3 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-emerald-700 text-sm">New Customers</p>
+                  <p className="text-xs text-muted-foreground">{analytics.newCustomersToday} joined today</p>
                 </div>
-              )}
-            </div>
+                <Button size="sm" variant="outline" className="text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={handleWelcomeNewCustomers}>
+                  Welcome
+                </Button>
+              </div>
+            )}
+
+            {analytics.lowStockItems === 0 && analytics.pendingOrders === 0 && analytics.newCustomersToday === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="font-medium">All systems running smoothly!</p>
+                <p className="text-sm mt-1">No immediate actions required.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -1,24 +1,18 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Import existing components
 import OverviewTab from '@/components/admin/OverviewTab';
 import ProductsTab from '@/components/admin/ProductsTab';
 import OrdersTab from '@/components/admin/OrdersTab';
 import UsersTab from '@/components/admin/UsersTab';
 import AnalyticsTab from '@/components/admin/AnalyticsTab';
-import NotificationDropdown from '@/components/admin/NotificationDropdown';
 import AddProductModal from '@/components/admin/AddProductModal';
 import EditProductModal from '@/components/admin/EditProductModal';
-
-// Import new components
 import BulkProductUpload from '@/components/admin/BulkProductUpload';
 import StockManagement from '@/components/admin/StockManagement';
 import SettingsTab from '@/components/admin/SettingsTab';
@@ -27,7 +21,6 @@ import MobileProductForm from '@/components/admin/MobileProductForm';
 import MobileQuickActions from '@/components/admin/MobileQuickActions';
 import MobileOverviewTab from '@/components/admin/MobileOverviewTab';
 import BotDashboardTab from '@/components/admin/BotDashboardTab';
-
 
 import { 
   BarChart3, 
@@ -38,11 +31,23 @@ import {
   Upload,
   AlertTriangle,
   Settings,
-  Bell,
   ArrowLeft,
   LogOut,
-  MessageSquare
+  MessageSquare,
+  Store
 } from 'lucide-react';
+
+const navItems = [
+  { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'products', label: 'Products', icon: Package },
+  { id: 'orders', label: 'Orders', icon: ShoppingCart },
+  { id: 'users', label: 'Users', icon: Users },
+  { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+  { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload },
+  { id: 'stock', label: 'Stock', icon: AlertTriangle },
+  { id: 'whatsapp-bot', label: 'WhatsApp Bot', icon: MessageSquare },
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
 
 const AdminDashboard = () => {
   const { user } = useAuthContext();
@@ -55,6 +60,7 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showMobileProductForm, setShowMobileProductForm] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   React.useEffect(() => {
     if (!loading && !isAdmin) {
@@ -75,36 +81,21 @@ const AdminDashboard = () => {
     setShowEditProductModal(true);
   };
 
-  const handleCloseAddModal = () => {
-    setShowAddProductModal(false);
-  };
-
-  const handleCloseEditModal = () => {
-    setShowEditProductModal(false);
-    setEditingProduct(null);
-  };
-
-  const handleToggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading admin dashboard...</p>
         </div>
       </div>
     );
   }
 
-  if (!isAdmin) {
-    return null;
-  }
+  if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950">
+    <div className="min-h-screen bg-muted/30">
       {/* Mobile Navigation */}
       {isMobile && (
         <MobileAdminNavigation
@@ -112,206 +103,142 @@ const AdminDashboard = () => {
           onTabChange={setActiveTab}
           onAddProduct={handleAddProduct}
           isMenuOpen={isMobileMenuOpen}
-          onToggleMenu={handleToggleMobileMenu}
+          onToggleMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
       )}
-      
-      <div className={`w-full px-4 py-4 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Header - Hidden on mobile when menu is open */}
-        <div className={`flex flex-col space-y-4 mb-6 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:mb-8 ${isMobile && isMobileMenuOpen ? 'hidden' : ''}`}>
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-            <Button
-              onClick={() => navigate('/')}
-              variant="outline"
-              className={`bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center justify-center space-x-2 w-full sm:w-auto text-sm ${isMobile ? 'ml-16' : ''}`}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Store</span>
-            </Button>
-            <div className="text-center sm:text-left">
-              <h1 className={`text-2xl sm:text-3xl font-bold text-white ${isMobile ? 'text-xl' : ''}`}>Admin Dashboard</h1>
-              <p className="text-gray-300 mt-1 text-sm sm:text-base">Manage your Gadget Genie store</p>
-            </div>
-          </div>
-          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
-            {!isMobile && (
-              <>
-                <Button
-                  variant="outline"
-                  className="bg-blue-500 hover:bg-blue-600 text-white border-blue-400 flex items-center justify-center space-x-2 text-sm"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span>Notifications</span>
-                </Button>
-                <Button
-                  onClick={() => setActiveTab('settings')}
-                  variant="outline"
-                  className="bg-green-500 hover:bg-green-600 text-white border-green-400 flex items-center justify-center space-x-2 text-sm"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Settings</span>
-                </Button>
-              </>
-            )}
-            <Button
-              onClick={() => navigate('/auth')}
-              variant="outline"
-              className="bg-red-500 hover:bg-red-600 text-white border-red-400 flex items-center justify-center space-x-2 text-sm w-full sm:w-auto"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </Button>
-          </div>
-        </div>
 
-        {/* Desktop Navigation */}
+      <div className="flex">
+        {/* Desktop Sidebar */}
         {!isMobile && (
-        <div className="flex space-x-2 sm:space-x-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <Button
-            onClick={() => setActiveTab('overview')}
-            variant={activeTab === 'overview' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'overview' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Overview</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('products')}
-            variant={activeTab === 'products' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'products' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <Package className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Products</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('orders')}
-            variant={activeTab === 'orders' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'orders' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Orders</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('users')}
-            variant={activeTab === 'users' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'users' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Users</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('analytics')}
-            variant={activeTab === 'analytics' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'analytics' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Analytics</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('bulk-upload')}
-            variant={activeTab === 'bulk-upload' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'bulk-upload' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Upload</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('stock')}
-            variant={activeTab === 'stock' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'stock' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Stock</span>
-          </Button>
-          <Button
-            onClick={() => setActiveTab('whatsapp-bot')}
-            variant={activeTab === 'whatsapp-bot' ? 'default' : 'outline'}
-            className={`flex items-center space-x-1 sm:space-x-2 whitespace-nowrap text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2 ${
-              activeTab === 'whatsapp-bot' 
-                ? 'bg-white text-purple-600 hover:bg-gray-100' 
-                : 'bg-white/10 text-white border-white/30 hover:bg-white/20'
-            }`}
-          >
-            <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className={isMobile ? 'hidden' : 'inline'}>WhatsApp Bot</span>
-          </Button>
-        </div>
+          <aside className={`sticky top-0 h-screen bg-card border-r border-border flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-[68px]' : 'w-60'}`}>
+            {/* Logo */}
+            <div className="p-4 border-b border-border flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                <Store className="w-5 h-5 text-primary-foreground" />
+              </div>
+              {!sidebarCollapsed && (
+                <div className="overflow-hidden">
+                  <h2 className="font-bold text-foreground text-sm leading-tight">Gadget Genie</h2>
+                  <p className="text-[11px] text-muted-foreground">Admin Panel</p>
+                </div>
+              )}
+            </div>
+
+            {/* Nav Items */}
+            <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
+                    title={sidebarCollapsed ? item.label : undefined}
+                  >
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Sidebar Footer */}
+            <div className="p-3 border-t border-border space-y-1">
+              <button
+                onClick={() => navigate('/')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                title={sidebarCollapsed ? 'Back to Store' : undefined}
+              >
+                <ArrowLeft className="w-[18px] h-[18px] flex-shrink-0" />
+                {!sidebarCollapsed && <span>Back to Store</span>}
+              </button>
+              <button
+                onClick={() => navigate('/auth')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                title={sidebarCollapsed ? 'Logout' : undefined}
+              >
+                <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+                {!sidebarCollapsed && <span>Logout</span>}
+              </button>
+            </div>
+          </aside>
         )}
 
-        {/* Tab Contents */}
-        <div className="space-y-6">
-          {/* Mobile Quick Actions - Only show on overview tab */}
-          {isMobile && activeTab === 'overview' && (
-            <MobileQuickActions 
-              onAddProduct={handleAddProduct}
-              onTabChange={setActiveTab}
-            />
+        {/* Main Content */}
+        <main className={`flex-1 min-w-0 ${isMobile ? 'pb-20' : ''}`}>
+          {/* Top Bar (desktop) */}
+          {!isMobile && (
+            <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-foreground capitalize">
+                  {navItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Manage your Gadget Genie store
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                </Button>
+              </div>
+            </header>
           )}
-          
-          {activeTab === 'overview' && (
-            isMobile ? <MobileOverviewTab onTabChange={setActiveTab} /> : <OverviewTab onTabChange={setActiveTab} />
-          )}
-          {activeTab === 'products' && (
-            <ProductsTab 
-              onAddProduct={handleAddProduct}
-              onEditProduct={handleEditProduct}
-            />
-          )}
-          {activeTab === 'orders' && <OrdersTab />}
-          {activeTab === 'users' && <UsersTab />}
-          {activeTab === 'analytics' && <AnalyticsTab />}
-          {activeTab === 'bulk-upload' && <BulkProductUpload />}
-          {activeTab === 'stock' && <StockManagement />}
-          {activeTab === 'settings' && <SettingsTab />}
-          {activeTab === 'whatsapp-bot' && <BotDashboardTab />}
-          
-        </div>
+
+          {/* Tab Content */}
+          <div className="p-4 lg:p-6 space-y-6">
+            {isMobile && activeTab === 'overview' && (
+              <MobileQuickActions
+                onAddProduct={handleAddProduct}
+                onTabChange={setActiveTab}
+              />
+            )}
+
+            {activeTab === 'overview' && (
+              isMobile ? <MobileOverviewTab onTabChange={setActiveTab} /> : <OverviewTab onTabChange={setActiveTab} />
+            )}
+            {activeTab === 'products' && (
+              <ProductsTab
+                onAddProduct={handleAddProduct}
+                onEditProduct={handleEditProduct}
+              />
+            )}
+            {activeTab === 'orders' && <OrdersTab />}
+            {activeTab === 'users' && <UsersTab />}
+            {activeTab === 'analytics' && <AnalyticsTab />}
+            {activeTab === 'bulk-upload' && <BulkProductUpload />}
+            {activeTab === 'stock' && <StockManagement />}
+            {activeTab === 'settings' && <SettingsTab />}
+            {activeTab === 'whatsapp-bot' && <BotDashboardTab />}
+          </div>
+        </main>
       </div>
 
-      {/* Modals - Conditional rendering for mobile */}
+      {/* Modals */}
       {!isMobile && (
         <>
-          <AddProductModal 
+          <AddProductModal
             isOpen={showAddProductModal}
-            onClose={handleCloseAddModal}
+            onClose={() => setShowAddProductModal(false)}
           />
-          <EditProductModal 
+          <EditProductModal
             isOpen={showEditProductModal}
-            onClose={handleCloseEditModal}
+            onClose={() => { setShowEditProductModal(false); setEditingProduct(null); }}
             product={editingProduct}
           />
         </>
       )}
-      
-      {/* Mobile Product Form */}
+
       {isMobile && (
         <MobileProductForm
           isOpen={showMobileProductForm}
