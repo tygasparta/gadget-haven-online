@@ -168,6 +168,8 @@ const ProductDetail = () => {
     const text = getShareText();
     const imageUrl = getAbsoluteImageUrl(product?.image || galleryImages[0]);
     
+    const ogUrl = getOgMetaUrl();
+    
     switch (platform) {
       case 'native':
         if (navigator.share) {
@@ -175,8 +177,7 @@ const ProductDetail = () => {
             await navigator.share({
               title: product?.name,
               text: text,
-              url: url,
-              files: imageUrl ? [await fetch(imageUrl).then(r => r.blob()).then(blob => new File([blob], "product.jpg", { type: "image/jpeg" }))].filter(Boolean) : undefined
+              url: ogUrl,
             });
             toast.success('Shared successfully!');
           } catch (error) {
@@ -188,8 +189,8 @@ const ProductDetail = () => {
         break;
       case 'copy':
         try {
-          await navigator.clipboard.writeText(url);
-          toast.success('Link copied to clipboard!');
+          await navigator.clipboard.writeText(ogUrl);
+          toast.success('Share link copied to clipboard!');
           setShowShareModal(false);
         } catch (error) {
           toast.error('Failed to copy link');
