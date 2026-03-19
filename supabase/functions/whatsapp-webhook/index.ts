@@ -12,7 +12,7 @@ const corsHeaders = {
 const STORE_NAME = "GadgetGenie";
 const STORE_TAGLINE = "Your Smart Shopping Assistant 🧞‍♂️";
 const SALES_WHATSAPP = "263776337910";
-const WEBSITE_URL = "https://gadget-haven-online.lovable.app";
+const WEBSITE_URL = "https://gadgetgenie.org";
 
 
 function getSupabase() {
