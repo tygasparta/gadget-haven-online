@@ -119,10 +119,21 @@ async function sendList(phone: string, bodyText: string, buttonLabel: string, se
 
 async function sendMainMenu(phone: string) {
   await sendButtons(phone, 
-    "👋 Welcome to *Gadget Haven*! 🛒\n\nHow can I help you today?",
+    "👋 Welcome to *GadgetGenie*! 🛒✨\n\nYour smart shopping assistant is here! How can I help you today?",
     [
       { id: "menu_categories", title: "📱 Browse Products" },
       { id: "menu_deals", title: "🔥 Hot Deals" },
+      { id: "menu_more", title: "📋 More Options" }
+    ]
+  );
+}
+
+async function sendMoreOptions(phone: string) {
+  await sendButtons(phone,
+    "📋 *More Options*\n\nWhat would you like to do?",
+    [
+      { id: "menu_track", title: "📦 Track Order" },
+      { id: "menu_search", title: "🔍 Search Products" },
       { id: "menu_help", title: "💬 Help & Support" }
     ]
   );
@@ -131,7 +142,6 @@ async function sendMainMenu(phone: string) {
 async function sendCategories(phone: string) {
   const supabase = getSupabase();
 
-  // Get distinct categories from products
   const { data: products } = await supabase
     .from("products")
     .select("category")
@@ -179,7 +189,6 @@ async function sendProductsByCategory(phone: string, category: string) {
     return;
   }
 
-  // Build product list
   const rows = products.map(p => {
     const priceText = p.discount_percentage && p.discount_percentage > 0
       ? `$${p.price} (${p.discount_percentage}% OFF)`
@@ -227,14 +236,12 @@ async function sendProductDetail(phone: string, productId: number) {
     priceSection = `💰 *Price:* ~$${product.original_price}~ → *$${product.price}* (${product.discount_percentage}% OFF! 🎉)`;
   }
 
-  // Build specs text
   let specsText = "";
   if (product.specifications && Array.isArray(product.specifications) && product.specifications.length > 0) {
     const specs = product.specifications.slice(0, 6).map((s: any) => `  • ${s.key || s.name}: ${s.value}`).join("\n");
     specsText = `\n\n📋 *Specifications:*\n${specs}`;
   }
 
-  // Build what's in box text
   let boxText = "";
   if (product.whats_in_box && product.whats_in_box.length > 0) {
     const items = product.whats_in_box.slice(0, 5).map((item: string) => `  📦 ${item}`).join("\n");
@@ -245,7 +252,6 @@ async function sendProductDetail(phone: string, productId: number) {
 
   const message = `📱 *${product.name}*\n\n${brandText}${priceSection}\n${rating}\n${stockStatus}${specsText}${boxText}\n\n${product.description ? `📝 ${product.description.substring(0, 300)}` : ""}`;
 
-  // Send product image if available
   if (product.image && (product.image.startsWith("http://") || product.image.startsWith("https://"))) {
     await sendWhatsAppMessage(phone, {
       messaging_product: "whatsapp",
@@ -260,12 +266,11 @@ async function sendProductDetail(phone: string, productId: number) {
     await sendText(phone, message);
   }
 
-  // Send action buttons
   await sendButtons(phone,
     "What would you like to do?",
     [
       { id: "menu_categories", title: "📱 Browse More" },
-      { id: "menu_deals", title: "🔥 Hot Deals" },
+      { id: "menu_search", title: "🔍 Search" },
       { id: "menu_main", title: "🏠 Main Menu" }
     ]
   );
@@ -307,13 +312,177 @@ async function sendDeals(phone: string) {
 
 async function sendHelp(phone: string) {
   await sendText(phone,
-    `💬 *Help & Support*\n\n` +
+    `💬 *GadgetGenie Help & Support*\n\n` +
     `Need assistance? Here's how we can help:\n\n` +
     `📞 *Contact us:* Send us a message here and our team will respond shortly.\n\n` +
     `🔄 *Returns:* We accept returns within 14 days of delivery.\n\n` +
     `🚚 *Shipping:* We offer collection and delivery options.\n\n` +
     `💳 *Payment:* We accept EcoCash, PayPal, and bank transfers.\n\n` +
+    `📦 *Track Order:* Type *track* followed by your order ID to check your order status.\n\n` +
+    `🔍 *Search:* Type *search* followed by a product name to find products.\n\n` +
     `Type *menu* anytime to go back to the main menu.`
+  );
+}
+
+// ===== ORDER TRACKING =====
+
+async function sendOrderTrackingPrompt(phone: string) {
+  await sendText(phone,
+    `📦 *Track Your Order*\n\n` +
+    `To track your order, please send your order ID in this format:\n\n` +
+    `*track <order-id>*\n\n` +
+    `Example: _track abc12345-6789_\n\n` +
+    `You can find your order ID in your order confirmation email or in your account on our website.`
+  );
+}
+
+async function sendOrderStatus(phone: string, orderId: string) {
+  const supabase = getSupabase();
+
+  // Try to find the order by ID (partial match for convenience)
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, status, total_amount, payment_method, shipping_method, created_at, updated_at")
+    .eq("id", orderId.trim())
+    .single();
+
+  if (!order) {
+    await sendText(phone,
+      `❌ *Order Not Found*\n\n` +
+      `We couldn't find an order with ID: _${orderId}_\n\n` +
+      `Please double-check the order ID and try again. Make sure you're using the full order ID from your confirmation.`
+    );
+    return;
+  }
+
+  const statusEmoji: Record<string, string> = {
+    "pending": "⏳",
+    "confirmed": "✅",
+    "processing": "⚙️",
+    "shipped": "🚚",
+    "delivered": "📬",
+    "cancelled": "❌",
+  };
+
+  const emoji = statusEmoji[order.status || "pending"] || "📋";
+  const orderDate = new Date(order.created_at).toLocaleDateString("en-US", {
+    year: "numeric", month: "short", day: "numeric"
+  });
+  const lastUpdate = new Date(order.updated_at).toLocaleDateString("en-US", {
+    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+  });
+
+  // Get order items
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("quantity, price, product_id")
+    .eq("order_id", order.id);
+
+  let itemsText = "";
+  if (items && items.length > 0) {
+    // Get product names
+    const productIds = items.map(i => i.product_id).filter(Boolean);
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, name")
+      .in("id", productIds);
+
+    const productMap = new Map((products || []).map(p => [p.id, p.name]));
+
+    const itemLines = items.map(i => {
+      const name = productMap.get(i.product_id) || "Unknown Product";
+      return `  • ${name} x${i.quantity} — $${i.price}`;
+    }).join("\n");
+    itemsText = `\n\n🛒 *Items:*\n${itemLines}`;
+  }
+
+  const shippingText = order.shipping_method ? `\n🚚 *Shipping:* ${order.shipping_method}` : "";
+  const paymentText = order.payment_method ? `\n💳 *Payment:* ${order.payment_method}` : "";
+
+  await sendText(phone,
+    `${emoji} *Order Status*\n\n` +
+    `📋 *Order ID:* _${order.id.substring(0, 8)}..._\n` +
+    `📅 *Date:* ${orderDate}\n` +
+    `${emoji} *Status:* *${(order.status || "pending").toUpperCase()}*\n` +
+    `💰 *Total:* $${order.total_amount}${shippingText}${paymentText}${itemsText}\n\n` +
+    `🕐 *Last Updated:* ${lastUpdate}`
+  );
+
+  await sendButtons(phone,
+    "What would you like to do next?",
+    [
+      { id: "menu_categories", title: "📱 Browse Products" },
+      { id: "menu_deals", title: "🔥 Hot Deals" },
+      { id: "menu_main", title: "🏠 Main Menu" }
+    ]
+  );
+}
+
+// ===== PRODUCT SEARCH =====
+
+async function sendSearchPrompt(phone: string) {
+  await sendText(phone,
+    `🔍 *Search Products*\n\n` +
+    `To search for a product, type *search* followed by the product name:\n\n` +
+    `*search iPhone*\n` +
+    `*search Samsung Galaxy*\n` +
+    `*search headphones*\n\n` +
+    `I'll find the best matches for you! 🎯`
+  );
+}
+
+async function searchProducts(phone: string, query: string) {
+  const supabase = getSupabase();
+
+  // Search by name, brand, category, or tags using ilike
+  const searchTerm = `%${query.trim()}%`;
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, price, original_price, discount_percentage, brand, stock, category")
+    .is("deleted_at", null)
+    .or(`name.ilike.${searchTerm},brand.ilike.${searchTerm},category.ilike.${searchTerm},description.ilike.${searchTerm}`)
+    .order("is_featured", { ascending: false })
+    .limit(10);
+
+  if (!products || products.length === 0) {
+    await sendText(phone,
+      `🔍 No products found for "*${query}*".\n\n` +
+      `Try:\n` +
+      `• A different keyword\n` +
+      `• A shorter search term\n` +
+      `• A brand name (Samsung, Apple, etc.)\n\n` +
+      `Or browse our categories instead! 📱`
+    );
+    await sendButtons(phone, "What would you like to do?", [
+      { id: "menu_categories", title: "📱 Browse Categories" },
+      { id: "menu_deals", title: "🔥 Hot Deals" },
+      { id: "menu_main", title: "🏠 Main Menu" }
+    ]);
+    return;
+  }
+
+  const rows = products.map(p => {
+    const priceText = p.discount_percentage && p.discount_percentage > 0
+      ? `$${p.price} (${p.discount_percentage}% OFF)`
+      : `$${p.price}`;
+    const stockText = (p.stock ?? 0) > 0 ? "In Stock" : "Out of Stock";
+
+    return {
+      id: `prod_${p.id}`,
+      title: p.name.substring(0, 24),
+      description: `${priceText} • ${stockText}`.substring(0, 72)
+    };
+  });
+
+  await sendList(
+    phone,
+    `🔍 *Search Results for "${query}"*\n\nFound ${products.length} product${products.length > 1 ? 's' : ''}:`,
+    "View Results",
+    [{
+      title: "Search Results",
+      rows: rows
+    }]
   );
 }
 
@@ -321,7 +490,6 @@ async function sendHelp(phone: string) {
 async function storeUserMessage(phone: string, content: any, messageId: string | null) {
   const supabase = getSupabase();
 
-  // Upsert conversation
   const { data: existingConvo } = await supabase
     .from("whatsapp_conversations")
     .select("id")
@@ -349,7 +517,6 @@ async function storeUserMessage(phone: string, content: any, messageId: string |
     conversationId = newConvo!.id;
   }
 
-  // Store message
   await supabase.from("whatsapp_messages").insert({
     conversation_id: conversationId,
     sender_type: "user",
@@ -361,13 +528,12 @@ async function storeUserMessage(phone: string, content: any, messageId: string |
 
 // Process incoming message
 async function processMessage(phone: string, messageText: string, messageId: string | null) {
-  // Store the user message first
   await storeUserMessage(phone, messageText, messageId);
 
   const text = messageText.toLowerCase().trim();
 
   // Main menu triggers
-  if (["hi", "hello", "hey", "start", "menu", "home", "help me", "hie"].includes(text) || text === "main menu") {
+  if (["hi", "hello", "hey", "start", "menu", "home", "help me", "hie", "main menu"].includes(text)) {
     await sendMainMenu(phone);
     return;
   }
@@ -390,6 +556,44 @@ async function processMessage(phone: string, messageText: string, messageId: str
     return;
   }
 
+  // Order tracking triggers
+  if (["track", "order", "tracking", "my order", "order status"].includes(text)) {
+    await sendOrderTrackingPrompt(phone);
+    return;
+  }
+
+  // Track with order ID: "track <order-id>"
+  if (text.startsWith("track ") && text.length > 6) {
+    const orderId = messageText.trim().substring(6).trim();
+    await sendOrderStatus(phone, orderId);
+    return;
+  }
+
+  // Search triggers
+  if (text === "search" || text === "find") {
+    await sendSearchPrompt(phone);
+    return;
+  }
+
+  // Search with query: "search <query>"
+  if (text.startsWith("search ") && text.length > 7) {
+    const query = messageText.trim().substring(7).trim();
+    await searchProducts(phone, query);
+    return;
+  }
+
+  if (text.startsWith("find ") && text.length > 5) {
+    const query = messageText.trim().substring(5).trim();
+    await searchProducts(phone, query);
+    return;
+  }
+
+  // More options trigger
+  if (["more", "options", "more options"].includes(text)) {
+    await sendMoreOptions(phone);
+    return;
+  }
+
   // Default: show main menu for any unrecognized text
   await sendText(phone, "I didn't quite understand that. Let me show you our menu! 😊");
   await sendMainMenu(phone);
@@ -399,7 +603,6 @@ async function processMessage(phone: string, messageText: string, messageId: str
 async function processInteractiveReply(phone: string, replyId: string, replyTitle: string) {
   await storeUserMessage(phone, `[Selected: ${replyTitle}]`, null);
 
-  // Main menu selections
   if (replyId === "menu_main") {
     await sendMainMenu(phone);
     return;
@@ -414,6 +617,18 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
   }
   if (replyId === "menu_help") {
     await sendHelp(phone);
+    return;
+  }
+  if (replyId === "menu_more") {
+    await sendMoreOptions(phone);
+    return;
+  }
+  if (replyId === "menu_track") {
+    await sendOrderTrackingPrompt(phone);
+    return;
+  }
+  if (replyId === "menu_search") {
+    await sendSearchPrompt(phone);
     return;
   }
 
@@ -452,12 +667,10 @@ function extractMessageData(body: any) {
     const phone = message.from;
     const messageId = message.id;
 
-    // Text message
     if (message.type === "text") {
       return { phone, text: message.text.body, type: "text", messageId };
     }
 
-    // Interactive reply (button or list)
     if (message.type === "interactive") {
       const interactive = message.interactive;
       if (interactive.type === "button_reply") {
@@ -480,7 +693,6 @@ function extractMessageData(body: any) {
       }
     }
 
-    // For other message types (image, audio, etc.), treat as unrecognized
     if (message.from) {
       return { phone: message.from, text: "[unsupported message type]", type: "text", messageId };
     }
@@ -493,7 +705,6 @@ function extractMessageData(body: any) {
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
@@ -536,7 +747,6 @@ serve(async (req) => {
 
     console.log("Processing message:", JSON.stringify(msgData));
 
-    // Use EdgeRuntime.waitUntil to process in background — return 200 immediately to Meta
     EdgeRuntime.waitUntil(
       (async () => {
         try {
@@ -552,7 +762,6 @@ serve(async (req) => {
       })()
     );
 
-    // Return immediately so Meta doesn't timeout
     return new Response("OK", { status: 200 });
   }
 
