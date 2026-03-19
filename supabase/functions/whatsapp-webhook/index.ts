@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-console.log("GadgetGenie WhatsApp Bot v3.0 starting...");
+console.log("GadgetGenie WhatsApp Bot v4.0 starting...");
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,15 +10,32 @@ const corsHeaders = {
 };
 
 const STORE_NAME = "GadgetGenie";
-const STORE_TAGLINE = "Your Smart Shopping Assistant";
+const STORE_TAGLINE = "Your Smart Shopping Assistant 🧞‍♂️";
 const SALES_WHATSAPP = "263776337910";
 const WEBSITE_URL = "https://gadget-haven-online.lovable.app";
+
+// ── Design tokens ──
+const LINE = `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`;
+const THICK = `══════════════════════`;
+const DOT = `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈`;
 
 function getSupabase() {
   return createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
+}
+
+function firstName(fullName: string | null): string {
+  if (!fullName) return "there";
+  return fullName.split(" ")[0];
+}
+
+function timeGreeting(): string {
+  const hour = new Date().getUTCHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
 }
 
 // ===== MESSAGE SENDING HELPERS =====
@@ -78,7 +95,7 @@ async function sendText(phone: string, text: string) {
     messaging_product: "whatsapp",
     to: phone,
     type: "text",
-    text: { body: text }
+    text: { preview_url: true, body: text }
   });
 }
 
@@ -134,7 +151,7 @@ async function sendBuyButton(phone: string, productName: string, price: number) 
       action: {
         name: "cta_url",
         parameters: {
-          display_text: "💳 Buy Now",
+          display_text: "💳 Buy Now — $" + price,
           url: buyUrl
         }
       }
@@ -144,7 +161,7 @@ async function sendBuyButton(phone: string, productName: string, price: number) 
 
 // ===== AI ASSISTANT =====
 
-async function getAIResponse(userMessage: string, context: string): Promise<string | null> {
+async function getAIResponse(userMessage: string, context: string, userName: string | null): Promise<string | null> {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) {
     console.log("AI not available - LOVABLE_API_KEY not set");
@@ -164,6 +181,7 @@ async function getAIResponse(userMessage: string, context: string): Promise<stri
           {
             role: "system",
             content: `You are ${STORE_NAME}'s WhatsApp shopping assistant — friendly, helpful, and concise.
+The customer's name is: ${userName || "unknown"}.${userName ? ` Address them as ${firstName(userName)}.` : ""}
 
 STORE INFO:
 - Name: ${STORE_NAME}
@@ -185,12 +203,10 @@ RULES:
 - Keep responses under 200 words
 - Use emojis naturally but not excessively
 - If asked about a specific product, suggest they type "search <product name>"
-- If asked about prices, suggest browsing categories or searching
-- If asked to buy, explain they can browse products and use the Buy Now button
 - Never make up product information or prices
 - Always stay in character as a shopping assistant
 - Be warm and professional
-- If the question is completely unrelated to shopping/electronics, politely redirect
+- If unrelated to shopping, politely redirect
 
 PRODUCT CONTEXT:
 ${context}`
@@ -252,7 +268,7 @@ async function getProductContext(): Promise<string> {
 
 // ===== PRODUCT RECOMMENDATIONS =====
 
-async function sendProductRecommendations(phone: string, currentProductId: number, category: string | null) {
+async function sendProductRecommendations(phone: string, currentProductId: number, category: string | null, userName: string | null) {
   if (!category) return;
   
   const supabase = getSupabase();
@@ -270,7 +286,7 @@ async function sendProductRecommendations(phone: string, currentProductId: numbe
 
   const rows = similar.map(p => {
     const priceText = p.discount_percentage && p.discount_percentage > 0
-      ? `$${p.price} (-${p.discount_percentage}%)`
+      ? `$${p.price} (${p.discount_percentage}% off)`
       : `$${p.price}`;
     return {
       id: `prod_${p.id}`,
@@ -279,9 +295,12 @@ async function sendProductRecommendations(phone: string, currentProductId: numbe
     };
   });
 
+  const name = firstName(userName);
   await sendList(
     phone,
-    `💡 *You Might Also Like*\n━━━━━━━━━━━━━━━━━━━━\n\n🎯 ${similar.length} similar product${similar.length > 1 ? "s" : ""} in *${category}*`,
+    `✨ *Picked for you, ${name}*\n${DOT}\n\n` +
+    `🎯 ${similar.length} similar product${similar.length > 1 ? "s" : ""}\n    in *${category}*\n\n` +
+    `_Customers who viewed this also\nliked these items_ 👇`,
     "View Similar",
     [{
       title: `More in ${category}`,
@@ -292,8 +311,9 @@ async function sendProductRecommendations(phone: string, currentProductId: numbe
 
 // ===== SUBSCRIPTION MANAGEMENT =====
 
-async function handleSubscribe(phone: string) {
+async function handleSubscribe(phone: string, userName: string | null) {
   const supabase = getSupabase();
+  const name = firstName(userName);
   
   const { data: existing } = await supabase
     .from("whatsapp_subscriptions")
@@ -303,9 +323,9 @@ async function handleSubscribe(phone: string) {
 
   if (existing?.subscribed_deals) {
     await sendText(phone,
-      `✅ *Already Subscribed!*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
-      `You're already receiving daily deals! 🎉\n\n` +
-      `Type *unsubscribe* to stop notifications.`
+      `✅ *Already Subscribed, ${name}!*\n${DOT}\n\n` +
+      `You're already on the VIP deals list! 🎉\n\n` +
+      `Type *unsubscribe* to opt out.`
     );
     return;
   }
@@ -322,17 +342,19 @@ async function handleSubscribe(phone: string) {
   }
 
   await sendText(phone,
-    `🔔 *Subscribed to Daily Deals!*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `You'll receive our best deals every day! 🎉\n\n` +
-    `🏷️ Flash sales & exclusive discounts\n` +
-    `📱 New product arrivals\n` +
-    `🔥 Limited-time offers\n\n` +
-    `Type *unsubscribe* anytime to stop.`
+    `🎉 *Welcome to VIP Deals, ${name}!*\n${THICK}\n\n` +
+    `You'll now receive daily curated deals:\n\n` +
+    `  🏷️  Flash sales & exclusives\n` +
+    `  📱  New arrivals first\n` +
+    `  🔥  Limited-time steals\n\n` +
+    `${DOT}\n` +
+    `_Type *unsubscribe* anytime to stop._`
   );
 }
 
-async function handleUnsubscribe(phone: string) {
+async function handleUnsubscribe(phone: string, userName: string | null) {
   const supabase = getSupabase();
+  const name = firstName(userName);
 
   const { data: existing } = await supabase
     .from("whatsapp_subscriptions")
@@ -342,7 +364,7 @@ async function handleUnsubscribe(phone: string) {
 
   if (!existing || !existing.subscribed_deals) {
     await sendText(phone,
-      `ℹ️ You're not currently subscribed to daily deals.\n\nType *subscribe* to start receiving deals!`
+      `ℹ️ ${name}, you're not currently subscribed.\n\nType *subscribe* to get daily deals!`
     );
     return;
   }
@@ -353,21 +375,29 @@ async function handleUnsubscribe(phone: string) {
     .eq("id", existing.id);
 
   await sendText(phone,
-    `🔕 *Unsubscribed*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `You won't receive daily deal notifications anymore.\n\n` +
-    `Type *subscribe* anytime to re-enable! 💡`
+    `🔕 *Unsubscribed, ${name}*\n${DOT}\n\n` +
+    `No more daily deal alerts.\n` +
+    `We'll miss you! 💛\n\n` +
+    `_Type *subscribe* to rejoin anytime._`
   );
 }
 
 // ===== BOT MENUS & FLOWS =====
 
-async function sendMainMenu(phone: string) {
-  const header = `━━━━━━━━━━━━━━━━━━━━\n` +
-    `   🧞 *${STORE_NAME}*\n` +
-    `   _${STORE_TAGLINE}_\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `Welcome! 👋 I'm your personal\nshopping assistant. I can help\nyou find the perfect gadget!\n\n` +
-    `💡 _Tip: You can type naturally!\nAsk me anything about products._`;
+async function sendMainMenu(phone: string, userName: string | null) {
+  const name = firstName(userName);
+  const greeting = timeGreeting();
+
+  const header = 
+    `${THICK}\n` +
+    `      🧞‍♂️  *${STORE_NAME}*\n` +
+    `${THICK}\n\n` +
+    `${greeting}, *${name}*! 👋\n\n` +
+    `I'm your personal shopping\nassistant. How can I help today?\n\n` +
+    `${DOT}\n` +
+    `💡 _Tip: Ask me anything naturally!_\n` +
+    `    _"Do you have iPhones?"_\n` +
+    `    _"What's on sale today?"_`;
 
   await sendButtons(phone, header, [
     { id: "menu_categories", title: "🛍️ Shop Now" },
@@ -376,16 +406,17 @@ async function sendMainMenu(phone: string) {
   ]);
 }
 
-async function sendMoreOptions(phone: string) {
+async function sendMoreOptions(phone: string, userName: string | null) {
+  const name = firstName(userName);
   await sendList(phone,
-    `⚡ *More Options*\n\nWhat would you like to do?`,
+    `⚡ *More Options*\n${DOT}\n\nWhat would you like to do, ${name}?`,
     "Choose Option",
     [{
       title: "Services",
       rows: [
         { id: "menu_search", title: "🔍 Search Products", description: "Find products by name or keyword" },
         { id: "menu_track", title: "📦 Track My Order", description: "Check your order status" },
-        { id: "menu_subscribe", title: "🔔 Daily Deals", description: "Subscribe to daily deal alerts" },
+        { id: "menu_subscribe", title: "🔔 Daily Deals", description: "Get daily deal alerts on WhatsApp" },
         { id: "menu_help", title: "💬 Help & Support", description: "Get assistance from our team" },
         { id: "menu_website", title: "🌐 Visit Website", description: "Browse our full catalog online" }
       ]
@@ -420,7 +451,9 @@ async function sendCategories(phone: string) {
 
   await sendList(
     phone,
-    `🛍️ *Shop by Category*\n━━━━━━━━━━━━━━━━━━━━\n\nBrowse our collection by category.\nTap to explore! 👇`,
+    `🛍️ *Shop by Category*\n${THICK}\n\n` +
+    `Browse our curated collections.\nTap any category to explore! 👇\n\n` +
+    `📦 ${categories.length} categories available`,
     "View Categories",
     [{
       title: "All Categories",
@@ -448,20 +481,22 @@ async function sendProductsByCategory(phone: string, category: string) {
 
   const rows = products.map(p => {
     const priceText = p.discount_percentage && p.discount_percentage > 0
-      ? `$${p.price} (-${p.discount_percentage}%)`
+      ? `$${p.price} (${p.discount_percentage}% off)`
       : `$${p.price}`;
-    const stock = (p.stock ?? 0) > 0 ? "✅" : "❌";
+    const stock = (p.stock ?? 0) > 0 ? "✅ In stock" : "❌ Sold out";
 
     return {
       id: `prod_${p.id}`,
       title: p.name.substring(0, 24),
-      description: `${stock} ${priceText} • ${p.brand || ""}`.substring(0, 72)
+      description: `${stock} · ${priceText}`.substring(0, 72)
     };
   });
 
   await sendList(
     phone,
-    `🛍️ *${category}*\n━━━━━━━━━━━━━━━━━━━━\n\n📦 ${products.length} product${products.length > 1 ? 's' : ''} found\nTap any item for full details & pricing`,
+    `🛍️ *${category}*\n${THICK}\n\n` +
+    `📦 ${products.length} product${products.length > 1 ? 's' : ''} found\n\n` +
+    `Tap any item to see full details,\nspecs & pricing 👇`,
     "Browse Products",
     [{
       title: category,
@@ -470,7 +505,7 @@ async function sendProductsByCategory(phone: string, category: string) {
   );
 }
 
-async function sendProductDetail(phone: string, productId: number) {
+async function sendProductDetail(phone: string, productId: number, userName: string | null) {
   const supabase = getSupabase();
 
   const { data: product } = await supabase
@@ -487,51 +522,56 @@ async function sendProductDetail(phone: string, productId: number) {
 
   const inStock = (product.stock ?? 0) > 0;
   const stockLine = inStock
-    ? `✅ *In Stock* — ${product.stock} available`
+    ? `✅ *In Stock* — ${product.stock} units`
     : `❌ *Out of Stock*`;
 
   const ratingStars = product.rating
-    ? "⭐".repeat(Math.min(Math.round(product.rating), 5)) + ` ${product.rating}/5 (${product.reviews || 0} reviews)`
-    : "No reviews yet";
+    ? "★".repeat(Math.min(Math.round(product.rating), 5)) + "☆".repeat(5 - Math.min(Math.round(product.rating), 5)) + ` ${product.rating}/5 (${product.reviews || 0})`
+    : "☆☆☆☆☆ No reviews yet";
 
   let priceBlock = `💰 *$${product.price}*`;
   if (product.original_price && product.discount_percentage && product.discount_percentage > 0) {
-    priceBlock = `💰 ~$${product.original_price}~ → *$${product.price}*\n🏷️ *SAVE ${product.discount_percentage}%!*`;
+    const saved = (product.original_price - product.price).toFixed(2);
+    priceBlock = `💰 ~$${product.original_price}~ ➜ *$${product.price}*\n🏷️ Save *$${saved}* (${product.discount_percentage}% off!)`;
   }
 
-  const brandLine = product.brand ? `🏢 *Brand:* ${product.brand}` : "";
+  const brandLine = product.brand ? `🏢 ${product.brand}` : "";
 
   let specsBlock = "";
   if (product.specifications && Array.isArray(product.specifications) && product.specifications.length > 0) {
-    const specs = product.specifications.slice(0, 5).map((s: any) =>
-      `   ▸ ${s.key || s.name}: *${s.value}*`
+    const specs = product.specifications.slice(0, 6).map((s: any) =>
+      `  ◦ ${s.key || s.name}: *${s.value}*`
     ).join("\n");
-    specsBlock = `\n\n📋 *Key Specs*\n${specs}`;
+    specsBlock = `\n\n📋 *Specifications*\n${DOT}\n${specs}`;
   }
 
   let boxBlock = "";
   if (product.whats_in_box && product.whats_in_box.length > 0) {
-    const items = product.whats_in_box.slice(0, 5).map((item: string) => `   📦 ${item}`).join("\n");
-    boxBlock = `\n\n🎁 *In the Box*\n${items}`;
+    const items = product.whats_in_box.slice(0, 5).map((item: string) => `  ☑️ ${item}`).join("\n");
+    boxBlock = `\n\n🎁 *What's in the Box*\n${items}`;
   }
 
   const descBlock = product.description
-    ? `\n\n📝 ${product.description.substring(0, 250)}`
+    ? `\n\n${product.description.substring(0, 200)}${product.description.length > 200 ? "..." : ""}`
     : "";
 
   const message = [
-    `━━━━━━━━━━━━━━━━━━━━`,
+    THICK,
     `📱 *${product.name}*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
+    THICK,
     ``,
     brandLine,
+    ``,
     priceBlock,
-    ratingStars,
+    `${ratingStars}`,
     stockLine,
     specsBlock,
     boxBlock,
-    descBlock
-  ].filter(Boolean).join("\n");
+    descBlock,
+    ``,
+    DOT,
+    `🌐 ${WEBSITE_URL}/product/${product.id}`
+  ].filter(l => l !== false && l !== null && l !== undefined).join("\n");
 
   if (product.image && (product.image.startsWith("http://") || product.image.startsWith("https://"))) {
     await sendWhatsAppMessage(phone, {
@@ -552,10 +592,11 @@ async function sendProductDetail(phone: string, productId: number) {
     await sendBuyButton(phone, product.name, product.price);
   }
 
+  const name = firstName(userName);
   await sendButtons(phone,
     inStock
-      ? "🛍️ Continue shopping?"
-      : "😔 This item is out of stock. Browse alternatives?",
+      ? `Keep shopping, ${name}? 🛍️`
+      : `😔 Out of stock. Browse alternatives, ${name}?`,
     [
       { id: "menu_categories", title: "🛍️ Shop More" },
       { id: "menu_search", title: "🔍 Search" },
@@ -564,11 +605,12 @@ async function sendProductDetail(phone: string, productId: number) {
   );
 
   // Send product recommendations from same category
-  await sendProductRecommendations(phone, productId, product.category);
+  await sendProductRecommendations(phone, productId, product.category, userName);
 }
 
-async function sendDeals(phone: string) {
+async function sendDeals(phone: string, userName: string | null) {
   const supabase = getSupabase();
+  const name = firstName(userName);
 
   const { data: deals } = await supabase
     .from("products")
@@ -579,20 +621,25 @@ async function sendDeals(phone: string) {
     .limit(10);
 
   if (!deals || deals.length === 0) {
-    await sendText(phone, "🔜 No active deals right now — check back soon for hot offers!");
-    await sendMainMenu(phone);
+    await sendText(phone, `🔜 No active deals right now, ${name}.\nCheck back soon for hot offers!`);
+    await sendMainMenu(phone, userName);
     return;
   }
 
   const rows = deals.map(p => ({
     id: `prod_${p.id}`,
     title: p.name.substring(0, 24),
-    description: `$${p.price} • Save ${p.discount_percentage}%!`.substring(0, 72)
+    description: `$${p.price} · Save ${p.discount_percentage}%`.substring(0, 72)
   }));
 
   await sendList(
     phone,
-    `🔥 *Today's Hot Deals*\n━━━━━━━━━━━━━━━━━━━━\n\n🏷️ Up to *${deals[0].discount_percentage}% OFF*!\nDon't miss these limited-time offers 👇`,
+    `🔥 *Today's Hot Deals*\n${THICK}\n\n` +
+    `Hey ${name}! 🎯\n\n` +
+    `🏷️ Up to *${deals[0].discount_percentage}% OFF*\n` +
+    `⏰ Limited-time offers\n\n` +
+    `${DOT}\n` +
+    `Tap to view any deal 👇`,
     "View All Deals",
     [{
       title: "🔥 Hot Deals",
@@ -601,28 +648,28 @@ async function sendDeals(phone: string) {
   );
 }
 
-async function sendHelp(phone: string) {
+async function sendHelp(phone: string, userName: string | null) {
+  const name = firstName(userName);
   await sendText(phone,
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `💬 *${STORE_NAME} Support*\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `How can we help you?\n\n` +
-    `🔍 *Search:* Type _search_ + product name\n` +
-    `   Example: _search Samsung Galaxy_\n\n` +
-    `📦 *Track:* Type _track_ + order ID\n` +
-    `   Example: _track abc12345_\n\n` +
-    `🛍️ *Browse:* Type _browse_ or _shop_\n\n` +
-    `🔥 *Deals:* Type _deals_ or _offers_\n\n` +
-    `🔔 *Subscribe:* Type _subscribe_ for daily deals\n` +
-    `🔕 *Unsubscribe:* Type _unsubscribe_ to stop\n\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `📞 *Contact Sales:* wa.me/${SALES_WHATSAPP}\n` +
-    `🌐 *Website:* ${WEBSITE_URL}\n` +
-    `🔄 *Returns:* 14-day return policy\n` +
-    `🚚 *Shipping:* Collection & delivery\n` +
-    `💳 *Payment:* EcoCash • PayPal • Bank\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `💡 _Or just ask me anything — I'm AI-powered!_ 🧞`
+    `${THICK}\n` +
+    `💬 *Help & Support*\n` +
+    `${THICK}\n\n` +
+    `Hi ${name}! Here's everything I can do:\n\n` +
+    `🔍 *Search*\n` +
+    `    _search Samsung Galaxy_\n\n` +
+    `📦 *Track Order*\n` +
+    `    _track abc12345_\n\n` +
+    `🛍️ *Browse* — Type _browse_\n` +
+    `🔥 *Deals* — Type _deals_\n` +
+    `🔔 *Subscribe* — Type _subscribe_\n` +
+    `🔕 *Unsubscribe* — Type _unsubscribe_\n\n` +
+    `${DOT}\n` +
+    `📞 *Sales:* wa.me/${SALES_WHATSAPP}\n` +
+    `🌐 *Web:* ${WEBSITE_URL}\n` +
+    `${DOT}\n` +
+    `🔄 14-day returns · 🚚 Delivery\n` +
+    `💳 EcoCash · PayPal · Bank Transfer\n\n` +
+    `💡 _Or just chat — I'm AI-powered!_ 🧞‍♂️`
   );
 }
 
@@ -649,18 +696,20 @@ async function sendWebsiteLink(phone: string) {
 
 // ===== ORDER TRACKING =====
 
-async function sendOrderTrackingPrompt(phone: string) {
+async function sendOrderTrackingPrompt(phone: string, userName: string | null) {
+  const name = firstName(userName);
   await sendText(phone,
-    `📦 *Track Your Order*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `Send your order ID in this format:\n\n` +
+    `📦 *Track Your Order*\n${THICK}\n\n` +
+    `Hey ${name}, send your order ID:\n\n` +
     `👉 *track <order-id>*\n\n` +
     `_Example: track abc12345-6789_\n\n` +
-    `📧 Find your order ID in your\nconfirmation email or account.`
+    `📧 _Find it in your confirmation\nemail or account dashboard._`
   );
 }
 
-async function sendOrderStatus(phone: string, orderId: string) {
+async function sendOrderStatus(phone: string, orderId: string, userName: string | null) {
   const supabase = getSupabase();
+  const name = firstName(userName);
 
   const { data: order } = await supabase
     .from("orders")
@@ -670,23 +719,23 @@ async function sendOrderStatus(phone: string, orderId: string) {
 
   if (!order) {
     await sendText(phone,
-      `❌ *Order Not Found*\n\n` +
-      `No order found with ID:\n_${orderId}_\n\n` +
-      `Please check and try again.`
+      `❌ *Order Not Found*\n${DOT}\n\n` +
+      `Sorry ${name}, no order with ID:\n_${orderId}_\n\n` +
+      `Double-check and try again.`
     );
     return;
   }
 
-  const statusConfig: Record<string, { emoji: string; label: string; progress: string }> = {
-    "pending": { emoji: "⏳", label: "Pending", progress: "▓░░░░" },
-    "confirmed": { emoji: "✅", label: "Confirmed", progress: "▓▓░░░" },
-    "processing": { emoji: "⚙️", label: "Processing", progress: "▓▓▓░░" },
-    "shipped": { emoji: "🚚", label: "Shipped", progress: "▓▓▓▓░" },
-    "delivered": { emoji: "📬", label: "Delivered", progress: "▓▓▓▓▓" },
-    "cancelled": { emoji: "❌", label: "Cancelled", progress: "✕✕✕✕✕" },
+  const statusConfig: Record<string, { emoji: string; label: string; bar: string }> = {
+    "pending":    { emoji: "⏳", label: "Pending",    bar: "🟡⚪⚪⚪⚪" },
+    "confirmed":  { emoji: "✅", label: "Confirmed",  bar: "🟢🟡⚪⚪⚪" },
+    "processing": { emoji: "⚙️", label: "Processing", bar: "🟢🟢🟡⚪⚪" },
+    "shipped":    { emoji: "🚚", label: "Shipped",    bar: "🟢🟢🟢🟡⚪" },
+    "delivered":  { emoji: "📬", label: "Delivered",  bar: "🟢🟢🟢🟢🟢" },
+    "cancelled":  { emoji: "❌", label: "Cancelled",  bar: "🔴🔴🔴🔴🔴" },
   };
 
-  const status = statusConfig[order.status || "pending"] || { emoji: "📋", label: order.status, progress: "░░░░░" };
+  const status = statusConfig[order.status || "pending"] || { emoji: "📋", label: order.status, bar: "⚪⚪⚪⚪⚪" };
   const orderDate = new Date(order.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   const lastUpdate = new Date(order.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
@@ -702,28 +751,29 @@ async function sendOrderStatus(phone: string, orderId: string) {
     const productMap = new Map((products || []).map(p => [p.id, p.name]));
 
     const lines = items.map(i => {
-      const name = productMap.get(i.product_id) || "Product";
-      return `   ▸ ${name} ×${i.quantity} — $${i.price}`;
+      const pname = productMap.get(i.product_id) || "Product";
+      return `  ◦ ${pname} ×${i.quantity} — $${i.price}`;
     }).join("\n");
     itemsBlock = `\n\n🛒 *Items*\n${lines}`;
   }
 
   await sendText(phone,
-    `━━━━━━━━━━━━━━━━━━━━\n` +
-    `📦 *Order Status*\n` +
-    `━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `${THICK}\n` +
+    `📦 *Order Tracking*\n` +
+    `${THICK}\n\n` +
+    `Hey ${name}! Here's your order:\n\n` +
     `📋 *ID:* _${order.id.substring(0, 8)}..._\n` +
-    `📅 *Date:* ${orderDate}\n\n` +
-    `${status.emoji} *Status: ${status.label}*\n` +
-    `[${status.progress}]\n\n` +
+    `📅 *Placed:* ${orderDate}\n\n` +
+    `${status.emoji} *${status.label}*\n` +
+    `${status.bar}\n\n` +
     `💰 *Total:* $${order.total_amount}` +
-    (order.payment_method ? `\n💳 *Payment:* ${order.payment_method}` : "") +
-    (order.shipping_method ? `\n🚚 *Shipping:* ${order.shipping_method}` : "") +
+    (order.payment_method ? `\n💳 *Pay:* ${order.payment_method}` : "") +
+    (order.shipping_method ? `\n🚚 *Ship:* ${order.shipping_method}` : "") +
     itemsBlock +
-    `\n\n🕐 _Updated: ${lastUpdate}_`
+    `\n\n${DOT}\n🕐 _Last updated: ${lastUpdate}_`
   );
 
-  await sendButtons(phone, "What's next?", [
+  await sendButtons(phone, `What's next, ${name}?`, [
     { id: "menu_categories", title: "🛍️ Shop More" },
     { id: "menu_deals", title: "🔥 Deals" },
     { id: "menu_main", title: "🏠 Main Menu" }
@@ -732,21 +782,22 @@ async function sendOrderStatus(phone: string, orderId: string) {
 
 // ===== PRODUCT SEARCH =====
 
-async function sendSearchPrompt(phone: string) {
+async function sendSearchPrompt(phone: string, userName: string | null) {
+  const name = firstName(userName);
   await sendText(phone,
-    `🔍 *Product Search*\n━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `Type *search* followed by a keyword:\n\n` +
-    `   _search iPhone_\n` +
-    `   _search Samsung Galaxy_\n` +
-    `   _search headphones_\n` +
-    `   _search laptop_\n\n` +
-    `💡 _Or just describe what you're\nlooking for — I'm AI-powered!_ 🧞`
+    `🔍 *Product Search*\n${THICK}\n\n` +
+    `${name}, type *search* + keyword:\n\n` +
+    `  _search iPhone_\n` +
+    `  _search Samsung Galaxy_\n` +
+    `  _search headphones_\n\n` +
+    `💡 _Or describe what you want —\nI understand natural language!_ 🧞‍♂️`
   );
 }
 
-async function searchProducts(phone: string, query: string) {
+async function searchProducts(phone: string, query: string, userName: string | null) {
   const supabase = getSupabase();
   const searchTerm = `%${query.trim()}%`;
+  const name = firstName(userName);
 
   const { data: products } = await supabase
     .from("products")
@@ -758,12 +809,12 @@ async function searchProducts(phone: string, query: string) {
 
   if (!products || products.length === 0) {
     await sendText(phone,
-      `🔍 No results for "*${query}*"\n\n` +
-      `💡 *Try:*\n` +
-      `   ▸ Different keyword\n` +
-      `   ▸ Brand name (Samsung, Apple)\n` +
-      `   ▸ Category (Smartphones, Audio)\n\n` +
-      `_Or ask me in natural language!_ 🧞`
+      `🔍 No results for "*${query}*"\n${DOT}\n\n` +
+      `Sorry ${name}! Try:\n` +
+      `  ◦ A different keyword\n` +
+      `  ◦ Brand name (Samsung, Apple)\n` +
+      `  ◦ Category (Smartphones, Audio)\n\n` +
+      `_Or ask me naturally!_ 🧞‍♂️`
     );
     await sendButtons(phone, "Browse instead?", [
       { id: "menu_categories", title: "🛍️ Categories" },
@@ -775,20 +826,21 @@ async function searchProducts(phone: string, query: string) {
 
   const rows = products.map(p => {
     const priceText = p.discount_percentage && p.discount_percentage > 0
-      ? `$${p.price} (-${p.discount_percentage}%)`
+      ? `$${p.price} (${p.discount_percentage}% off)`
       : `$${p.price}`;
     const stock = (p.stock ?? 0) > 0 ? "✅" : "❌";
 
     return {
       id: `prod_${p.id}`,
       title: p.name.substring(0, 24),
-      description: `${stock} ${priceText} • ${p.brand || ""}`.substring(0, 72)
+      description: `${stock} ${priceText} · ${p.brand || ""}`.substring(0, 72)
     };
   });
 
   await sendList(
     phone,
-    `🔍 *Results for "${query}"*\n━━━━━━━━━━━━━━━━━━━━\n\n🎯 Found ${products.length} match${products.length > 1 ? "es" : ""}`,
+    `🔍 *"${query}"*\n${THICK}\n\n` +
+    `Found *${products.length}* result${products.length > 1 ? "s" : ""} for you, ${name}! 🎯`,
     "View Results",
     [{
       title: "Search Results",
@@ -799,7 +851,7 @@ async function searchProducts(phone: string, query: string) {
 
 // ===== CONVERSATION STORAGE =====
 
-async function storeUserMessage(phone: string, content: any, messageId: string | null) {
+async function storeUserMessage(phone: string, content: any, messageId: string | null, userName: string | null) {
   const supabase = getSupabase();
 
   const { data: existingConvo } = await supabase
@@ -812,9 +864,11 @@ async function storeUserMessage(phone: string, content: any, messageId: string |
 
   if (existingConvo) {
     conversationId = existingConvo.id;
+    const updateData: any = { last_message_at: new Date().toISOString(), status: "active" };
+    if (userName) updateData.user_name = userName;
     await supabase
       .from("whatsapp_conversations")
-      .update({ last_message_at: new Date().toISOString(), status: "active" })
+      .update(updateData)
       .eq("id", conversationId);
   } else {
     const { data: newConvo } = await supabase
@@ -822,6 +876,7 @@ async function storeUserMessage(phone: string, content: any, messageId: string |
       .insert({
         phone_number: phone,
         status: "active",
+        user_name: userName || null,
         last_message_at: new Date().toISOString()
       })
       .select("id")
@@ -838,28 +893,45 @@ async function storeUserMessage(phone: string, content: any, messageId: string |
   });
 }
 
+// ===== Get stored user name =====
+
+async function getUserName(phone: string): Promise<string | null> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("whatsapp_conversations")
+    .select("user_name")
+    .eq("phone_number", phone)
+    .single();
+  return data?.user_name || null;
+}
+
 // ===== MESSAGE PROCESSING =====
 
-async function processMessage(phone: string, messageText: string, messageId: string | null) {
-  await storeUserMessage(phone, messageText, messageId);
+async function processMessage(phone: string, messageText: string, messageId: string | null, userName: string | null) {
+  await storeUserMessage(phone, messageText, messageId, userName);
+
+  // If webhook didn't provide name, try to get from stored conversation
+  if (!userName) {
+    userName = await getUserName(phone);
+  }
 
   const text = messageText.toLowerCase().trim();
 
   // Greeting / Menu triggers
   if (["hi", "hello", "hey", "start", "menu", "home", "hie", "main menu", "yo", "sup"].includes(text)) {
-    await sendMainMenu(phone);
+    await sendMainMenu(phone, userName);
     return;
   }
 
   // Help triggers
   if (["help", "support", "contact", "question", "help me", "assist"].includes(text)) {
-    await sendHelp(phone);
+    await sendHelp(phone, userName);
     return;
   }
 
   // Deals triggers
   if (["deals", "offers", "sale", "discount", "discounts", "hot deals", "promo"].includes(text)) {
-    await sendDeals(phone);
+    await sendDeals(phone, userName);
     return;
   }
 
@@ -871,46 +943,46 @@ async function processMessage(phone: string, messageText: string, messageId: str
 
   // Subscribe / Unsubscribe
   if (["subscribe", "notify me", "daily deals", "alerts", "notifications"].includes(text)) {
-    await handleSubscribe(phone);
+    await handleSubscribe(phone, userName);
     return;
   }
   if (["unsubscribe", "stop", "stop notifications", "no deals", "opt out"].includes(text)) {
-    await handleUnsubscribe(phone);
+    await handleUnsubscribe(phone, userName);
     return;
   }
 
   // Order tracking triggers
   if (["track", "order", "tracking", "my order", "order status", "where is my order"].includes(text)) {
-    await sendOrderTrackingPrompt(phone);
+    await sendOrderTrackingPrompt(phone, userName);
     return;
   }
 
   // Track with order ID
   if (text.startsWith("track ") && text.length > 6) {
     const orderId = messageText.trim().substring(6).trim();
-    await sendOrderStatus(phone, orderId);
+    await sendOrderStatus(phone, orderId, userName);
     return;
   }
 
   // Search triggers
   if (["search", "find", "lookup", "look up"].includes(text)) {
-    await sendSearchPrompt(phone);
+    await sendSearchPrompt(phone, userName);
     return;
   }
 
   // Search with query
   if (text.startsWith("search ") && text.length > 7) {
-    await searchProducts(phone, messageText.trim().substring(7).trim());
+    await searchProducts(phone, messageText.trim().substring(7).trim(), userName);
     return;
   }
   if (text.startsWith("find ") && text.length > 5) {
-    await searchProducts(phone, messageText.trim().substring(5).trim());
+    await searchProducts(phone, messageText.trim().substring(5).trim(), userName);
     return;
   }
 
   // More options
   if (["more", "options", "more options", "other"].includes(text)) {
-    await sendMoreOptions(phone);
+    await sendMoreOptions(phone, userName);
     return;
   }
 
@@ -922,10 +994,11 @@ async function processMessage(phone: string, messageText: string, messageId: str
 
   // Buy/purchase intent
   if (["buy", "purchase", "order", "checkout"].includes(text)) {
+    const name = firstName(userName);
     await sendText(phone,
-      `🛒 *Ready to Purchase?*\n\n` +
-      `Browse our products first, then tap\n*Buy Now* on any item to connect\nwith our sales team!\n\n` +
-      `Or contact sales directly: 👇`
+      `🛒 *Ready to Purchase, ${name}?*\n${DOT}\n\n` +
+      `Browse products and tap *Buy Now*\non any item to chat with sales!\n\n` +
+      `Or contact us directly 👇`
     );
     await sendWhatsAppMessage(phone, {
       messaging_product: "whatsapp",
@@ -950,7 +1023,7 @@ async function processMessage(phone: string, messageText: string, messageId: str
   console.log("Using AI for unrecognized message:", text);
 
   const context = await getProductContext();
-  const aiResponse = await getAIResponse(messageText, context);
+  const aiResponse = await getAIResponse(messageText, context, userName);
 
   if (aiResponse) {
     await sendText(phone, aiResponse);
@@ -961,24 +1034,28 @@ async function processMessage(phone: string, messageText: string, messageId: str
     ]);
   } else {
     await sendText(phone, `🤔 I'm not sure about that.\nLet me show you what I can do!`);
-    await sendMainMenu(phone);
+    await sendMainMenu(phone, userName);
   }
 }
 
 // Process interactive replies
-async function processInteractiveReply(phone: string, replyId: string, replyTitle: string) {
-  await storeUserMessage(phone, `[Selected: ${replyTitle}]`, null);
+async function processInteractiveReply(phone: string, replyId: string, replyTitle: string, userName: string | null) {
+  await storeUserMessage(phone, `[Selected: ${replyTitle}]`, null, userName);
+
+  if (!userName) {
+    userName = await getUserName(phone);
+  }
 
   const handlers: Record<string, () => Promise<void>> = {
-    "menu_main": () => sendMainMenu(phone),
+    "menu_main": () => sendMainMenu(phone, userName),
     "menu_categories": () => sendCategories(phone),
-    "menu_deals": () => sendDeals(phone),
-    "menu_help": () => sendHelp(phone),
-    "menu_more": () => sendMoreOptions(phone),
-    "menu_track": () => sendOrderTrackingPrompt(phone),
-    "menu_search": () => sendSearchPrompt(phone),
+    "menu_deals": () => sendDeals(phone, userName),
+    "menu_help": () => sendHelp(phone, userName),
+    "menu_more": () => sendMoreOptions(phone, userName),
+    "menu_track": () => sendOrderTrackingPrompt(phone, userName),
+    "menu_search": () => sendSearchPrompt(phone, userName),
     "menu_website": () => sendWebsiteLink(phone),
-    "menu_subscribe": () => handleSubscribe(phone),
+    "menu_subscribe": () => handleSubscribe(phone, userName),
   };
 
   if (handlers[replyId]) {
@@ -994,15 +1071,15 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
   if (replyId.startsWith("prod_")) {
     const productId = parseInt(replyId.substring(5), 10);
     if (!isNaN(productId)) {
-      await sendProductDetail(phone, productId);
+      await sendProductDetail(phone, productId, userName);
       return;
     }
   }
 
-  await sendMainMenu(phone);
+  await sendMainMenu(phone, userName);
 }
 
-// Extract message data from webhook payload
+// Extract message data from webhook payload (includes contact name)
 function extractMessageData(body: any) {
   try {
     const entry = body.entry?.[0];
@@ -1015,22 +1092,27 @@ function extractMessageData(body: any) {
     const phone = message.from;
     const messageId = message.id;
 
+    // Extract user's profile name from contacts array
+    const contacts = value.contacts;
+    const userName = contacts?.[0]?.profile?.name || null;
+    console.log("User name from WhatsApp:", userName);
+
     if (message.type === "text") {
-      return { phone, text: message.text.body, type: "text", messageId };
+      return { phone, text: message.text.body, type: "text", messageId, userName };
     }
 
     if (message.type === "interactive") {
       const interactive = message.interactive;
       if (interactive.type === "button_reply") {
-        return { phone, replyId: interactive.button_reply.id, replyTitle: interactive.button_reply.title, type: "interactive", messageId };
+        return { phone, replyId: interactive.button_reply.id, replyTitle: interactive.button_reply.title, type: "interactive", messageId, userName };
       }
       if (interactive.type === "list_reply") {
-        return { phone, replyId: interactive.list_reply.id, replyTitle: interactive.list_reply.title, type: "interactive", messageId };
+        return { phone, replyId: interactive.list_reply.id, replyTitle: interactive.list_reply.title, type: "interactive", messageId, userName };
       }
     }
 
     if (message.from) {
-      return { phone: message.from, text: "[unsupported message type]", type: "text", messageId };
+      return { phone: message.from, text: "[unsupported message type]", type: "text", messageId, userName };
     }
 
     return null;
@@ -1085,9 +1167,9 @@ serve(async (req) => {
       (async () => {
         try {
           if (msgData.type === "interactive") {
-            await processInteractiveReply(msgData.phone, msgData.replyId!, msgData.replyTitle!);
+            await processInteractiveReply(msgData.phone, msgData.replyId!, msgData.replyTitle!, msgData.userName);
           } else {
-            await processMessage(msgData.phone, msgData.text!, msgData.messageId);
+            await processMessage(msgData.phone, msgData.text!, msgData.messageId, msgData.userName);
           }
           console.log("✅ Done for", msgData.phone);
         } catch (error) {
