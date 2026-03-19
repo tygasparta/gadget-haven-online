@@ -14,10 +14,6 @@ const STORE_TAGLINE = "Your Smart Shopping Assistant 🧞‍♂️";
 const SALES_WHATSAPP = "263776337910";
 const WEBSITE_URL = "https://gadget-haven-online.lovable.app";
 
-// ── Design tokens ──
-const LINE = `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌`;
-const THICK = `══════════════════════`;
-const DOT = `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈`;
 
 function getSupabase() {
   return createClient(
