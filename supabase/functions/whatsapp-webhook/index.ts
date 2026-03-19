@@ -639,9 +639,7 @@ async function sendDeals(phone: string, userName: string | null) {
 async function sendHelp(phone: string, userName: string | null) {
   const name = firstName(userName);
   await sendText(phone,
-    ` +
-    `💬 *Help & Support*\n` +
-    `\n` +
+    `💬 *Help & Support*\n\n` +
     `Hi ${name}! Here's everything I can do:\n\n` +
     `🔍 *Search*\n` +
     `    _search Samsung Galaxy_\n\n` +
@@ -651,10 +649,8 @@ async function sendHelp(phone: string, userName: string | null) {
     `🔥 *Deals* — Type _deals_\n` +
     `🔔 *Subscribe* — Type _subscribe_\n` +
     `🔕 *Unsubscribe* — Type _unsubscribe_\n\n` +
-    `` +
     `📞 *Sales:* wa.me/${SALES_WHATSAPP}\n` +
     `🌐 *Web:* ${WEBSITE_URL}\n` +
-    `` +
     `🔄 14-day returns · 🚚 Delivery\n` +
     `💳 EcoCash · PayPal · Bank Transfer\n\n` +
     `💡 _Or just chat — I'm AI-powered!_ 🧞‍♂️`
