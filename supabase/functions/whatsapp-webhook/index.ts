@@ -576,11 +576,6 @@ async function sendProductDetail(phone: string, productId: number, userName: str
     await sendText(phone, message);
   }
 
-  // Buy Now CTA if in stock
-  if (inStock) {
-    await sendBuyButton(phone, product.name, product.price);
-  }
-
   const name = firstName(userName);
   await sendButtons(phone,
     inStock
@@ -595,6 +590,11 @@ async function sendProductDetail(phone: string, productId: number, userName: str
 
   // Send product recommendations from same category
   await sendProductRecommendations(phone, productId, product.category, userName);
+
+  // Buy Now CTA last if in stock
+  if (inStock) {
+    await sendBuyButton(phone, product.name, product.price);
+  }
 }
 
 async function sendDeals(phone: string, userName: string | null) {
