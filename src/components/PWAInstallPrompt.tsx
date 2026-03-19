@@ -60,7 +60,7 @@ const PWAInstallPrompt = () => {
   };
 
   // Don't show if already installed or user dismissed
-  if (isInstalled || !showInstallPrompt || localStorage.getItem('pwa-install-dismissed')) {
+  if (isMobile || isInstalled || !showInstallPrompt || localStorage.getItem('pwa-install-dismissed')) {
     return null;
   }
 
