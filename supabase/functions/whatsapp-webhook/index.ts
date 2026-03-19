@@ -266,8 +266,37 @@ async function sendProductDetail(phone: string, productId: number) {
     await sendText(phone, message);
   }
 
+  // Send Buy Now CTA button linking to sales WhatsApp
+  if ((product.stock ?? 0) > 0) {
+    const buyMessage = encodeURIComponent(
+      `Hi GadgetGenie! 👋\n\nI'm interested in buying:\n\n` +
+      `📱 *${product.name}*\n💰 Price: $${product.price}\n\n` +
+      `Please help me complete my purchase!`
+    );
+    const buyUrl = `https://wa.me/263776337910?text=${buyMessage}`;
+
+    await sendWhatsAppMessage(phone, {
+      messaging_product: "whatsapp",
+      to: phone,
+      type: "interactive",
+      interactive: {
+        type: "cta_url",
+        body: {
+          text: "🛒 Ready to buy? Tap the button below to chat with our sales team and complete your purchase!"
+        },
+        action: {
+          name: "cta_url",
+          parameters: {
+            display_text: "Buy Now 🛒",
+            url: buyUrl
+          }
+        }
+      }
+    });
+  }
+
   await sendButtons(phone,
-    "What would you like to do?",
+    "What else would you like to do?",
     [
       { id: "menu_categories", title: "📱 Browse More" },
       { id: "menu_search", title: "🔍 Search" },
