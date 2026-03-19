@@ -742,9 +742,7 @@ async function sendOrderStatus(phone: string, orderId: string, userName: string 
   }
 
   await sendText(phone,
-    ` +
-    `📦 *Order Tracking*\n` +
-    `\n` +
+    `📦 *Order Tracking*\n\n` +
     `Hey ${name}! Here's your order:\n\n` +
     `📋 *ID:* _${order.id.substring(0, 8)}..._\n` +
     `📅 *Placed:* ${orderDate}\n\n` +
