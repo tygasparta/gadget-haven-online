@@ -33,65 +33,31 @@ const ConversationsList: React.FC<ConversationsListProps> = ({ onRefresh }) => {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('whatsapp_conversations')
-        .select('*')
-        .order('last_message_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching conversations:', error);
-        toast.error('Failed to fetch conversations');
-        return;
-      }
-
+      const { data, error } = await supabase.from('whatsapp_conversations').select('*').order('last_message_at', { ascending: false });
+      if (error) { toast.error('Failed to fetch conversations'); return; }
       setConversations(data || []);
     } catch (error) {
-      console.error('Error:', error);
       toast.error('An error occurred while fetching conversations');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
+  useEffect(() => { fetchConversations(); }, []);
 
   const filteredConversations = conversations.filter(conv =>
-    conv.phone_number.includes(searchTerm) ||
-    (conv.user_name && conv.user_name.toLowerCase().includes(searchTerm.toLowerCase()))
+    conv.phone_number.includes(searchTerm) || (conv.user_name && conv.user_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const updateConversationStatus = async (conversationId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('whatsapp_conversations')
-        .update({ status: newStatus })
-        .eq('id', conversationId);
-
-      if (error) {
-        toast.error('Failed to update conversation status');
-        return;
-      }
-
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === conversationId 
-            ? { ...conv, status: newStatus }
-            : conv
-        )
-      );
-
+      const { error } = await supabase.from('whatsapp_conversations').update({ status: newStatus }).eq('id', conversationId);
+      if (error) { toast.error('Failed to update conversation status'); return; }
+      setConversations(prev => prev.map(conv => conv.id === conversationId ? { ...conv, status: newStatus } : conv));
       toast.success(`Conversation ${newStatus}`);
       onRefresh?.();
-    } catch (error) {
-      console.error('Error updating conversation:', error);
-      toast.error('An error occurred');
-    }
+    } catch (error) { toast.error('An error occurred'); }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case 'active': return 'default';
       case 'resolved': return 'secondary';
@@ -100,96 +66,60 @@ const ConversationsList: React.FC<ConversationsListProps> = ({ onRefresh }) => {
     }
   };
 
-  const handleViewChat = (conversation: Conversation) => {
-    setSelectedConversation(conversation);
-    setShowMessageDialog(true);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-        <span>Loading conversations...</span>
+        <RefreshCw className="w-6 h-6 animate-spin mr-2 text-muted-foreground" />
+        <span className="text-muted-foreground">Loading conversations...</span>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Search and Refresh */}
       <div className="flex gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search by phone number or name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input placeholder="Search by phone number or name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
         </div>
         <Button onClick={fetchConversations} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
+          <RefreshCw className="w-4 h-4 mr-2" />Refresh
         </Button>
       </div>
 
-      {/* Conversations List */}
-      <Card>
+      <Card className="border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <MessageSquare className="w-5 h-5" />
             Conversations ({filteredConversations.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {filteredConversations.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No conversations found</p>
             </div>
           ) : (
             <div className="space-y-3">
               {filteredConversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                >
+                <div key={conversation.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium">
-                        {conversation.user_name || conversation.phone_number}
-                      </span>
-                      <Badge variant={getStatusBadgeVariant(conversation.status)}>
-                        {conversation.status}
-                      </Badge>
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-foreground">{conversation.user_name || conversation.phone_number}</span>
+                      <Badge variant={getStatusBadgeVariant(conversation.status)}>{conversation.status}</Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-3 h-3" />
-                      <span>
-                        Last message: {new Date(conversation.last_message_at).toLocaleString()}
-                      </span>
+                      <span>Last message: {new Date(conversation.last_message_at).toLocaleString()}</span>
                     </div>
-                    <div className="text-sm text-gray-400 mt-1">
-                      {conversation.phone_number}
-                    </div>
+                    <div className="text-sm text-muted-foreground mt-1">{conversation.phone_number}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleViewChat(conversation)}
-                    >
-                      View Chat
-                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => { setSelectedConversation(conversation); setShowMessageDialog(true); }}>View Chat</Button>
                     {conversation.status === 'active' && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => updateConversationStatus(conversation.id, 'resolved')}
-                      >
-                        Resolve
-                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => updateConversationStatus(conversation.id, 'resolved')}>Resolve</Button>
                     )}
                   </div>
                 </div>
@@ -199,22 +129,13 @@ const ConversationsList: React.FC<ConversationsListProps> = ({ onRefresh }) => {
         </CardContent>
       </Card>
 
-      {/* Message Thread Dialog */}
       <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>
-              {selectedConversation?.user_name || selectedConversation?.phone_number}
-            </DialogTitle>
+            <DialogTitle className="text-foreground">{selectedConversation?.user_name || selectedConversation?.phone_number}</DialogTitle>
           </DialogHeader>
           {selectedConversation && (
-            <MessageThread
-              conversation={selectedConversation}
-              onConversationUpdate={() => {
-                fetchConversations();
-                onRefresh?.();
-              }}
-            />
+            <MessageThread conversation={selectedConversation} onConversationUpdate={() => { fetchConversations(); onRefresh?.(); }} />
           )}
         </DialogContent>
       </Dialog>
