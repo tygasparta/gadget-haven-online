@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.ecocash-webhook]
 verify_jwt = false
+
+[functions.whatsapp-daily-deals]
+verify_jwt = false
