@@ -158,9 +158,9 @@ const ProductDetail = () => {
     return `https://gadgetgenie.org/product/${id}`;
   };
 
-  // For platforms that support og-meta (Facebook, WhatsApp preview cards)
+  // Short share URL via Cloudflare Worker custom domain
   const getOgMetaUrl = () => {
-    return `https://ktpxqjyfguxckdzlqwai.supabase.co/functions/v1/og-meta?id=${id}`;
+    return `https://share.gadgetgenie.org/${id}`;
   };
 
   const handleShare = async (platform: string) => {
