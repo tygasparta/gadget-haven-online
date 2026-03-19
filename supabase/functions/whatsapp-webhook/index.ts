@@ -384,12 +384,9 @@ async function sendMainMenu(phone: string, userName: string | null) {
   const greeting = timeGreeting();
 
   const header = 
-    ` +
-    `      🧞‍♂️  *${STORE_NAME}*\n` +
-    `\n` +
+    `🧞‍♂️ *${STORE_NAME}*\n\n` +
     `${greeting}, *${name}*! 👋\n\n` +
-    `I'm your personal shopping\nassistant. How can I help today?\n\n` +
-    `` +
+    `I'm your personal shopping assistant. How can I help today?\n\n` +
     `💡 _Tip: Ask me anything naturally!_\n` +
     `    _"Do you have iPhones?"_\n` +
     `    _"What's on sale today?"_`;
