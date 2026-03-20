@@ -76,6 +76,7 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <PWAInstallPrompt />
+                <WhatsAppButton />
                 <CartSidebar />
                 <Suspense fallback={<div></div>}>
                   <Routes>
