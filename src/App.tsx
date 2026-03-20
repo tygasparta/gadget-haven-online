@@ -8,6 +8,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "next-themes";
 
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import MobileNavigation from "@/components/MobileNavigation";
 import CartSidebar from "@/components/CartSidebar";
 import { usePWA } from "@/hooks/usePWA";
@@ -75,6 +76,7 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <PWAInstallPrompt />
+                <WhatsAppButton />
                 <CartSidebar />
                 <Suspense fallback={<div></div>}>
                   <Routes>
