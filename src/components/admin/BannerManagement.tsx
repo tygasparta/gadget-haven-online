@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Image, Plus, Trash2, Save, Upload, GripVertical, Eye, Video } from 'lucide-react';
+import AIBannerGenerator from './AIBannerGenerator';
 
 export interface BannerSlide {
   id: string;
@@ -218,6 +219,21 @@ const BannerManagement: React.FC = () => {
             </div>
           ))}
         </div>
+
+        <AIBannerGenerator
+          onImageGenerated={(imageUrl) => {
+            setSlides([
+              ...slides,
+              {
+                id: Date.now().toString(),
+                image: imageUrl,
+                path: '/products',
+                alt: 'AI Generated Banner',
+                type: 'image',
+              },
+            ]);
+          }}
+        />
 
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => addSlide('image')} className="flex-1 border-dashed">
