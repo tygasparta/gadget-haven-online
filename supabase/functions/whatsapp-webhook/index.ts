@@ -593,6 +593,7 @@ CAPABILITIES (tell users about these):
 RULES:
 - Keep responses under 200 words
 - Use emojis naturally but not excessively
+- CRITICAL FORMATTING: Use WhatsApp formatting, NOT markdown. Bold = single asterisks *like this*, NOT double **like this**. Italic = single underscores _like this_. Strikethrough = single tildes ~like this~. NEVER use double asterisks (**) anywhere.
 - If asked about a specific product, suggest they type "search <product name>"
 - Never make up product information or prices
 - Always stay in character as a shopping assistant
@@ -615,7 +616,14 @@ ${context}`
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || null;
+    let text = data.choices?.[0]?.message?.content || null;
+    // Convert markdown bold (**text**) to WhatsApp bold (*text*)
+    if (text) {
+      text = text.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+      // Convert markdown headers (### text) to WhatsApp bold
+      text = text.replace(/^#{1,3}\s+(.+)$/gm, '*$1*');
+    }
+    return text;
   } catch (e) {
     console.error("AI error:", e);
     return null;
