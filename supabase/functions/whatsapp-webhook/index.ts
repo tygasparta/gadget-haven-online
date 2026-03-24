@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-console.log("GadgetGenie WhatsApp Bot v4.0 starting...");
+console.log("GadgetGenie WhatsApp Bot v5.0 starting...");
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -129,30 +129,398 @@ async function sendList(phone: string, bodyText: string, buttonLabel: string, se
   });
 }
 
-async function sendBuyButton(phone: string, productName: string, price: number) {
-  const buyMessage = encodeURIComponent(
-    `Hi ${STORE_NAME}! 👋\n\nI'd like to purchase:\n📱 ${productName}\n💰 $${price}\n\nPlease assist me!`
-  );
-  const buyUrl = `https://wa.me/${SALES_WHATSAPP}?text=${buyMessage}`;
+// ===== CART MANAGEMENT =====
 
-  await sendWhatsAppMessage(phone, {
-    messaging_product: "whatsapp",
-    to: phone,
-    type: "interactive",
-    interactive: {
-      type: "cta_url",
-      body: {
-        text: `🛒 *Ready to purchase?*\nTap below to chat with our sales team and complete your order instantly!`
+async function getCartItems(phone: string) {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("whatsapp_cart_items")
+    .select(`
+      id,
+      product_id,
+      quantity,
+      products:product_id (
+        id, name, price, stock, image
+      )
+    `)
+    .eq("phone_number", phone);
+  return data || [];
+}
+
+async function addToCart(phone: string, productId: number, userName: string | null) {
+  const supabase = getSupabase();
+  const name = firstName(userName);
+
+  // Check product exists and in stock
+  const { data: product } = await supabase
+    .from("products")
+    .select("id, name, price, stock")
+    .eq("id", productId)
+    .is("deleted_at", null)
+    .single();
+
+  if (!product) {
+    await sendText(phone, `😔 Sorry ${name}, this product is no longer available.`);
+    return;
+  }
+
+  if ((product.stock ?? 0) <= 0) {
+    await sendText(phone, `❌ Sorry ${name}, *${product.name}* is out of stock.`);
+    return;
+  }
+
+  // Upsert cart item
+  const { data: existing } = await supabase
+    .from("whatsapp_cart_items")
+    .select("id, quantity")
+    .eq("phone_number", phone)
+    .eq("product_id", productId)
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("whatsapp_cart_items")
+      .update({ quantity: existing.quantity + 1, updated_at: new Date().toISOString() })
+      .eq("id", existing.id);
+  } else {
+    await supabase
+      .from("whatsapp_cart_items")
+      .insert({ phone_number: phone, product_id: productId, quantity: 1 });
+  }
+
+  const cartItems = await getCartItems(phone);
+  const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const totalPrice = cartItems.reduce((sum: number, item: any) => sum + (item.products.price * item.quantity), 0);
+
+  await sendText(phone,
+    `✅ *Added to Cart!*\n\n` +
+    `📱 ${product.name}\n` +
+    `💰 $${product.price}\n\n` +
+    `🛒 *Cart:* ${totalItems} item${totalItems !== 1 ? 's' : ''} • *$${totalPrice.toFixed(2)}*`
+  );
+
+  await sendButtons(phone, `What next, ${name}?`, [
+    { id: "cart_view", title: "🛒 View Cart" },
+    { id: "cart_checkout", title: "💳 Checkout" },
+    { id: "menu_categories", title: "🛍️ Shop More" }
+  ]);
+}
+
+async function sendCartView(phone: string, userName: string | null) {
+  const name = firstName(userName);
+  const cartItems = await getCartItems(phone);
+
+  if (cartItems.length === 0) {
+    await sendText(phone,
+      `🛒 *Your Cart is Empty*\n\n` +
+      `Hey ${name}, you haven't added anything yet.\n` +
+      `Browse our products and tap *🛒 Add to Cart*!`
+    );
+    await sendButtons(phone, "Start shopping?", [
+      { id: "menu_categories", title: "🛍️ Shop Now" },
+      { id: "menu_deals", title: "🔥 Deals" },
+      { id: "menu_main", title: "🏠 Menu" }
+    ]);
+    return;
+  }
+
+  const lines = cartItems.map((item: any, i: number) => {
+    const p = item.products;
+    return `${i + 1}. *${p.name}*\n   💰 $${p.price} × ${item.quantity} = *$${(p.price * item.quantity).toFixed(2)}*`;
+  }).join("\n\n");
+
+  const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.products.price * item.quantity), 0);
+  const tax = subtotal * 0.02;
+  const total = subtotal + tax;
+
+  await sendText(phone,
+    `🛒 *Your Cart*\n\n` +
+    `${lines}\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📦 *${totalItems} item${totalItems !== 1 ? 's' : ''}*\n` +
+    `💵 Subtotal: $${subtotal.toFixed(2)}\n` +
+    `📋 Tax (2%): $${tax.toFixed(2)}\n` +
+    `🚚 Shipping: *FREE* (collect at shop)\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `💰 *Total: $${total.toFixed(2)}*`
+  );
+
+  await sendButtons(phone, `Ready to pay, ${name}?`, [
+    { id: "cart_checkout", title: "💳 Pay Now" },
+    { id: "cart_clear", title: "🗑️ Clear Cart" },
+    { id: "menu_categories", title: "🛍️ Shop More" }
+  ]);
+}
+
+async function clearCart(phone: string, userName: string | null) {
+  const supabase = getSupabase();
+  const name = firstName(userName);
+
+  await supabase
+    .from("whatsapp_cart_items")
+    .delete()
+    .eq("phone_number", phone);
+
+  await sendText(phone,
+    `🗑️ *Cart Cleared*\n\n` +
+    `Your cart is now empty, ${name}.\n` +
+    `Ready to start fresh? 🛍️`
+  );
+
+  await sendButtons(phone, "What's next?", [
+    { id: "menu_categories", title: "🛍️ Shop Now" },
+    { id: "menu_deals", title: "🔥 Deals" },
+    { id: "menu_main", title: "🏠 Menu" }
+  ]);
+}
+
+async function removeFromCart(phone: string, productId: number, userName: string | null) {
+  const supabase = getSupabase();
+  const name = firstName(userName);
+
+  const { data: item } = await supabase
+    .from("whatsapp_cart_items")
+    .select("id, products:product_id (name)")
+    .eq("phone_number", phone)
+    .eq("product_id", productId)
+    .single();
+
+  if (!item) {
+    await sendText(phone, `${name}, this item isn't in your cart.`);
+    return;
+  }
+
+  await supabase
+    .from("whatsapp_cart_items")
+    .delete()
+    .eq("id", item.id);
+
+  await sendText(phone,
+    `✅ Removed *${(item as any).products?.name || 'item'}* from your cart.`
+  );
+
+  await sendCartView(phone, userName);
+}
+
+// ===== CHECKOUT & PAYMENT =====
+
+async function handleCheckout(phone: string, userName: string | null) {
+  const name = firstName(userName);
+  const cartItems = await getCartItems(phone);
+
+  if (cartItems.length === 0) {
+    await sendText(phone,
+      `🛒 Your cart is empty, ${name}!\n\nBrowse products first and add items to your cart.`
+    );
+    await sendButtons(phone, "Start shopping?", [
+      { id: "menu_categories", title: "🛍️ Shop Now" },
+      { id: "menu_deals", title: "🔥 Deals" },
+      { id: "menu_main", title: "🏠 Menu" }
+    ]);
+    return;
+  }
+
+  // Validate stock
+  const outOfStock: string[] = [];
+  for (const item of cartItems) {
+    const p = item.products as any;
+    if ((p.stock ?? 0) < item.quantity) {
+      outOfStock.push(p.name);
+    }
+  }
+
+  if (outOfStock.length > 0) {
+    await sendText(phone,
+      `⚠️ *Stock Issue*\n\n` +
+      `Sorry ${name}, these items are no longer available in the quantity you need:\n\n` +
+      outOfStock.map(n => `  ❌ ${n}`).join("\n") +
+      `\n\nPlease update your cart and try again.`
+    );
+    return;
+  }
+
+  const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.products.price * item.quantity), 0);
+  const tax = subtotal * 0.02;
+  const total = subtotal + tax;
+  const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+
+  // Show order summary and confirm
+  const itemLines = cartItems.map((item: any) => {
+    const p = item.products;
+    return `  📱 ${p.name} ×${item.quantity} — $${(p.price * item.quantity).toFixed(2)}`;
+  }).join("\n");
+
+  await sendText(phone,
+    `📋 *Order Summary*\n\n` +
+    `${itemLines}\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📦 ${totalItems} item${totalItems !== 1 ? 's' : ''}\n` +
+    `💵 Subtotal: $${subtotal.toFixed(2)}\n` +
+    `📋 Tax (2%): $${tax.toFixed(2)}\n` +
+    `🚚 Collection: *FREE*\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `💰 *Total: $${total.toFixed(2)}*\n\n` +
+    `📍 *Collect at shop* after payment\n` +
+    `💳 Payment via *PesePay*`
+  );
+
+  await sendButtons(phone, `Confirm your order, ${name}?`, [
+    { id: "cart_confirm_pay", title: "✅ Pay Now" },
+    { id: "cart_view", title: "🛒 Edit Cart" },
+    { id: "menu_main", title: "❌ Cancel" }
+  ]);
+}
+
+async function processPayment(phone: string, userName: string | null) {
+  const name = firstName(userName);
+  const supabase = getSupabase();
+  const cartItems = await getCartItems(phone);
+
+  if (cartItems.length === 0) {
+    await sendText(phone, `🛒 Your cart is empty, ${name}! Add items first.`);
+    return;
+  }
+
+  await sendText(phone,
+    `⏳ *Processing your order, ${name}...*\n\n` +
+    `Setting up your payment link.\nPlease wait a moment! 🔄`
+  );
+
+  const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.products.price * item.quantity), 0);
+  const tax = subtotal * 0.02;
+  const total = subtotal + tax;
+  const totalItems = cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+
+  try {
+    // Create order in database
+    const itemNames = cartItems.map((item: any) => item.products.name).join(", ");
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        total_amount: total,
+        status: "pending",
+        payment_method: "pesepay",
+        shipping_method: "collection",
+        source: "whatsapp",
+        customer_phone: phone,
+        billing_address: {
+          firstName: userName || "WhatsApp Customer",
+          lastName: "",
+          address: "Shop Collection",
+          city: "Shop Location",
+          zipCode: "00000",
+          country: "Zimbabwe"
+        }
+      })
+      .select()
+      .single();
+
+    if (orderError || !order) {
+      throw new Error(`Failed to create order: ${orderError?.message}`);
+    }
+
+    console.log("WhatsApp order created:", order.id);
+
+    // Create order items
+    const orderItems = cartItems.map((item: any) => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.products.price
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error("Error creating order items:", itemsError);
+    }
+
+    // Initiate PesePay payment via the edge function
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    const paymentResponse = await fetch(`${supabaseUrl}/functions/v1/pesepay-initiate`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${serviceKey}`,
+        "Content-Type": "application/json"
       },
-      action: {
-        name: "cta_url",
-        parameters: {
-          display_text: "💳 Buy Now — $" + price,
-          url: buyUrl
+      body: JSON.stringify({
+        amount: total,
+        currencyCode: "USD",
+        reasonForPayment: `GadgetGenie WhatsApp Order #${order.id.substring(0, 8)} - ${totalItems} item(s)`,
+        orderDbId: order.id
+      })
+    });
+
+    const paymentData = await paymentResponse.json();
+
+    if (!paymentData.success || !paymentData.redirectUrl) {
+      throw new Error(paymentData.error || "Failed to create payment link");
+    }
+
+    console.log("PesePay payment link generated:", paymentData.referenceNumber);
+
+    // Store the phone number with the payment reference for later notification
+    // We use the order's customer_phone field for this
+
+    // Clear cart after successful order creation
+    await supabase
+      .from("whatsapp_cart_items")
+      .delete()
+      .eq("phone_number", phone);
+
+    // Send payment link via WhatsApp
+    await sendText(phone,
+      `✅ *Order Created!*\n\n` +
+      `📋 Order ID: *#${order.id.substring(0, 8)}*\n` +
+      `💰 Total: *$${total.toFixed(2)}*\n` +
+      `📦 ${totalItems} item${totalItems !== 1 ? 's' : ''}\n\n` +
+      `⏰ *Complete payment within 30 minutes*\n` +
+      `_Your order will be cancelled if\npayment is not received._`
+    );
+
+    // Send the payment CTA button
+    await sendWhatsAppMessage(phone, {
+      messaging_product: "whatsapp",
+      to: phone,
+      type: "interactive",
+      interactive: {
+        type: "cta_url",
+        body: {
+          text: `💳 *Tap below to pay securely via PesePay*\n\nAccepts EcoCash, Visa, Mastercard & more.`
+        },
+        action: {
+          name: "cta_url",
+          parameters: {
+            display_text: `💳 Pay $${total.toFixed(2)} Now`,
+            url: paymentData.redirectUrl
+          }
         }
       }
-    }
-  });
+    });
+
+    await sendText(phone,
+      `💡 *After payment:*\n` +
+      `✅ You'll receive a confirmation here\n` +
+      `📍 Collect your order at our shop\n` +
+      `📦 Track anytime: _track ${order.id.substring(0, 8)}_\n\n` +
+      `Need help? Type *help* 💬`
+    );
+
+  } catch (error) {
+    console.error("WhatsApp checkout error:", error);
+    await sendText(phone,
+      `❌ *Payment Error*\n\n` +
+      `Sorry ${name}, something went wrong.\n` +
+      `Please try again or contact support.\n\n` +
+      `📞 wa.me/${SALES_WHATSAPP}`
+    );
+  }
 }
 
 // ===== AI ASSISTANT =====
@@ -182,8 +550,8 @@ The customer's name is: ${userName || "unknown"}.${userName ? ` Address them as 
 STORE INFO:
 - Name: ${STORE_NAME}
 - Website: ${WEBSITE_URL}
-- Payment: EcoCash, PayPal, bank transfers
-- Shipping: Collection & delivery available
+- Payment: PesePay (EcoCash, Visa, Mastercard)
+- Shipping: Free collection at shop
 - Returns: 14-day return policy
 - Location: Zimbabwe
 
@@ -192,6 +560,7 @@ CAPABILITIES (tell users about these):
 - Search products (type "search <product name>")
 - View hot deals (type "deals")
 - Track orders (type "track <order-id>")
+- 🛒 Add to cart & pay via WhatsApp (type "cart")
 - Subscribe to daily deals (type "subscribe")
 - Get help (type "help")
 
@@ -203,6 +572,7 @@ RULES:
 - Always stay in character as a shopping assistant
 - Be warm and professional
 - If unrelated to shopping, politely redirect
+- Users can now buy directly on WhatsApp — mention this when relevant
 
 PRODUCT CONTEXT:
 ${context}`
@@ -407,6 +777,7 @@ async function sendMoreOptions(phone: string, userName: string | null) {
       title: "Services",
       rows: [
         { id: "menu_search", title: "🔍 Search Products", description: "Find products by name or keyword" },
+        { id: "cart_view", title: "🛒 My Cart", description: "View your shopping cart" },
         { id: "menu_track", title: "📦 Track My Order", description: "Check your order status" },
         { id: "menu_subscribe", title: "🔔 Daily Deals", description: "Get daily deal alerts on WhatsApp" },
         { id: "menu_help", title: "💬 Help & Support", description: "Get assistance from our team" },
@@ -577,24 +948,29 @@ async function sendProductDetail(phone: string, productId: number, userName: str
   }
 
   const name = firstName(userName);
-  await sendButtons(phone,
-    inStock
-      ? `Keep shopping, ${name}? 🛍️`
-      : `😔 Out of stock. Browse alternatives, ${name}?`,
-    [
-      { id: "menu_categories", title: "🛍️ Shop More" },
-      { id: "menu_search", title: "🔍 Search" },
-      { id: "menu_main", title: "🏠 Main Menu" }
-    ]
-  );
+  
+  if (inStock) {
+    await sendButtons(phone,
+      `What would you like to do, ${name}?`,
+      [
+        { id: `addcart_${product.id}`, title: "🛒 Add to Cart" },
+        { id: "menu_categories", title: "🛍️ Shop More" },
+        { id: "cart_view", title: "🛒 View Cart" }
+      ]
+    );
+  } else {
+    await sendButtons(phone,
+      `😔 Out of stock. Browse alternatives, ${name}?`,
+      [
+        { id: "menu_categories", title: "🛍️ Shop More" },
+        { id: "menu_search", title: "🔍 Search" },
+        { id: "menu_main", title: "🏠 Main Menu" }
+      ]
+    );
+  }
 
   // Send product recommendations from same category
   await sendProductRecommendations(phone, productId, product.category, userName);
-
-  // Buy Now CTA last if in stock
-  if (inStock) {
-    await sendBuyButton(phone, product.name, product.price);
-  }
 }
 
 async function sendDeals(phone: string, userName: string | null) {
@@ -643,6 +1019,9 @@ async function sendHelp(phone: string, userName: string | null) {
     `Hi ${name}! Here's everything I can do:\n\n` +
     `🔍 *Search*\n` +
     `    _search Samsung Galaxy_\n\n` +
+    `🛒 *Cart*\n` +
+    `    _cart_ — View your cart\n` +
+    `    _checkout_ — Pay & order\n\n` +
     `📦 *Track Order*\n` +
     `    _track abc12345_\n\n` +
     `🛍️ *Browse* — Type _browse_\n` +
@@ -651,8 +1030,8 @@ async function sendHelp(phone: string, userName: string | null) {
     `🔕 *Unsubscribe* — Type _unsubscribe_\n\n` +
     `📞 *Sales:* wa.me/${SALES_WHATSAPP}\n` +
     `🌐 *Web:* ${WEBSITE_URL}\n` +
-    `🔄 14-day returns · 🚚 Delivery\n` +
-    `💳 EcoCash · PayPal · Bank Transfer\n\n` +
+    `🔄 14-day returns · 🚚 Free collection\n` +
+    `💳 PesePay (EcoCash, Visa, Mastercard)\n\n` +
     `💡 _Or just chat — I'm AI-powered!_ 🧞‍♂️`
   );
 }
@@ -892,7 +1271,6 @@ async function getUserName(phone: string): Promise<string | null> {
 async function processMessage(phone: string, messageText: string, messageId: string | null, userName: string | null) {
   await storeUserMessage(phone, messageText, messageId, userName);
 
-  // If webhook didn't provide name, try to get from stored conversation
   if (!userName) {
     userName = await getUserName(phone);
   }
@@ -920,6 +1298,24 @@ async function processMessage(phone: string, messageText: string, messageId: str
   // Browse triggers
   if (["browse", "products", "shop", "categories", "category", "catalog", "catalogue", "shop now"].includes(text)) {
     await sendCategories(phone);
+    return;
+  }
+
+  // Cart triggers
+  if (["cart", "my cart", "view cart", "shopping cart", "basket"].includes(text)) {
+    await sendCartView(phone, userName);
+    return;
+  }
+
+  // Clear cart
+  if (["clear cart", "empty cart", "remove all"].includes(text)) {
+    await clearCart(phone, userName);
+    return;
+  }
+
+  // Checkout triggers
+  if (["checkout", "pay", "pay now", "place order", "order now", "buy", "purchase"].includes(text)) {
+    await handleCheckout(phone, userName);
     return;
   }
 
@@ -974,33 +1370,6 @@ async function processMessage(phone: string, messageText: string, messageId: str
     return;
   }
 
-  // Buy/purchase intent
-  if (["buy", "purchase", "order", "checkout"].includes(text)) {
-    const name = firstName(userName);
-    await sendText(phone,
-      `🛒 *Ready to Purchase, ${name}?*\n\n` +
-      `Browse products and tap *Buy Now*\non any item to chat with sales!\n\n` +
-      `Or contact us directly 👇`
-    );
-    await sendWhatsAppMessage(phone, {
-      messaging_product: "whatsapp",
-      to: phone,
-      type: "interactive",
-      interactive: {
-        type: "cta_url",
-        body: { text: `💬 Chat with our sales team` },
-        action: {
-          name: "cta_url",
-          parameters: {
-            display_text: "💬 Contact Sales",
-            url: `https://wa.me/${SALES_WHATSAPP}`
-          }
-        }
-      }
-    });
-    return;
-  }
-
   // ===== AI FALLBACK =====
   console.log("Using AI for unrecognized message:", text);
 
@@ -1038,11 +1407,24 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
     "menu_search": () => sendSearchPrompt(phone, userName),
     "menu_website": () => sendWebsiteLink(phone),
     "menu_subscribe": () => handleSubscribe(phone, userName),
+    "cart_view": () => sendCartView(phone, userName),
+    "cart_checkout": () => handleCheckout(phone, userName),
+    "cart_confirm_pay": () => processPayment(phone, userName),
+    "cart_clear": () => clearCart(phone, userName),
   };
 
   if (handlers[replyId]) {
     await handlers[replyId]();
     return;
+  }
+
+  // Add to cart from product detail
+  if (replyId.startsWith("addcart_")) {
+    const productId = parseInt(replyId.substring(8), 10);
+    if (!isNaN(productId)) {
+      await addToCart(phone, productId, userName);
+      return;
+    }
   }
 
   if (replyId.startsWith("cat_")) {

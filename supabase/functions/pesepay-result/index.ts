@@ -32,8 +32,102 @@ async function decryptPayload(encryptedBase64: string, encryptionKey: string): P
   );
 
   const decoded = new TextDecoder().decode(decrypted);
-  // Web Crypto API automatically handles PKCS7 padding removal
   return JSON.parse(decoded);
+}
+
+// Send WhatsApp message helper for payment confirmations
+async function sendWhatsAppMessage(phone: string, messageBody: any) {
+  const ACCESS_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+  const PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+
+  if (!ACCESS_TOKEN || !PHONE_NUMBER_ID) {
+    console.log("WhatsApp credentials not configured — skipping notification");
+    return null;
+  }
+
+  const response = await fetch(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(messageBody)
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    console.error("Failed to send WhatsApp message:", result);
+  } else {
+    console.log("WhatsApp confirmation sent:", result.messages?.[0]?.id);
+  }
+  return result;
+}
+
+async function sendWhatsAppOrderConfirmation(phone: string, order: any, items: any[]) {
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
+  // Get product names for the order items
+  const productIds = items.map(i => i.product_id).filter(Boolean);
+  let itemLines = "";
+  
+  if (productIds.length > 0) {
+    const { data: products } = await supabaseClient
+      .from("products")
+      .select("id, name")
+      .in("id", productIds);
+    
+    const productMap = new Map((products || []).map(p => [p.id, p.name]));
+    
+    itemLines = items.map(i => {
+      const name = productMap.get(i.product_id) || "Product";
+      return `  ✅ ${name} ×${i.quantity} — $${i.price}`;
+    }).join("\n");
+  }
+
+  const message =
+    `🎉 *Payment Confirmed!*\n\n` +
+    `Your order has been paid successfully!\n\n` +
+    `📋 *Order:* #${order.id.substring(0, 8)}\n` +
+    `💰 *Total:* $${order.total_amount}\n` +
+    `💳 *Payment:* PesePay ✅\n\n` +
+    (itemLines ? `🛒 *Items:*\n${itemLines}\n\n` : "") +
+    `📍 *Collection:*\n` +
+    `  📍 Shop address: 123 Main Street\n` +
+    `  ⏰ We'll notify you when ready\n` +
+    `  🪪 Bring valid ID for collection\n\n` +
+    `📦 Track anytime: _track ${order.id.substring(0, 8)}_\n\n` +
+    `Thank you for shopping with GadgetGenie! 🧞‍♂️`;
+
+  await sendWhatsAppMessage(phone, {
+    messaging_product: "whatsapp",
+    to: phone,
+    type: "text",
+    text: { preview_url: false, body: message }
+  });
+
+  // Store the confirmation in conversations
+  try {
+    const { data: conversation } = await supabaseClient
+      .from("whatsapp_conversations")
+      .select("id")
+      .eq("phone_number", phone)
+      .single();
+
+    if (conversation) {
+      await supabaseClient.from("whatsapp_messages").insert({
+        conversation_id: conversation.id,
+        sender_type: "bot",
+        message_type: "text",
+        content: { body: message },
+        delivered: true,
+      });
+    }
+  } catch (e) {
+    console.error("Error storing confirmation message:", e);
+  }
 }
 
 serve(async (req) => {
@@ -100,7 +194,7 @@ serve(async (req) => {
       console.error("Error updating payment record:", paymentError);
     }
 
-    // Update order status
+    // Update order status and send WhatsApp notification if applicable
     if (paymentRecord?.order_id) {
       const { error: orderError } = await supabaseClient
         .from("orders")
@@ -109,6 +203,31 @@ serve(async (req) => {
 
       if (orderError) {
         console.error("Error updating order:", orderError);
+      }
+
+      // If payment succeeded, check if this is a WhatsApp order and send confirmation
+      if (transactionStatus === "SUCCESS") {
+        const { data: order } = await supabaseClient
+          .from("orders")
+          .select("id, total_amount, source, customer_phone, payment_method")
+          .eq("id", paymentRecord.order_id)
+          .single();
+
+        if (order?.source === "whatsapp" && order?.customer_phone) {
+          console.log("Sending WhatsApp payment confirmation to:", order.customer_phone);
+
+          // Get order items
+          const { data: orderItems } = await supabaseClient
+            .from("order_items")
+            .select("product_id, quantity, price")
+            .eq("order_id", order.id);
+
+          await sendWhatsAppOrderConfirmation(
+            order.customer_phone,
+            order,
+            orderItems || []
+          );
+        }
       }
     }
 
