@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Image, Plus, Trash2, Save, Upload, GripVertical, Eye, Video } from 'lucide-react';
+import AIBannerGenerator from './AIBannerGenerator';
 
 export interface BannerSlide {
   id: string;
