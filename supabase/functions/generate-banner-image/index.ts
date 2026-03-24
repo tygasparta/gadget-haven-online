@@ -143,13 +143,29 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
+    console.log("AI response keys:", Object.keys(aiData));
 
-    // Extract image from response parts
+    // Extract image from response - check both images array and content parts
     let imageBase64: string | null = null;
     const message = aiData.choices?.[0]?.message;
 
-    if (message?.content) {
-      // Content can be a string or array of parts
+    // Check the images array first (gateway format)
+    if (message?.images && Array.isArray(message.images)) {
+      for (const img of message.images) {
+        if (img.image_url?.url?.startsWith("data:")) {
+          const base64Match = img.image_url.url.match(
+            /^data:image\/[^;]+;base64,(.+)$/
+          );
+          if (base64Match) {
+            imageBase64 = base64Match[1];
+            break;
+          }
+        }
+      }
+    }
+
+    // Fallback: check content parts
+    if (!imageBase64 && message?.content) {
       const parts = Array.isArray(message.content)
         ? message.content
         : [{ type: "text", text: message.content }];
@@ -169,6 +185,8 @@ serve(async (req) => {
         }
       }
     }
+
+    console.log("Image extracted:", !!imageBase64);
 
     if (!imageBase64) {
       return new Response(
