@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, MoreHorizontal, Trash2, Download, RefreshCw } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, MoreHorizontal, Trash2, Download, RefreshCw, MessageSquare } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
 import { useUpdateOrderStatus, useDeleteOrder } from '@/hooks/useOrderManagement';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +22,7 @@ const OrdersTab = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
@@ -43,9 +44,10 @@ const OrdersTab = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.user_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) || (order as any).customer_phone?.includes(searchTerm);
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSource = sourceFilter === 'all' || (order as any).source === sourceFilter;
+    return matchesSearch && matchesStatus && matchesSource;
   });
 
   const getStatusBadgeClasses = (status: string) => {
@@ -144,6 +146,14 @@ const OrdersTab = () => {
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="Filter by source" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sources</SelectItem>
+                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                </SelectContent>
+              </Select>
               <Button onClick={() => refetch()} variant="outline" disabled={isLoading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />Refresh
               </Button>
@@ -154,6 +164,7 @@ const OrdersTab = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">Source</TableHead>
                   <TableHead className="font-semibold">Order ID</TableHead>
                   <TableHead className="font-semibold">Date</TableHead>
                   <TableHead className="font-semibold">Customer</TableHead>
@@ -167,6 +178,15 @@ const OrdersTab = () => {
               <TableBody>
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell>
+                      {(order as any).source === 'whatsapp' ? (
+                        <Badge className="bg-green-100 text-green-700 border-green-200 flex items-center gap-1 w-fit text-xs">
+                          <MessageSquare className="w-3 h-3" />WhatsApp
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">Website</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <span className="font-mono text-primary font-medium text-sm">#{order.id.slice(-8).toUpperCase()}</span>
                     </TableCell>

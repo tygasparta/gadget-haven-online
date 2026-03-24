@@ -248,8 +248,8 @@ async function sendCartView(phone: string, userName: string | null) {
 
   await sendButtons(phone, `Ready to pay, ${name}?`, [
     { id: "cart_checkout", title: "💳 Pay Now" },
-    { id: "cart_clear", title: "🗑️ Clear Cart" },
-    { id: "menu_categories", title: "🛍️ Shop More" }
+    { id: "cart_remove_pick", title: "🗑️ Remove Item" },
+    { id: "cart_clear", title: "🗑️ Clear All" }
   ]);
 }
 
@@ -301,6 +301,32 @@ async function removeFromCart(phone: string, productId: number, userName: string
   );
 
   await sendCartView(phone, userName);
+}
+
+async function sendRemoveItemPicker(phone: string, userName: string | null) {
+  const name = firstName(userName);
+  const cartItems = await getCartItems(phone);
+
+  if (cartItems.length === 0) {
+    await sendText(phone, `🛒 Your cart is empty, ${name}! Nothing to remove.`);
+    return;
+  }
+
+  const rows = cartItems.map((item: any) => ({
+    id: `rmcart_${item.product_id}`,
+    title: (item.products?.name || "Product").substring(0, 24),
+    description: `$${item.products?.price} × ${item.quantity}`.substring(0, 72)
+  }));
+
+  await sendList(
+    phone,
+    `🗑️ *Remove an Item*\n\nSelect the item to remove from your cart, ${name}:`,
+    "Select Item",
+    [{
+      title: "Cart Items",
+      rows: rows
+    }]
+  );
 }
 
 // ===== CHECKOUT & PAYMENT =====
@@ -1411,6 +1437,7 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
     "cart_checkout": () => handleCheckout(phone, userName),
     "cart_confirm_pay": () => processPayment(phone, userName),
     "cart_clear": () => clearCart(phone, userName),
+    "cart_remove_pick": () => sendRemoveItemPicker(phone, userName),
   };
 
   if (handlers[replyId]) {
@@ -1423,6 +1450,15 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
     const productId = parseInt(replyId.substring(8), 10);
     if (!isNaN(productId)) {
       await addToCart(phone, productId, userName);
+      return;
+    }
+  }
+
+  // Remove item from cart
+  if (replyId.startsWith("rmcart_")) {
+    const productId = parseInt(replyId.substring(7), 10);
+    if (!isNaN(productId)) {
+      await removeFromCart(phone, productId, userName);
       return;
     }
   }
