@@ -303,6 +303,32 @@ async function removeFromCart(phone: string, productId: number, userName: string
   await sendCartView(phone, userName);
 }
 
+async function sendRemoveItemPicker(phone: string, userName: string | null) {
+  const name = firstName(userName);
+  const cartItems = await getCartItems(phone);
+
+  if (cartItems.length === 0) {
+    await sendText(phone, `🛒 Your cart is empty, ${name}! Nothing to remove.`);
+    return;
+  }
+
+  const rows = cartItems.map((item: any) => ({
+    id: `rmcart_${item.product_id}`,
+    title: (item.products?.name || "Product").substring(0, 24),
+    description: `$${item.products?.price} × ${item.quantity}`.substring(0, 72)
+  }));
+
+  await sendList(
+    phone,
+    `🗑️ *Remove an Item*\n\nSelect the item to remove from your cart, ${name}:`,
+    "Select Item",
+    [{
+      title: "Cart Items",
+      rows: rows
+    }]
+  );
+}
+
 // ===== CHECKOUT & PAYMENT =====
 
 async function handleCheckout(phone: string, userName: string | null) {
