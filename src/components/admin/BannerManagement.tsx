@@ -6,19 +6,20 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Image, Plus, Trash2, Save, Upload, GripVertical, Eye } from 'lucide-react';
+import { Image, Plus, Trash2, Save, Upload, GripVertical, Eye, Video } from 'lucide-react';
 
 export interface BannerSlide {
   id: string;
   image: string;
   path: string;
   alt: string;
+  type?: 'image' | 'video';
 }
 
 const DEFAULT_SLIDES: BannerSlide[] = [
-  { id: '1', image: '/banners/audio-banner.jpg', path: '/audio', alt: 'Premium Audio Collection' },
-  { id: '2', image: '/banners/phones-banner.jpg', path: '/phones', alt: 'Latest Smartphones' },
-  { id: '3', image: '/banners/electronics-banner.jpg', path: '/deals', alt: 'Electronics Mega Deals' },
+  { id: '1', image: '/banners/audio-banner.jpg', path: '/audio', alt: 'Premium Audio Collection', type: 'image' },
+  { id: '2', image: '/banners/phones-banner.jpg', path: '/phones', alt: 'Latest Smartphones', type: 'image' },
+  { id: '3', image: '/banners/electronics-banner.jpg', path: '/deals', alt: 'Electronics Mega Deals', type: 'image' },
 ];
 
 const BannerManagement: React.FC = () => {
@@ -39,7 +40,7 @@ const BannerManagement: React.FC = () => {
       if (error && error.code !== 'PGRST116') throw error;
       if (data?.value) {
         const banners = data.value as unknown as BannerSlide[];
-        if (Array.isArray(banners) && banners.length > 0) setSlides(banners);
+        if (Array.isArray(banners) && banners.length > 0) setSlides(banners.map(b => ({ ...b, type: b.type || 'image' })));
       }
     } catch (error: any) {
       console.error('Error fetching banners:', error);
@@ -48,10 +49,20 @@ const BannerManagement: React.FC = () => {
     }
   };
 
-  const handleImageUpload = async (index: number, file: File) => {
+  const isVideoFile = (file: File) => file.type.startsWith('video/');
+  const isMediaFile = (file: File) => file.type.startsWith('image/') || file.type.startsWith('video/');
+
+  const handleFileUpload = async (index: number, file: File) => {
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast({ title: 'File too large', description: 'Max file size is 5MB', variant: 'destructive' }); return; }
-    if (!file.type.startsWith('image/')) { toast({ title: 'Invalid file', description: 'Please select an image file', variant: 'destructive' }); return; }
+    const maxSize = isVideoFile(file) ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({ title: 'File too large', description: `Max file size is ${isVideoFile(file) ? '50MB' : '5MB'}`, variant: 'destructive' });
+      return;
+    }
+    if (!isMediaFile(file)) {
+      toast({ title: 'Invalid file', description: 'Please select an image or video file', variant: 'destructive' });
+      return;
+    }
 
     setUploadingIndex(index);
     try {
@@ -61,9 +72,13 @@ const BannerManagement: React.FC = () => {
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('gallary').getPublicUrl(data.path);
       const updated = [...slides];
-      updated[index] = { ...updated[index], image: urlData.publicUrl };
+      updated[index] = {
+        ...updated[index],
+        image: urlData.publicUrl,
+        type: isVideoFile(file) ? 'video' : 'image',
+      };
       setSlides(updated);
-      toast({ title: 'Image uploaded', description: 'Banner image updated successfully' });
+      toast({ title: `${isVideoFile(file) ? 'Video' : 'Image'} uploaded`, description: 'Banner media updated successfully' });
     } catch (error: any) {
       toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
     } finally {
@@ -71,8 +86,8 @@ const BannerManagement: React.FC = () => {
     }
   };
 
-  const addSlide = () => {
-    setSlides([...slides, { id: Date.now().toString(), image: '', path: '/products', alt: 'New Banner' }]);
+  const addSlide = (type: 'image' | 'video' = 'image') => {
+    setSlides([...slides, { id: Date.now().toString(), image: '', path: '/products', alt: 'New Banner', type }]);
   };
 
   const removeSlide = (index: number) => {
@@ -86,8 +101,14 @@ const BannerManagement: React.FC = () => {
     setSlides(updated);
   };
 
+  const toggleType = (index: number) => {
+    const updated = [...slides];
+    updated[index] = { ...updated[index], type: updated[index].type === 'video' ? 'image' : 'video' };
+    setSlides(updated);
+  };
+
   const saveBanners = async () => {
-    if (slides.some(s => !s.image)) { toast({ title: 'Missing images', description: 'All banners must have an image', variant: 'destructive' }); return; }
+    if (slides.some(s => !s.image)) { toast({ title: 'Missing media', description: 'All banners must have an image or video', variant: 'destructive' }); return; }
     setSaving(true);
     try {
       const { error } = await supabase.from('admin_settings').upsert({ key: 'desktop_banners', value: slides as any, updated_at: new Date().toISOString() }, { onConflict: 'key' });
@@ -121,7 +142,7 @@ const BannerManagement: React.FC = () => {
       </CardHeader>
       <CardContent className="p-6 space-y-6">
         <p className="text-muted-foreground text-sm">
-          Manage the hero banner slides shown on the homepage. Recommended size: 1292×300px.
+          Manage hero banner slides (images or videos). Videos auto-play muted. Recommended size: 1920×544px.
         </p>
 
         <div className="space-y-4">
@@ -130,9 +151,19 @@ const BannerManagement: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <GripVertical className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground font-medium text-sm">Banner {index + 1}</span>
+                  {slide.type === 'video' ? (
+                    <Video className="w-4 h-4 text-blue-500" />
+                  ) : (
+                    <Image className="w-4 h-4 text-green-500" />
+                  )}
+                  <span className="text-foreground font-medium text-sm">
+                    Banner {index + 1} — {slide.type === 'video' ? 'Video' : 'Image'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs" onClick={() => toggleType(index)}>
+                    Switch to {slide.type === 'video' ? 'Image' : 'Video'}
+                  </Button>
                   {slide.image && (
                     <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => setPreviewIndex(previewIndex === index ? null : index)}>
                       <Eye className="w-4 h-4" />
@@ -146,22 +177,32 @@ const BannerManagement: React.FC = () => {
 
               {previewIndex === index && slide.image && (
                 <div className="rounded-lg overflow-hidden border border-border">
-                  <img src={slide.image} alt={slide.alt} className="w-full h-auto object-cover" style={{ aspectRatio: '1292/300' }} />
+                  {slide.type === 'video' ? (
+                    <video src={slide.image} controls muted className="w-full h-auto object-cover" style={{ aspectRatio: '1920/544' }} />
+                  ) : (
+                    <img src={slide.image} alt={slide.alt} className="w-full h-auto object-cover" style={{ aspectRatio: '1920/544' }} />
+                  )}
                 </div>
               )}
 
               <div className="flex items-center gap-3">
-                <input type="file" accept="image/*" className="hidden" ref={(el) => { fileInputRefs.current[index] = el; }} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageUpload(index, file); e.target.value = ''; }} />
+                <input
+                  type="file"
+                  accept={slide.type === 'video' ? 'video/*' : 'image/*'}
+                  className="hidden"
+                  ref={(el) => { fileInputRefs.current[index] = el; }}
+                  onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(index, file); e.target.value = ''; }}
+                />
                 <Button variant="outline" size="sm" onClick={() => fileInputRefs.current[index]?.click()} disabled={uploadingIndex === index}>
                   <Upload className="w-4 h-4 mr-2" />
-                  {uploadingIndex === index ? 'Uploading...' : slide.image ? 'Change Image' : 'Upload Image'}
+                  {uploadingIndex === index ? 'Uploading...' : slide.image ? `Change ${slide.type === 'video' ? 'Video' : 'Image'}` : `Upload ${slide.type === 'video' ? 'Video' : 'Image'}`}
                 </Button>
-                {slide.image && <span className="text-emerald-600 text-xs">✓ Image set</span>}
+                {slide.image && <span className="text-emerald-600 text-xs">✓ Media set</span>}
               </div>
 
               <div>
-                <Label className="text-muted-foreground text-xs">Image URL (or upload above)</Label>
-                <Input value={slide.image} onChange={(e) => updateSlide(index, 'image', e.target.value)} placeholder="https://... or /lovable-uploads/..." />
+                <Label className="text-muted-foreground text-xs">{slide.type === 'video' ? 'Video' : 'Image'} URL (or upload above)</Label>
+                <Input value={slide.image} onChange={(e) => updateSlide(index, 'image', e.target.value)} placeholder="https://..." />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -178,10 +219,16 @@ const BannerManagement: React.FC = () => {
           ))}
         </div>
 
-        <Button variant="outline" onClick={addSlide} className="w-full border-dashed">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Banner Slide
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => addSlide('image')} className="flex-1 border-dashed">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Image Slide
+          </Button>
+          <Button variant="outline" onClick={() => addSlide('video')} className="flex-1 border-dashed">
+            <Video className="w-4 h-4 mr-2" />
+            Add Video Slide
+          </Button>
+        </div>
 
         <Button onClick={saveBanners} disabled={saving} className="w-full">
           <Save className="w-4 h-4 mr-2" />
