@@ -168,10 +168,10 @@ serve(async (req) => {
       throw new Error(`Invalid response from PesePay: ${curlStdout.substring(0, 200)}`);
     }
 
-    if (!response.ok) {
+    if (responseData.error || responseData.message) {
       console.error("PesePay API error:", JSON.stringify(responseData));
       throw new Error(
-        `PesePay API error (${response.status}): ${JSON.stringify(responseData)}`
+        `PesePay API error: ${JSON.stringify(responseData)}`
       );
     }
 
