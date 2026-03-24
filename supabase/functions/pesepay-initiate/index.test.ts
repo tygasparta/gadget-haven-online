@@ -22,17 +22,10 @@ Deno.test("pesepay-initiate returns redirect URL for valid payment", async () =>
   const data = await response.json();
   console.log("PesePay initiate response:", JSON.stringify(data, null, 2));
 
-  // With live mode + raw TLS, we should get a successful response with redirectUrl
-  if (data.success) {
-    assertEquals(data.success, true);
-    assertEquals(typeof data.redirectUrl, "string");
-    assertEquals(typeof data.referenceNumber, "string");
-    console.log("✅ SUCCESS! Redirect URL:", data.redirectUrl);
-  } else {
-    // Log the error for debugging
-    console.log("❌ Payment initiation failed:", data.error);
-    // Don't fail the test - just log the error for inspection
-  }
+  assertEquals(response.status, 200);
+  assertEquals(data.success, true);
+  assertEquals(typeof data.redirectUrl, "string");
+  assertEquals(typeof data.referenceNumber, "string");
 });
 
 Deno.test("pesepay-initiate rejects invalid amount", async () => {
@@ -51,6 +44,5 @@ Deno.test("pesepay-initiate rejects invalid amount", async () => {
   });
 
   const data = await response.json();
-  console.log("Invalid amount response:", JSON.stringify(data, null, 2));
   assertEquals(data.success, false);
 });
