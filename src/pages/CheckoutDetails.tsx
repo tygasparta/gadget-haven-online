@@ -9,9 +9,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
-import useDischub from '@/hooks/useDischub';
 import { usePayPal } from '@/hooks/usePayPal';
-import EcoCashService from '@/services/ecocashService';
+import { usePesePay } from '@/hooks/usePesePay';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ContactInformationSection from '@/components/checkout/ContactInformationSection';
@@ -26,12 +25,10 @@ const CheckoutDetails = () => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const { data: cartItems = [], isLoading: cartLoading, error: cartError } = useCartItems();
-  const { initiateDischubPayment, isProcessing: isDischubProcessing } = useDischub();
   const { initiatePayPalPayment, isProcessing: isPayPalProcessing } = usePayPal();
+  const { initiatePesePayPayment, isProcessing: isPesePayProcessing } = usePesePay();
   
-  const [paymentMethod, setPaymentMethod] = useState('dischub');
-  const [dischubCurrency, setDischubCurrency] = useState<'USD'>('USD');
-  const [isEcocashProcessing, setIsEcocashProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('pesepay');
   const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
   const [formData, setFormData] = useState({
     email: '',
@@ -45,444 +42,155 @@ const CheckoutDetails = () => {
 
   useEffect(() => {
     if (user?.email) {
-      setFormData(prev => ({
-        ...prev,
-        email: user.email
-      }));
+      setFormData(prev => ({ ...prev, email: user.email }));
     }
   }, [user]);
 
   useEffect(() => {
-    console.log('CheckoutDetails - User:', user?.email);
-    console.log('CheckoutDetails - Cart loading:', cartLoading);
-    console.log('CheckoutDetails - Cart items:', cartItems);
-    console.log('CheckoutDetails - Cart error:', cartError);
-  }, [user, cartLoading, cartItems, cartError]);
-
-  useEffect(() => {
     if (!cartLoading && !user) {
-      console.log('No user found, redirecting to auth');
       navigate('/auth');
     }
   }, [user, cartLoading, navigate]);
 
   useEffect(() => {
     if (!cartLoading && user && cartItems.length === 0) {
-      console.log('No cart items found, redirecting to checkout');
       navigate('/checkout');
     }
   }, [cartLoading, user, cartItems, navigate]);
 
   const getSubtotal = () => {
-    return cartItems.reduce((total, item) => {
-      return total + (item.products.price * item.quantity);
-    }, 0);
+    return cartItems.reduce((total, item) => total + (item.products.price * item.quantity), 0);
   };
 
-  const getTaxAmount = () => {
-    return getSubtotal() * 0.02; // 2% tax
-  };
+  const getTaxAmount = () => getSubtotal() * 0.02;
 
-  const getTotalPrice = () => {
-    return getSubtotal() + getTaxAmount();
-  };
+  const getTotalPrice = () => getSubtotal() + getTaxAmount();
 
-  const getShippingCost = () => {
-    return shippingMethod === 'shipping' ? 5.00 : 0;
-  };
+  const getShippingCost = () => (shippingMethod === 'shipping' ? 5.00 : 0);
 
   const totalPrice = getTotalPrice();
   const shipping = getShippingCost();
   const finalTotal = totalPrice + shipping;
 
-  const handleDischubPayment = async (currency: 'USD') => {
-    if (!formData.firstName || !formData.lastName || 
-        (shippingMethod === 'shipping' && (!formData.address || !formData.city))) {
+  const validateForm = () => {
+    if (!formData.firstName || !formData.lastName) {
       toast({
         title: "Missing Information",
-        description: shippingMethod === 'shipping' 
-          ? "Please fill in all required fields including shipping address"
-          : "Please fill in all required fields",
+        description: "Please fill in your name",
         variant: "destructive"
       });
-      return;
+      return false;
     }
-
-    try {
-      console.log('Starting Dischub payment process...');
-      
-      const orderData = {
-        user_id: user.id,
-        total_amount: finalTotal,
-        status: 'pending',
-        payment_method: 'dischub',
-        shipping_method: shippingMethod,
-        shipping_address: shippingMethod === 'shipping' ? {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          address: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
-          country: formData.country
-        } : null,
-        billing_address: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          address: formData.address || 'Shop Collection',
-          city: formData.city || 'Shop Location',
-          zipCode: formData.zipCode || '00000',
-          country: formData.country
-        }
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) {
-        console.error('Order creation error:', orderError);
-        throw orderError;
-      }
-
-      console.log('Order created successfully:', order);
-
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.products.price
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error('Order items creation error:', itemsError);
-        throw itemsError;
-      }
-
-      console.log('Order items created successfully');
-
-      const paymentData = {
-        order_id: `ORDER-${order.id}`,
-        amount: finalTotal,
-        currency: currency,
-        additionalInfo: `Order for ${cartItems.length} items`
-      };
-
-      console.log('Initiating Dischub payment with data:', paymentData);
-      await initiateDischubPayment(paymentData, order.id);
-
-    } catch (error: any) {
-      console.error('Dischub checkout error:', error);
+    if (shippingMethod === 'shipping' && (!formData.address || !formData.city)) {
       toast({
-        title: "Checkout Failed",
-        description: error.message || "Failed to process checkout",
+        title: "Missing Information",
+        description: "Please fill in your shipping address",
         variant: "destructive"
       });
+      return false;
     }
+    return true;
   };
 
-  const handleCashOnDelivery = async () => {
-    if (!formData.firstName || !formData.lastName || 
-        (shippingMethod === 'shipping' && (!formData.address || !formData.city))) {
-      toast({
-        title: "Missing Information",
-        description: shippingMethod === 'shipping' 
-          ? "Please fill in all required fields including shipping address"
-          : "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
+  const createOrder = async (paymentMethodName: string) => {
+    const orderData = {
+      user_id: user!.id,
+      total_amount: finalTotal,
+      status: 'pending',
+      payment_method: paymentMethodName,
+      shipping_method: shippingMethod,
+      shipping_address: shippingMethod === 'shipping' ? {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.address,
+        city: formData.city,
+        zipCode: formData.zipCode,
+        country: formData.country
+      } : null,
+      billing_address: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.address || 'Shop Collection',
+        city: formData.city || 'Shop Location',
+        zipCode: formData.zipCode || '00000',
+        country: formData.country
+      }
+    };
+
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert(orderData)
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    const orderItems = cartItems.map(item => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.products.price
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems);
+
+    if (itemsError) throw itemsError;
+
+    return order;
+  };
+
+  const handlePesePayPayment = async () => {
+    if (!validateForm() || !user) return;
 
     try {
-      console.log('Starting cash on delivery process...');
+      const order = await createOrder('pesepay');
       
-      const orderData = {
-        user_id: user.id,
-        total_amount: finalTotal,
-        status: 'confirmed',
-        payment_method: 'cash_on_delivery',
-        shipping_method: shippingMethod,
-        shipping_address: shippingMethod === 'shipping' ? {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          address: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
-          country: formData.country
-        } : null,
-        billing_address: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          address: formData.address || 'Shop Collection',
-          city: formData.city || 'Shop Location',
-          zipCode: formData.zipCode || '00000',
-          country: formData.country
-        }
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) {
-        console.error('COD order creation error:', orderError);
-        throw orderError;
-      }
-
-      console.log('COD order created successfully:', order);
-
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.products.price
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error('COD order items creation error:', itemsError);
-        throw itemsError;
-      }
-
-      console.log('COD order items created successfully');
-
-      toast({
-        title: "Order Confirmed",
-        description: "Your order has been confirmed for cash on delivery",
+      await initiatePesePayPayment({
+        amount: finalTotal,
+        currencyCode: 'USD',
+        reasonForPayment: `GadgetGenie Order #${order.id} - ${cartItems.length} item(s)`,
+        orderDbId: order.id,
       });
-      
-      navigate(`/payment-success?reference=ORDER-${order.id}&order_id=${order.id}`);
-
     } catch (error: any) {
-      console.error('COD checkout error:', error);
+      console.error('PesePay checkout error:', error);
       toast({
-        title: "Checkout Failed",
-        description: error.message || "Failed to process checkout",
+        title: "Payment Failed",
+        description: error.message || "Failed to process payment",
         variant: "destructive"
       });
     }
   };
 
   const handlePayPalPayment = async () => {
-    console.log('Starting PayPal payment process');
-    
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to proceed with payment",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast({
-        title: "Empty Cart",
-        description: "Please add items to your cart before proceeding",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!validateForm() || !user) return;
 
     try {
-      const orderData = {
-        user_id: user.id,
-        total_amount: finalTotal,
-        shipping_method: shippingMethod,
-        payment_method: 'paypal',
-        status: 'pending',
-        shipping_address: shippingMethod === 'shipping' ? formData : null,
-        billing_address: shippingMethod === 'shipping' ? formData : null
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      console.log('Order created:', order.id);
-
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.products?.price || 0
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      console.log('Order items created');
+      const order = await createOrder('paypal');
 
       await initiatePayPalPayment({
         orderId: order.id,
         amount: finalTotal,
         currency: 'USD'
       }, order.id);
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('PayPal payment error:', error);
       toast({
         title: "Payment Error",
-        description: error instanceof Error ? error.message : "Failed to process payment",
+        description: error.message || "Failed to process payment",
         variant: "destructive"
       });
-    }
-  };
-
-  const handleEcocashPayment = async () => {
-    if (!formData.firstName || !formData.lastName || 
-        (shippingMethod === 'shipping' && (!formData.address || !formData.city))) {
-      toast({
-        title: "Missing Information",
-        description: shippingMethod === 'shipping' 
-          ? "Please fill in all required fields including shipping address"
-          : "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setIsEcocashProcessing(true);
-      console.log('Starting EcoCash payment process...');
-      
-      const orderData = {
-        user_id: user.id,
-        total_amount: finalTotal,
-        status: 'pending',
-        payment_method: 'ecocash',
-        shipping_method: shippingMethod,
-        shipping_address: shippingMethod === 'shipping' ? {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          address: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
-          country: formData.country
-        } : null,
-        billing_address: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          address: formData.address || 'Shop Collection',
-          city: formData.city || 'Shop Location',
-          zipCode: formData.zipCode || '00000',
-          country: formData.country
-        }
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) {
-        console.error('Order creation error:', orderError);
-        throw orderError;
-      }
-
-      console.log('Order created successfully:', order);
-
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.products.price
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error('Order items creation error:', itemsError);
-        throw itemsError;
-      }
-
-      console.log('Order items created successfully');
-
-      const ecocashService = new EcoCashService();
-      const result = await ecocashService.createPaymentOrder({
-        amount: finalTotal,
-        description: `Order ${order.id} - ${cartItems.length} items`,
-        orderId: order.id,
-        currency: 'USD'
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to initiate EcoCash payment');
-      }
-
-      if (result.redirectUrl) {
-        window.location.href = result.redirectUrl;
-      } else {
-        toast({
-          title: "Payment Initiated",
-          description: result.instructions || "Please complete payment on your EcoCash app",
-        });
-        navigate(`/payment-success?reference=${result.reference}`);
-      }
-
-    } catch (error: any) {
-      console.error('EcoCash checkout error:', error);
-      
-      // Construct a detailed error message for debugging
-      let errorDescription = error.message || "Failed to process checkout";
-      
-      // If there's additional error data, include it
-      if (error.details) {
-        errorDescription += `\n\nDetails: ${JSON.stringify(error.details)}`;
-      }
-      
-      toast({
-        title: "EcoCash Payment Failed",
-        description: (
-          <div className="space-y-2">
-            <p>{errorDescription}</p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Error details have been logged. Please try again or contact support if the issue persists.
-            </p>
-          </div>
-        ),
-        variant: "destructive",
-        duration: 10000, // Show for longer to allow reading the error
-      });
-    } finally {
-      setIsEcocashProcessing(false);
     }
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    console.log('Form submitted with payment method:', paymentMethod);
-    
-    if (paymentMethod === 'dischub') {
-      await handleDischubPayment(dischubCurrency);
+    if (paymentMethod === 'pesepay') {
+      await handlePesePayPayment();
     } else if (paymentMethod === 'paypal') {
       await handlePayPalPayment();
-    } else if (paymentMethod === 'ecocash') {
-      await handleEcocashPayment();
-    } else if (paymentMethod === 'cod') {
-      await handleCashOnDelivery();
     }
   };
 
@@ -535,9 +243,7 @@ const CheckoutDetails = () => {
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -592,19 +298,11 @@ const CheckoutDetails = () => {
             <PaymentMethodSection
               paymentMethod={paymentMethod}
               setPaymentMethod={setPaymentMethod}
-              mobileMethod=""
-              setMobileMethod={() => {}}
-              phoneNumber=""
-              setPhoneNumber={() => {}}
-              dischubCurrency={dischubCurrency}
-              setDischubCurrency={setDischubCurrency}
               totalAmount={finalTotal}
-              onInitiateDischubPayment={handleDischubPayment}
-              isDischubProcessing={isDischubProcessing}
+              onInitiatePesePayPayment={handlePesePayPayment}
+              isPesePayProcessing={isPesePayProcessing}
               onInitiatePayPalPayment={handlePayPalPayment}
               isPayPalProcessing={isPayPalProcessing}
-              onInitiateEcocashPayment={handleEcocashPayment}
-              isEcocashProcessing={isEcocashProcessing}
             />
           </div>
 
@@ -617,7 +315,7 @@ const CheckoutDetails = () => {
               finalTotal={finalTotal}
               paymentMethod={paymentMethod}
               mobileMethod=""
-              isProcessing={isDischubProcessing}
+              isProcessing={isPesePayProcessing || isPayPalProcessing}
               onSubmit={handleSubmit}
             />
           </div>

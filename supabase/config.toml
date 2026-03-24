@@ -107,3 +107,12 @@ verify_jwt = false
 
 [functions.whatsapp-daily-deals]
 verify_jwt = false
+
+[functions.pesepay-initiate]
+verify_jwt = false
+
+[functions.pesepay-result]
+verify_jwt = false
+
+[functions.pesepay-check-status]
+verify_jwt = false
