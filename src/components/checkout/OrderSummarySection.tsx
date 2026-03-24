@@ -48,7 +48,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
       transition={{ delay: 0.3 }}
     >
       <Card className="sticky top-4 bg-white border-0 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+        <CardHeader className="bg-accent rounded-t-xl">
           <CardTitle className="flex items-center space-x-2 text-gray-800">
             <ShoppingCart className="w-5 h-5 text-blue-600" />
             <span>Order Summary</span>
