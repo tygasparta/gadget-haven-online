@@ -220,6 +220,21 @@ const BannerManagement: React.FC = () => {
           ))}
         </div>
 
+        <AIBannerGenerator
+          onImageGenerated={(imageUrl) => {
+            setSlides([
+              ...slides,
+              {
+                id: Date.now().toString(),
+                image: imageUrl,
+                path: '/products',
+                alt: 'AI Generated Banner',
+                type: 'image',
+              },
+            ]);
+          }}
+        />
+
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => addSlide('image')} className="flex-1 border-dashed">
             <Plus className="w-4 h-4 mr-2" />
