@@ -1454,6 +1454,15 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
     }
   }
 
+  // Remove item from cart
+  if (replyId.startsWith("rmcart_")) {
+    const productId = parseInt(replyId.substring(7), 10);
+    if (!isNaN(productId)) {
+      await removeFromCart(phone, productId, userName);
+      return;
+    }
+  }
+
   if (replyId.startsWith("cat_")) {
     await sendProductsByCategory(phone, replyId.substring(4));
     return;
