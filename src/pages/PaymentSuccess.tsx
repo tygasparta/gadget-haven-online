@@ -10,25 +10,75 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { useGmailSystem } from '@/hooks/useGmailSystem';
 
 type PaymentStatus = 'polling' | 'success' | 'failed' | 'pending' | 'error';
 
 const MAX_POLLS = 20;
-const POLL_INTERVAL = 5000; // 5 seconds
+const POLL_INTERVAL = 5000;
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { user } = useAuthContext();
+  const { clearCart } = useCart();
+  const queryClient = useQueryClient();
+  const { sendOrderConfirmation } = useGmailSystem();
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('polling');
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [pollCount, setPollCount] = useState(0);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasToastedRef = useRef(false);
+  const hasProcessedSuccessRef = useRef(false);
 
   const sessionId = searchParams.get('session_id');
   const reference = searchParams.get('reference') || searchParams.get('referenceNumber');
+
+  const clearCartItems = useCallback(async () => {
+    if (!user) return;
+    try {
+      // Clear from Supabase
+      await supabase.from('cart_items').delete().eq('user_id', user.id);
+      // Clear local cart context
+      clearCart();
+      // Invalidate cart query cache
+      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
+      console.log('Cart cleared after successful payment');
+    } catch (err) {
+      console.error('Failed to clear cart:', err);
+    }
+  }, [user, clearCart, queryClient]);
+
+  const sendConfirmationEmail = useCallback(async (order: any) => {
+    if (!user?.email) return;
+    try {
+      sendOrderConfirmation({
+        id: order?.id || reference || 'N/A',
+        total_amount: order?.total_amount || 0,
+        created_at: new Date().toISOString(),
+        email: user.email,
+      });
+      console.log('Order confirmation email queued');
+    } catch (err) {
+      console.error('Failed to send order confirmation email:', err);
+    }
+  }, [user, reference, sendOrderConfirmation]);
+
+  const handlePaymentSuccess = useCallback(async (order: any) => {
+    if (hasProcessedSuccessRef.current) return;
+    hasProcessedSuccessRef.current = true;
+
+    // Clear cart and send email in parallel
+    await Promise.all([
+      clearCartItems(),
+      sendConfirmationEmail(order),
+    ]);
+  }, [clearCartItems, sendConfirmationEmail]);
 
   const checkPesePayStatus = useCallback(async (ref: string): Promise<boolean> => {
     try {
@@ -47,11 +97,14 @@ const PaymentSuccess = () => {
 
       if (txnStatus === 'SUCCESS' || txnStatus === 'PAID' || txnStatus === 'COMPLETED') {
         setPaymentStatus('success');
-        setOrderDetails(data?.orderDetails || data?.data || null);
+        const details = data?.orderDetails || data?.data || null;
+        setOrderDetails(details);
         if (!hasToastedRef.current) {
           hasToastedRef.current = true;
           toast({ title: "Payment Confirmed!", description: "Your order has been processed successfully." });
         }
+        // Trigger post-success actions
+        handlePaymentSuccess(details);
         return true;
       } else if (txnStatus === 'FAILED' || txnStatus === 'CANCELLED' || txnStatus === 'DECLINED') {
         setPaymentStatus('failed');
@@ -62,13 +115,12 @@ const PaymentSuccess = () => {
         return true;
       }
 
-      // Still pending
       return false;
     } catch (err) {
       console.error('Status poll error:', err);
       return false;
     }
-  }, [toast]);
+  }, [toast, handlePaymentSuccess]);
 
   const verifySessionPayment = useCallback(async () => {
     if (!sessionId) return;
@@ -79,6 +131,7 @@ const PaymentSuccess = () => {
         setPaymentStatus('success');
         setOrderDetails(data.order);
         toast({ title: "Payment Confirmed!", description: "Your order has been processed successfully." });
+        handlePaymentSuccess(data.order);
       } else {
         setPaymentStatus('failed');
         toast({ title: "Payment Verification Failed", description: "Please contact support if you were charged.", variant: "destructive" });
@@ -87,16 +140,14 @@ const PaymentSuccess = () => {
       setPaymentStatus('error');
       toast({ title: "Verification Error", description: "There was an issue verifying your payment.", variant: "destructive" });
     }
-  }, [sessionId, toast]);
+  }, [sessionId, toast, handlePaymentSuccess]);
 
   useEffect(() => {
-    // If we have a session_id (PayPal/Stripe flow), verify once
     if (sessionId) {
       verifySessionPayment();
       return;
     }
 
-    // If we have a PesePay reference, start polling
     if (reference) {
       let currentPoll = 0;
 
@@ -122,7 +173,6 @@ const PaymentSuccess = () => {
       };
     }
 
-    // No reference or session — show pending
     setPaymentStatus('pending');
   }, [sessionId, reference, verifySessionPayment, checkPesePayStatus]);
 
@@ -131,6 +181,7 @@ const PaymentSuccess = () => {
     setPaymentStatus('polling');
     setPollCount(0);
     hasToastedRef.current = false;
+    hasProcessedSuccessRef.current = false;
     const done = await checkPesePayStatus(reference);
     if (!done) setPaymentStatus('pending');
   };
