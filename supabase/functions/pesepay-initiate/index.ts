@@ -84,8 +84,8 @@ serve(async (req) => {
   }
 
   try {
-    const integrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY");
-    const encryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY");
+    const integrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY")?.trim().replace(/[\r\n]/g, '');
+    const encryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY")?.trim().replace(/[\r\n]/g, '');
 
     if (!integrationKey || !encryptionKey) {
       throw new Error("PesePay credentials not configured");
