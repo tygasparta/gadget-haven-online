@@ -248,8 +248,8 @@ async function sendCartView(phone: string, userName: string | null) {
 
   await sendButtons(phone, `Ready to pay, ${name}?`, [
     { id: "cart_checkout", title: "💳 Pay Now" },
-    { id: "cart_clear", title: "🗑️ Clear Cart" },
-    { id: "menu_categories", title: "🛍️ Shop More" }
+    { id: "cart_remove_pick", title: "🗑️ Remove Item" },
+    { id: "cart_clear", title: "🗑️ Clear All" }
   ]);
 }
 
