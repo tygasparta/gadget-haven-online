@@ -179,6 +179,15 @@ const OrdersTab = () => {
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell>
+                      {(order as any).source === 'whatsapp' ? (
+                        <Badge className="bg-green-100 text-green-700 border-green-200 flex items-center gap-1 w-fit text-xs">
+                          <MessageSquare className="w-3 h-3" />WhatsApp
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">Website</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <span className="font-mono text-primary font-medium text-sm">#{order.id.slice(-8).toUpperCase()}</span>
                     </TableCell>
                     <TableCell>
