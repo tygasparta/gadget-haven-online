@@ -62,7 +62,22 @@ export const useUpdateOrderStatus = () => {
           });
         } catch (emailError) {
           console.error('Failed to queue status update email:', emailError);
-          // Don't throw here as the order update succeeded
+        }
+      }
+
+      // Send WhatsApp notification for WhatsApp orders
+      if (order.source === 'whatsapp' && order.customer_phone) {
+        try {
+          console.log('Sending WhatsApp order status notification to:', order.customer_phone);
+          await supabase.functions.invoke('whatsapp-order-status', {
+            body: {
+              orderId,
+              newStatus: status,
+              customerPhone: order.customer_phone,
+            },
+          });
+        } catch (waError) {
+          console.error('Failed to send WhatsApp status notification:', waError);
         }
       }
 
