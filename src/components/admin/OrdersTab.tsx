@@ -22,6 +22,7 @@ const OrdersTab = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
