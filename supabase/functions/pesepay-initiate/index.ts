@@ -168,8 +168,13 @@ async function decryptPayload(encryptedBase64: string, encryptionKey: string): P
   );
 
   const decoded = new TextDecoder().decode(decrypted);
+  console.log("Decrypted raw (first 200 chars):", decoded.substring(0, 200));
+  console.log("Decrypted raw length:", decoded.length);
+  // Remove PKCS7 padding
   const padLen = decoded.charCodeAt(decoded.length - 1);
+  console.log("PKCS7 pad length:", padLen, "Last char code:", decoded.charCodeAt(decoded.length - 1));
   const unpadded = decoded.slice(0, decoded.length - padLen);
+  console.log("Unpadded result (first 200 chars):", unpadded.substring(0, 200));
   return JSON.parse(unpadded);
 }
 
