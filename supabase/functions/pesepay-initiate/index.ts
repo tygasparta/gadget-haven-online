@@ -67,7 +67,10 @@ async function rawHttpPost(
     let responseBody = fullResponse.substring(headerEnd + 4);
 
     if (headerSection.toLowerCase().includes("transfer-encoding: chunked")) {
+      console.log("Decoding chunked response, raw length:", responseBody.length);
+      console.log("Raw chunked data (first 100):", JSON.stringify(responseBody.substring(0, 100)));
       responseBody = decodeChunked(responseBody);
+      console.log("Decoded body length:", responseBody.length);
     }
 
     console.log("Raw HTTP response parsed - status:", status, "body length:", responseBody.length);
