@@ -35,30 +35,29 @@ async function rawHttpPost(
 
     await conn.write(new TextEncoder().encode(httpRequest));
 
-    // Read full response
-    const chunks: Uint8Array[] = [];
-    const buf = new Uint8Array(8192);
+    // Read full response - keep reading until connection closes
+    const allBytes: number[] = [];
+    const buf = new Uint8Array(16384);
     try {
       while (true) {
         const n = await conn.read(buf);
         if (n === null) break;
-        chunks.push(buf.slice(0, n));
+        for (let i = 0; i < n; i++) {
+          allBytes.push(buf[i]);
+        }
       }
     } catch {
       // Connection closed by server
     }
 
-    const fullResponse = new TextDecoder().decode(
-      chunks.reduce((acc, chunk) => {
-        const merged = new Uint8Array(acc.length + chunk.length);
-        merged.set(acc);
-        merged.set(chunk, acc.length);
-        return merged;
-      }, new Uint8Array(0))
-    );
+    const fullResponse = new TextDecoder().decode(new Uint8Array(allBytes));
 
     // Parse status line
     const headerEnd = fullResponse.indexOf("\r\n\r\n");
+    if (headerEnd === -1) {
+      throw new Error("Invalid HTTP response - no header/body separator found");
+    }
+
     const headerSection = fullResponse.substring(0, headerEnd);
     const statusLine = headerSection.split("\r\n")[0];
     const statusMatch = statusLine.match(/HTTP\/\d\.\d\s+(\d+)/);
@@ -70,6 +69,8 @@ async function rawHttpPost(
     if (headerSection.toLowerCase().includes("transfer-encoding: chunked")) {
       responseBody = decodeChunked(responseBody);
     }
+
+    console.log("Raw HTTP response parsed - status:", status, "body length:", responseBody.length);
 
     return { status, body: responseBody };
   } finally {
