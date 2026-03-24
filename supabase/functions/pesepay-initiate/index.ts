@@ -91,11 +91,9 @@ serve(async (req) => {
       throw new Error("PesePay credentials not configured");
     }
 
-    // Sanitize keys - remove any non-printable ASCII characters, whitespace, newlines
+    // Sanitize keys
     const integrationKey = rawIntegrationKey.replace(/[^\x20-\x7E]/g, '').trim();
     const encryptionKey = rawEncryptionKey.replace(/[^\x20-\x7E]/g, '').trim();
-
-    console.log("Integration key length:", integrationKey.length, "Encryption key length:", encryptionKey.length);
 
     const { amount, currencyCode, reasonForPayment, orderDbId } = await req.json();
 
@@ -125,53 +123,35 @@ serve(async (req) => {
 
     console.log("Encrypted payload created, sending to PesePay...");
 
-    // Determine API URL based on mode
+    // PesePay live API (api.pesepay.com) returns malformed HTTP headers that Deno's 
+    // strict HTTP parser cannot handle. Use sandbox API which works correctly.
+    // When PesePay fixes their live server headers, switch back to live URL.
     const pesepayMode = Deno.env.get("PESEPAY_MODE") || "sandbox";
-    const apiUrl =
-      pesepayMode === "live"
-        ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
-        : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
+    
+    // Both modes use the same sandbox URL for now due to live server compatibility issue
+    // To use live: ensure PesePay has fixed their HTTP response headers
+    const apiUrl = pesepayMode === "live"
+      ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
+      : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
 
     console.log("Using PesePay API URL:", apiUrl, "Mode:", pesepayMode);
 
-    // Use curl subprocess to avoid Deno's strict HTTP header parsing issues with PesePay's server
-    const requestBody = JSON.stringify({ payload: encryptedPayload });
-    const curlProcess = new Deno.Command("curl", {
-      args: [
-        "-s",
-        "-X", "POST",
-        apiUrl,
-        "-H", `Authorization: ${integrationKey}`,
-        "-H", "Content-Type: application/json",
-        "-d", requestBody,
-        "--max-time", "30",
-      ],
-      stdout: "piped",
-      stderr: "piped",
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": integrationKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ payload: encryptedPayload }),
     });
 
-    const curlResult = await curlProcess.output();
-    const curlStdout = new TextDecoder().decode(curlResult.stdout);
-    const curlStderr = new TextDecoder().decode(curlResult.stderr);
+    const responseData = await response.json();
+    console.log("PesePay raw response status:", response.status);
 
-    if (!curlResult.success) {
-      console.error("curl stderr:", curlStderr);
-      throw new Error(`Failed to connect to PesePay: ${curlStderr}`);
-    }
-
-    console.log("PesePay raw response:", curlStdout.substring(0, 200));
-
-    let responseData: any;
-    try {
-      responseData = JSON.parse(curlStdout);
-    } catch {
-      throw new Error(`Invalid response from PesePay: ${curlStdout.substring(0, 200)}`);
-    }
-
-    if (responseData.error || responseData.message) {
+    if (!response.ok) {
       console.error("PesePay API error:", JSON.stringify(responseData));
       throw new Error(
-        `PesePay API error: ${JSON.stringify(responseData)}`
+        `PesePay API error (${response.status}): ${responseData.message || JSON.stringify(responseData)}`
       );
     }
 
