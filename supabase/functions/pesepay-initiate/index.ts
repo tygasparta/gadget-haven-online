@@ -35,9 +35,9 @@ async function rawHttpPost(
 
     await conn.write(new TextEncoder().encode(httpRequest));
 
-    // Read full response - keep reading until connection closes
+    // Read ALL data until connection closes
     const allBytes: number[] = [];
-    const buf = new Uint8Array(16384);
+    const buf = new Uint8Array(32768);
     try {
       while (true) {
         const n = await conn.read(buf);
@@ -50,56 +50,59 @@ async function rawHttpPost(
       // Connection closed by server
     }
 
-    const fullResponse = new TextDecoder().decode(new Uint8Array(allBytes));
+    const rawData = new Uint8Array(allBytes);
+    const fullResponse = new TextDecoder().decode(rawData);
 
-    // Parse status line
-    const headerEnd = fullResponse.indexOf("\r\n\r\n");
-    if (headerEnd === -1) {
-      throw new Error("Invalid HTTP response - no header/body separator found");
+    // Find header/body boundary
+    const separatorIdx = fullResponse.indexOf("\r\n\r\n");
+    if (separatorIdx === -1) {
+      throw new Error("Invalid HTTP response - no header/body separator");
     }
 
-    const headerSection = fullResponse.substring(0, headerEnd);
+    const headerSection = fullResponse.substring(0, separatorIdx);
     const statusLine = headerSection.split("\r\n")[0];
     const statusMatch = statusLine.match(/HTTP\/\d\.\d\s+(\d+)/);
     const status = statusMatch ? parseInt(statusMatch[1]) : 0;
 
-    // Parse body - handle chunked transfer encoding
-    let responseBody = fullResponse.substring(headerEnd + 4);
+    // Get body bytes (after \r\n\r\n)
+    const bodyStartIdx = fullResponse.indexOf("\r\n\r\n") + 4;
+    let responseBody = fullResponse.substring(bodyStartIdx);
 
+    // Handle chunked transfer encoding
     if (headerSection.toLowerCase().includes("transfer-encoding: chunked")) {
-      console.log("Decoding chunked response, raw length:", responseBody.length);
-      console.log("Raw chunked data (first 100):", JSON.stringify(responseBody.substring(0, 100)));
-      responseBody = decodeChunked(responseBody);
-      console.log("Decoded body length:", responseBody.length);
+      // For chunked encoding, reassemble by reading chunk sizes
+      const bodyBytes = rawData.slice(
+        new TextEncoder().encode(fullResponse.substring(0, bodyStartIdx)).length
+      );
+      const bodyStr = new TextDecoder().decode(bodyBytes);
+      
+      let decoded = "";
+      let pos = 0;
+      while (pos < bodyStr.length) {
+        // Find chunk size line
+        const lineEnd = bodyStr.indexOf("\r\n", pos);
+        if (lineEnd === -1) break;
+        
+        const sizeHex = bodyStr.substring(pos, lineEnd).trim();
+        const chunkSize = parseInt(sizeHex, 16);
+        
+        if (isNaN(chunkSize) || chunkSize === 0) break;
+        
+        // Read chunk data
+        const chunkStart = lineEnd + 2;
+        decoded += bodyStr.substring(chunkStart, chunkStart + chunkSize);
+        pos = chunkStart + chunkSize + 2; // skip \r\n after chunk data
+      }
+      
+      responseBody = decoded;
     }
 
-    console.log("Raw HTTP response parsed - status:", status, "body length:", responseBody.length);
+    console.log("Raw HTTP response - status:", status, "body length:", responseBody.length);
 
     return { status, body: responseBody };
   } finally {
     conn.close();
   }
-}
-
-function decodeChunked(data: string): string {
-  let result = "";
-  let remaining = data;
-
-  while (remaining.length > 0) {
-    const lineEnd = remaining.indexOf("\r\n");
-    if (lineEnd === -1) break;
-
-    const chunkSizeHex = remaining.substring(0, lineEnd).trim();
-    const chunkSize = parseInt(chunkSizeHex, 16);
-
-    if (isNaN(chunkSize) || chunkSize === 0) break;
-
-    const chunkData = remaining.substring(lineEnd + 2, lineEnd + 2 + chunkSize);
-    result += chunkData;
-    remaining = remaining.substring(lineEnd + 2 + chunkSize + 2);
-  }
-
-  return result;
 }
 
 // AES-256-CBC encryption using Web Crypto API
