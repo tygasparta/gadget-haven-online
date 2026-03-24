@@ -44,9 +44,10 @@ const OrdersTab = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.user_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) || (order as any).customer_phone?.includes(searchTerm);
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSource = sourceFilter === 'all' || (order as any).source === sourceFilter;
+    return matchesSearch && matchesStatus && matchesSource;
   });
 
   const getStatusBadgeClasses = (status: string) => {
