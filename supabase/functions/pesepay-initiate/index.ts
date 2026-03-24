@@ -84,12 +84,18 @@ serve(async (req) => {
   }
 
   try {
-    const integrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY")?.trim().replace(/[\r\n]/g, '');
-    const encryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY")?.trim().replace(/[\r\n]/g, '');
+    const rawIntegrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY");
+    const rawEncryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY");
 
-    if (!integrationKey || !encryptionKey) {
+    if (!rawIntegrationKey || !rawEncryptionKey) {
       throw new Error("PesePay credentials not configured");
     }
+
+    // Sanitize keys - remove any non-printable ASCII characters, whitespace, newlines
+    const integrationKey = rawIntegrationKey.replace(/[^\x20-\x7E]/g, '').trim();
+    const encryptionKey = rawEncryptionKey.replace(/[^\x20-\x7E]/g, '').trim();
+
+    console.log("Integration key length:", integrationKey.length, "Encryption key length:", encryptionKey.length);
 
     const { amount, currencyCode, reasonForPayment, orderDbId } = await req.json();
 
