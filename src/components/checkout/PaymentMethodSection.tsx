@@ -35,8 +35,8 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
       <Card className="shadow-lg border-0 bg-card">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center space-x-3 text-gray-800">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <CreditCard className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-accent rounded-lg">
+              <CreditCard className="w-5 h-5 text-primary" />
             </div>
             <span>Payment Method</span>
           </CardTitle>

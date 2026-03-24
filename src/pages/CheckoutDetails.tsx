@@ -264,7 +264,7 @@ const CheckoutDetails = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-foreground">
                 Checkout Details
               </h1>
               <p className="text-gray-500 mt-1">Complete your order securely</p>

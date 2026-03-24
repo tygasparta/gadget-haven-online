@@ -147,7 +147,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           <Button
             onClick={onSubmit}
             disabled={isProcessing}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
           >
             {isProcessing ? (
               <div className="flex items-center justify-center space-x-2">
