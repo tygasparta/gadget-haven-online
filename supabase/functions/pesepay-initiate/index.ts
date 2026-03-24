@@ -132,24 +132,41 @@ serve(async (req) => {
         ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
         : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
 
-    console.log("Using PesePay API URL:", apiUrl);
+    console.log("Using PesePay API URL:", apiUrl, "Mode:", pesepayMode);
 
-    // Use HTTP/1.1 client to avoid HTTP/2 parsing issues with PesePay's server
-    const httpClient = Deno.createHttpClient({ http2: false });
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": integrationKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ payload: encryptedPayload }),
-      // @ts-ignore - Deno-specific option to force HTTP/1.1
-      client: httpClient,
+    // Use curl subprocess to avoid Deno's strict HTTP header parsing issues with PesePay's server
+    const requestBody = JSON.stringify({ payload: encryptedPayload });
+    const curlProcess = new Deno.Command("curl", {
+      args: [
+        "-s",
+        "-X", "POST",
+        apiUrl,
+        "-H", `Authorization: ${integrationKey}`,
+        "-H", "Content-Type: application/json",
+        "-d", requestBody,
+        "--max-time", "30",
+      ],
+      stdout: "piped",
+      stderr: "piped",
     });
 
-    const responseData = await response.json();
-    console.log("PesePay raw response status:", response.status);
+    const curlResult = await curlProcess.output();
+    const curlStdout = new TextDecoder().decode(curlResult.stdout);
+    const curlStderr = new TextDecoder().decode(curlResult.stderr);
+
+    if (!curlResult.success) {
+      console.error("curl stderr:", curlStderr);
+      throw new Error(`Failed to connect to PesePay: ${curlStderr}`);
+    }
+
+    console.log("PesePay raw response:", curlStdout.substring(0, 200));
+
+    let responseData: any;
+    try {
+      responseData = JSON.parse(curlStdout);
+    } catch {
+      throw new Error(`Invalid response from PesePay: ${curlStdout.substring(0, 200)}`);
+    }
 
     if (!response.ok) {
       console.error("PesePay API error:", JSON.stringify(responseData));
