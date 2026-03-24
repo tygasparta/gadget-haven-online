@@ -118,6 +118,7 @@ serve(async (req) => {
     );
 
     console.log("Encrypted payload created, sending to PesePay...");
+    console.log("Integration key length:", integrationKey?.length, "First 4 chars:", integrationKey?.substring(0, 4));
 
     // Determine API URL based on mode
     const pesepayMode = Deno.env.get("PESEPAY_MODE") || "sandbox";
