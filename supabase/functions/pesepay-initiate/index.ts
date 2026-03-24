@@ -124,7 +124,6 @@ serve(async (req) => {
     );
 
     console.log("Encrypted payload created, sending to PesePay...");
-    console.log("Integration key length:", integrationKey?.length, "First 4 chars:", integrationKey?.substring(0, 4));
 
     // Determine API URL based on mode
     const pesepayMode = Deno.env.get("PESEPAY_MODE") || "sandbox";
@@ -133,13 +132,20 @@ serve(async (req) => {
         ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
         : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
 
+    console.log("Using PesePay API URL:", apiUrl);
+
+    // Use HTTP/1.1 client to avoid HTTP/2 parsing issues with PesePay's server
+    const httpClient = Deno.createHttpClient({ http2: false });
+
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: integrationKey,
+        "Authorization": integrationKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ payload: encryptedPayload }),
+      client: httpClient,
+    } as any);
     });
 
     const responseData = await response.json();
