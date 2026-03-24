@@ -350,11 +350,13 @@ export type Database = {
         Row: {
           billing_address: Json | null
           created_at: string | null
+          customer_phone: string | null
           id: string
           payment_method: string | null
           payment_reference: string | null
           shipping_address: Json | null
           shipping_method: string | null
+          source: string | null
           status: string | null
           total_amount: number
           updated_at: string | null
@@ -363,11 +365,13 @@ export type Database = {
         Insert: {
           billing_address?: Json | null
           created_at?: string | null
+          customer_phone?: string | null
           id?: string
           payment_method?: string | null
           payment_reference?: string | null
           shipping_address?: Json | null
           shipping_method?: string | null
+          source?: string | null
           status?: string | null
           total_amount: number
           updated_at?: string | null
@@ -376,11 +380,13 @@ export type Database = {
         Update: {
           billing_address?: Json | null
           created_at?: string | null
+          customer_phone?: string | null
           id?: string
           payment_method?: string | null
           payment_reference?: string | null
           shipping_address?: Json | null
           shipping_method?: string | null
+          source?: string | null
           status?: string | null
           total_amount?: number
           updated_at?: string | null
@@ -616,6 +622,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          phone_number: string
+          product_id: number
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone_number: string
+          product_id: number
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone_number?: string
+          product_id?: number
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       whatsapp_conversations: {
         Row: {
