@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, MoreHorizontal, Trash2, Download, RefreshCw } from 'lucide-react';
+import { Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, User, Calendar, DollarSign, MapPin, CreditCard, Phone, MoreHorizontal, Trash2, Download, RefreshCw, MessageSquare } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
 import { useUpdateOrderStatus, useDeleteOrder } from '@/hooks/useOrderManagement';
 import { useToast } from '@/hooks/use-toast';
