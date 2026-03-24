@@ -32,7 +32,7 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+      <Card className="shadow-lg border-0 bg-card">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center space-x-3 text-gray-800">
             <div className="p-2 bg-purple-100 rounded-lg">
