@@ -1437,6 +1437,7 @@ async function processInteractiveReply(phone: string, replyId: string, replyTitl
     "cart_checkout": () => handleCheckout(phone, userName),
     "cart_confirm_pay": () => processPayment(phone, userName),
     "cart_clear": () => clearCart(phone, userName),
+    "cart_remove_pick": () => sendRemoveItemPicker(phone, userName),
   };
 
   if (handlers[replyId]) {
