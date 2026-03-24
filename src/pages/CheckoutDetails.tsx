@@ -228,12 +228,12 @@ const CheckoutDetails = () => {
 
   if (!cartItems || cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <p className="text-gray-600 mb-4">Your cart is empty</p>
-            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+            <p className="text-muted-foreground mb-4">Your cart is empty</p>
+            <Button onClick={() => navigate('/')}>
               Continue Shopping
             </Button>
           </div>
