@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import audioBanner from '/banners/audio-banner.mp4.asset.json';
+import phonesBanner from '/banners/phones-banner.mp4.asset.json';
+import electronicsBanner from '/banners/electronics-banner.mp4.asset.json';
 
 export interface BannerSlide {
   id: string;
@@ -12,9 +15,9 @@ export interface BannerSlide {
 }
 
 const DEFAULT_SLIDES: BannerSlide[] = [
-  { id: '1', image: '/banners/audio-banner.jpg', path: '/audio', alt: 'Premium Audio Collection', type: 'image' },
-  { id: '2', image: '/banners/phones-banner.jpg', path: '/phones', alt: 'Latest Smartphones', type: 'image' },
-  { id: '3', image: '/banners/electronics-banner.jpg', path: '/deals', alt: 'Electronics Mega Deals', type: 'image' },
+  { id: '1', image: audioBanner.url, path: '/audio', alt: 'Premium Audio Collection', type: 'video' },
+  { id: '2', image: phonesBanner.url, path: '/phones', alt: 'Latest Smartphones', type: 'video' },
+  { id: '3', image: electronicsBanner.url, path: '/deals', alt: 'Electronics Mega Deals', type: 'video' },
 ];
 
 const HeroBanner = () => {
