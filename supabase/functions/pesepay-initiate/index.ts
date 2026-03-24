@@ -7,6 +7,104 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Raw TLS HTTP client to bypass Deno's strict HTTP parser
+// PesePay's server returns "HTTP/1.1 404 " (trailing space, no reason phrase)
+// which Deno's hyper-based fetch rejects as "invalid HTTP header parsed"
+async function rawHttpPost(
+  hostname: string,
+  path: string,
+  headers: Record<string, string>,
+  body: string
+): Promise<{ status: number; body: string }> {
+  const conn = await Deno.connectTls({ hostname, port: 443 });
+
+  try {
+    const headerLines = Object.entries(headers)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\r\n");
+
+    const httpRequest = [
+      `POST ${path} HTTP/1.1`,
+      `Host: ${hostname}`,
+      headerLines,
+      `Content-Length: ${new TextEncoder().encode(body).length}`,
+      "Connection: close",
+      "",
+      body,
+    ].join("\r\n");
+
+    await conn.write(new TextEncoder().encode(httpRequest));
+
+    // Read ALL data until connection closes
+    const allBytes: number[] = [];
+    const buf = new Uint8Array(32768);
+    try {
+      while (true) {
+        const n = await conn.read(buf);
+        if (n === null) break;
+        for (let i = 0; i < n; i++) {
+          allBytes.push(buf[i]);
+        }
+      }
+    } catch {
+      // Connection closed by server
+    }
+
+    const rawData = new Uint8Array(allBytes);
+    const fullResponse = new TextDecoder().decode(rawData);
+
+    // Find header/body boundary
+    const separatorIdx = fullResponse.indexOf("\r\n\r\n");
+    if (separatorIdx === -1) {
+      throw new Error("Invalid HTTP response - no header/body separator");
+    }
+
+    const headerSection = fullResponse.substring(0, separatorIdx);
+    const statusLine = headerSection.split("\r\n")[0];
+    const statusMatch = statusLine.match(/HTTP\/\d\.\d\s+(\d+)/);
+    const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+
+    // Get body bytes (after \r\n\r\n)
+    const bodyStartIdx = fullResponse.indexOf("\r\n\r\n") + 4;
+    let responseBody = fullResponse.substring(bodyStartIdx);
+
+    // Handle chunked transfer encoding
+    if (headerSection.toLowerCase().includes("transfer-encoding: chunked")) {
+      // For chunked encoding, reassemble by reading chunk sizes
+      const bodyBytes = rawData.slice(
+        new TextEncoder().encode(fullResponse.substring(0, bodyStartIdx)).length
+      );
+      const bodyStr = new TextDecoder().decode(bodyBytes);
+      
+      let decoded = "";
+      let pos = 0;
+      while (pos < bodyStr.length) {
+        // Find chunk size line
+        const lineEnd = bodyStr.indexOf("\r\n", pos);
+        if (lineEnd === -1) break;
+        
+        const sizeHex = bodyStr.substring(pos, lineEnd).trim();
+        const chunkSize = parseInt(sizeHex, 16);
+        
+        if (isNaN(chunkSize) || chunkSize === 0) break;
+        
+        // Read chunk data
+        const chunkStart = lineEnd + 2;
+        decoded += bodyStr.substring(chunkStart, chunkStart + chunkSize);
+        pos = chunkStart + chunkSize + 2; // skip \r\n after chunk data
+      }
+      
+      responseBody = decoded;
+    }
+
+    console.log("Raw HTTP response - status:", status, "body length:", responseBody.length);
+
+    return { status, body: responseBody };
+  } finally {
+    conn.close();
+  }
+}
+
 // AES-256-CBC encryption using Web Crypto API
 async function encryptPayload(data: string, encryptionKey: string): Promise<string> {
   const keyBytes = new TextEncoder().encode(encryptionKey);
@@ -22,22 +120,13 @@ async function encryptPayload(data: string, encryptionKey: string): Promise<stri
 
   const encoded = new TextEncoder().encode(data);
 
-  // PKCS7 padding
-  const blockSize = 16;
-  const padLen = blockSize - (encoded.length % blockSize);
-  const padded = new Uint8Array(encoded.length + padLen);
-  padded.set(encoded);
-  for (let i = encoded.length; i < padded.length; i++) {
-    padded[i] = padLen;
-  }
-
+  // Web Crypto API handles PKCS7 padding automatically for AES-CBC
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-CBC", iv },
     cryptoKey,
-    padded
+    encoded
   );
 
-  // Base64 encode
   const bytes = new Uint8Array(encrypted);
   let binary = "";
   for (let i = 0; i < bytes.length; i++) {
@@ -58,7 +147,6 @@ async function decryptPayload(encryptedBase64: string, encryptionKey: string): P
     ["decrypt"]
   );
 
-  // Base64 decode
   const binary = atob(encryptedBase64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -72,10 +160,8 @@ async function decryptPayload(encryptedBase64: string, encryptionKey: string): P
   );
 
   const decoded = new TextDecoder().decode(decrypted);
-  // Remove PKCS7 padding
-  const padLen = decoded.charCodeAt(decoded.length - 1);
-  const unpadded = decoded.slice(0, decoded.length - padLen);
-  return JSON.parse(unpadded);
+  // Web Crypto API automatically handles PKCS7 padding removal
+  return JSON.parse(decoded);
 }
 
 serve(async (req) => {
@@ -91,7 +177,6 @@ serve(async (req) => {
       throw new Error("PesePay credentials not configured");
     }
 
-    // Sanitize keys
     const integrationKey = rawIntegrationKey.replace(/[^\x20-\x7E]/g, '').trim();
     const encryptionKey = rawEncryptionKey.replace(/[^\x20-\x7E]/g, '').trim();
 
@@ -114,45 +199,68 @@ serve(async (req) => {
       returnUrl: returnUrl,
     };
 
-    console.log("PesePay payment body (before encryption):", JSON.stringify(paymentBody));
+    console.log("PesePay payment body:", JSON.stringify(paymentBody));
 
     const encryptedPayload = await encryptPayload(
       JSON.stringify(paymentBody),
       encryptionKey
     );
 
-    console.log("Encrypted payload created, sending to PesePay...");
-
-    // PesePay live API (api.pesepay.com) returns malformed HTTP headers that Deno's 
-    // strict HTTP parser cannot handle. Use sandbox API which works correctly.
-    // When PesePay fixes their live server headers, switch back to live URL.
     const pesepayMode = Deno.env.get("PESEPAY_MODE") || "sandbox";
-    
-    // Both modes use the same sandbox URL for now due to live server compatibility issue
-    // To use live: ensure PesePay has fixed their HTTP response headers
-    const apiUrl = pesepayMode === "live"
-      ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
-      : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
 
-    console.log("Using PesePay API URL:", apiUrl, "Mode:", pesepayMode);
+    // Choose hostname and path based on mode
+    const isLive = pesepayMode === "live";
+    const hostname = isLive ? "api.pesepay.com" : "api.test.sandbox.pesepay.com";
+    const path = isLive
+      ? "/api/payments-engine/v1/payments/initiate"
+      : "/payments-engine/v1/payments/initiate";
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": integrationKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ payload: encryptedPayload }),
-    });
+    console.log("Sending to PesePay:", hostname, path, "Mode:", pesepayMode);
 
-    const responseData = await response.json();
-    console.log("PesePay raw response status:", response.status);
+    // Use raw TLS for live (PesePay live returns malformed HTTP headers)
+    // Use standard fetch for sandbox (works correctly)
+    let responseData: any;
 
-    if (!response.ok) {
-      console.error("PesePay API error:", JSON.stringify(responseData));
-      throw new Error(
-        `PesePay API error (${response.status}): ${responseData.message || JSON.stringify(responseData)}`
+    if (isLive) {
+      const rawResponse = await rawHttpPost(
+        hostname,
+        path,
+        {
+          "Authorization": integrationKey,
+          "Content-Type": "application/json",
+        },
+        JSON.stringify({ payload: encryptedPayload })
       );
+
+      console.log("PesePay raw response status:", rawResponse.status);
+      console.log("PesePay raw response body:", rawResponse.body.substring(0, 200));
+
+      if (rawResponse.status >= 400) {
+        throw new Error(`PesePay API error (${rawResponse.status}): ${rawResponse.body.substring(0, 300)}`);
+      }
+
+      try {
+        responseData = JSON.parse(rawResponse.body);
+      } catch {
+        throw new Error(`Invalid JSON from PesePay: ${rawResponse.body.substring(0, 200)}`);
+      }
+    } else {
+      const response = await fetch(
+        `https://${hostname}${path}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": integrationKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ payload: encryptedPayload }),
+        }
+      );
+      responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(`PesePay API error (${response.status}): ${responseData.message || JSON.stringify(responseData)}`);
+      }
     }
 
     if (!responseData.payload) {
@@ -160,7 +268,6 @@ serve(async (req) => {
       throw new Error("Invalid response from PesePay - no payload");
     }
 
-    // Decrypt the response
     const decryptedResponse = await decryptPayload(
       responseData.payload,
       encryptionKey
@@ -174,7 +281,6 @@ serve(async (req) => {
       throw new Error("Missing redirectUrl or referenceNumber in PesePay response");
     }
 
-    // Update payment record if orderDbId provided
     if (orderDbId) {
       const supabaseClient = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
@@ -193,7 +299,6 @@ serve(async (req) => {
           poll_url: pollUrl || null,
         });
 
-      // Update order with payment reference
       await supabaseClient
         .from("orders")
         .update({ payment_reference: referenceNumber })

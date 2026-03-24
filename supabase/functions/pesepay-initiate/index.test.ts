@@ -44,7 +44,5 @@ Deno.test("pesepay-initiate rejects invalid amount", async () => {
   });
 
   const data = await response.json();
-  console.log("Invalid amount response:", JSON.stringify(data, null, 2));
-
   assertEquals(data.success, false);
 });
