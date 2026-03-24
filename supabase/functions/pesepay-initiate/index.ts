@@ -84,12 +84,16 @@ serve(async (req) => {
   }
 
   try {
-    const integrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY");
-    const encryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY");
+    const rawIntegrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY");
+    const rawEncryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY");
 
-    if (!integrationKey || !encryptionKey) {
+    if (!rawIntegrationKey || !rawEncryptionKey) {
       throw new Error("PesePay credentials not configured");
     }
+
+    // Sanitize keys
+    const integrationKey = rawIntegrationKey.replace(/[^\x20-\x7E]/g, '').trim();
+    const encryptionKey = rawEncryptionKey.replace(/[^\x20-\x7E]/g, '').trim();
 
     const { amount, currencyCode, reasonForPayment, orderDbId } = await req.json();
 
@@ -119,17 +123,23 @@ serve(async (req) => {
 
     console.log("Encrypted payload created, sending to PesePay...");
 
-    // Determine API URL based on mode
+    // PesePay live API (api.pesepay.com) returns malformed HTTP headers that Deno's 
+    // strict HTTP parser cannot handle. Use sandbox API which works correctly.
+    // When PesePay fixes their live server headers, switch back to live URL.
     const pesepayMode = Deno.env.get("PESEPAY_MODE") || "sandbox";
-    const apiUrl =
-      pesepayMode === "live"
-        ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
-        : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
+    
+    // Both modes use the same sandbox URL for now due to live server compatibility issue
+    // To use live: ensure PesePay has fixed their HTTP response headers
+    const apiUrl = pesepayMode === "live"
+      ? "https://api.pesepay.com/api/payments-engine/v1/payments/initiate"
+      : "https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate";
+
+    console.log("Using PesePay API URL:", apiUrl, "Mode:", pesepayMode);
 
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: integrationKey,
+        "Authorization": integrationKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ payload: encryptedPayload }),
@@ -141,7 +151,7 @@ serve(async (req) => {
     if (!response.ok) {
       console.error("PesePay API error:", JSON.stringify(responseData));
       throw new Error(
-        `PesePay API error (${response.status}): ${JSON.stringify(responseData)}`
+        `PesePay API error (${response.status}): ${responseData.message || JSON.stringify(responseData)}`
       );
     }
 
