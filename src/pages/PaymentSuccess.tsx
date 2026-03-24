@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, Truck, CreditCard, ArrowRight, Home } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Package, Truck, CreditCard, Home, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/Header';
@@ -11,105 +11,223 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 
+type PaymentStatus = 'polling' | 'success' | 'failed' | 'pending' | 'error';
+
+const MAX_POLLS = 20;
+const POLL_INTERVAL = 5000; // 5 seconds
+
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const [isVerifying, setIsVerifying] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('polling');
   const [orderDetails, setOrderDetails] = useState<any>(null);
-  
+  const [pollCount, setPollCount] = useState(0);
+  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasToastedRef = useRef(false);
+
   const sessionId = searchParams.get('session_id');
-  const reference = searchParams.get('reference');
+  const reference = searchParams.get('reference') || searchParams.get('referenceNumber');
 
-  useEffect(() => {
-    const verifyPayment = async () => {
-      if (!sessionId) {
-        setIsVerifying(false);
-        return;
+  const checkPesePayStatus = useCallback(async (ref: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('pesepay-check-status', {
+        body: { referenceNumber: ref },
+      });
+
+      if (error) {
+        console.error('PesePay status check error:', error);
+        return false;
       }
 
-      try {
-        const { data, error } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId }
-        });
+      console.log('PesePay status response:', data);
 
-        if (error) throw error;
+      const txnStatus = data?.status?.toUpperCase?.() || data?.transactionStatus?.toUpperCase?.();
 
-        if (data?.success) {
-          setOrderDetails(data.order);
-          toast({
-            title: "Payment Confirmed!",
-            description: "Your order has been processed successfully.",
-          });
-        } else {
-          toast({
-            title: "Payment Verification Failed",
-            description: "Please contact support if you were charged.",
-            variant: "destructive"
-          });
+      if (txnStatus === 'SUCCESS' || txnStatus === 'PAID' || txnStatus === 'COMPLETED') {
+        setPaymentStatus('success');
+        setOrderDetails(data?.orderDetails || data?.data || null);
+        if (!hasToastedRef.current) {
+          hasToastedRef.current = true;
+          toast({ title: "Payment Confirmed!", description: "Your order has been processed successfully." });
         }
-      } catch (error: any) {
-        console.error('Payment verification error:', error);
-        toast({
-          title: "Verification Error",
-          description: "There was an issue verifying your payment.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsVerifying(false);
+        return true;
+      } else if (txnStatus === 'FAILED' || txnStatus === 'CANCELLED' || txnStatus === 'DECLINED') {
+        setPaymentStatus('failed');
+        if (!hasToastedRef.current) {
+          hasToastedRef.current = true;
+          toast({ title: "Payment Failed", description: "Your payment was not successful. Please try again.", variant: "destructive" });
+        }
+        return true;
       }
-    };
 
-    verifyPayment();
+      // Still pending
+      return false;
+    } catch (err) {
+      console.error('Status poll error:', err);
+      return false;
+    }
+  }, [toast]);
+
+  const verifySessionPayment = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-payment', { body: { sessionId } });
+      if (error) throw error;
+      if (data?.success) {
+        setPaymentStatus('success');
+        setOrderDetails(data.order);
+        toast({ title: "Payment Confirmed!", description: "Your order has been processed successfully." });
+      } else {
+        setPaymentStatus('failed');
+        toast({ title: "Payment Verification Failed", description: "Please contact support if you were charged.", variant: "destructive" });
+      }
+    } catch {
+      setPaymentStatus('error');
+      toast({ title: "Verification Error", description: "There was an issue verifying your payment.", variant: "destructive" });
+    }
   }, [sessionId, toast]);
 
-  if (isVerifying) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-700">Verifying Payment...</h2>
-            <p className="text-gray-500 mt-2">Please wait while we confirm your order</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    // If we have a session_id (PayPal/Stripe flow), verify once
+    if (sessionId) {
+      verifySessionPayment();
+      return;
+    }
+
+    // If we have a PesePay reference, start polling
+    if (reference) {
+      let currentPoll = 0;
+
+      const poll = async () => {
+        currentPoll++;
+        setPollCount(currentPoll);
+
+        const done = await checkPesePayStatus(reference);
+        if (done || currentPoll >= MAX_POLLS) {
+          if (!done && currentPoll >= MAX_POLLS) {
+            setPaymentStatus('pending');
+          }
+          return;
+        }
+
+        pollRef.current = setTimeout(poll, POLL_INTERVAL);
+      };
+
+      poll();
+
+      return () => {
+        if (pollRef.current) clearTimeout(pollRef.current);
+      };
+    }
+
+    // No reference or session — show pending
+    setPaymentStatus('pending');
+  }, [sessionId, reference, verifySessionPayment, checkPesePayStatus]);
+
+  const handleRetryCheck = async () => {
+    if (!reference) return;
+    setPaymentStatus('polling');
+    setPollCount(0);
+    hasToastedRef.current = false;
+    const done = await checkPesePayStatus(reference);
+    if (!done) setPaymentStatus('pending');
+  };
+
+  const statusConfig = {
+    polling: {
+      icon: <Loader2 className="w-12 h-12 text-primary animate-spin" />,
+      bgColor: 'bg-accent',
+      title: 'Verifying Payment...',
+      subtitle: `Checking payment status (attempt ${pollCount}/${MAX_POLLS})`,
+    },
+    success: {
+      icon: <CheckCircle className="w-12 h-12 text-green-600" />,
+      bgColor: 'bg-green-100',
+      title: 'Payment Successful!',
+      subtitle: 'Thank you for your order. We\'re processing it now.',
+    },
+    failed: {
+      icon: <XCircle className="w-12 h-12 text-destructive" />,
+      bgColor: 'bg-red-100',
+      title: 'Payment Failed',
+      subtitle: 'Your payment was not successful. Please try again or contact support.',
+    },
+    pending: {
+      icon: <Clock className="w-12 h-12 text-yellow-600" />,
+      bgColor: 'bg-yellow-100',
+      title: 'Payment Pending',
+      subtitle: 'We\'re still waiting for confirmation. This may take a few minutes.',
+    },
+    error: {
+      icon: <XCircle className="w-12 h-12 text-destructive" />,
+      bgColor: 'bg-red-100',
+      title: 'Verification Error',
+      subtitle: 'There was an issue verifying your payment. Please contact support.',
+    },
+  };
+
+  const current = statusConfig[paymentStatus];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header />
-      
+
       <div className={`max-w-4xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Success Header */}
+          {/* Status Header */}
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+              className={`w-20 h-20 ${current.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}
             >
-              <CheckCircle className="w-12 h-12 text-green-600" />
+              {current.icon}
             </motion.div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-            <p className="text-gray-600">Thank you for your order. We're processing it now.</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{current.title}</h1>
+            <p className="text-muted-foreground">{current.subtitle}</p>
             {reference && (
-              <div className="mt-4 inline-block bg-blue-50 px-4 py-2 rounded-lg">
-                <span className="text-blue-700 font-medium">Order Reference: {reference}</span>
+              <div className="mt-4 inline-block bg-accent px-4 py-2 rounded-lg">
+                <span className="text-accent-foreground font-medium">Reference: {reference}</span>
               </div>
             )}
           </div>
 
+          {/* Polling progress bar */}
+          {paymentStatus === 'polling' && (
+            <div className="mb-8 max-w-md mx-auto">
+              <div className="w-full bg-muted rounded-full h-2">
+                <motion.div
+                  className="bg-primary h-2 rounded-full"
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${(pollCount / MAX_POLLS) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Checking every {POLL_INTERVAL / 1000} seconds...
+              </p>
+            </div>
+          )}
+
+          {/* Retry button for pending/failed */}
+          {(paymentStatus === 'pending' || paymentStatus === 'failed') && reference && (
+            <div className="text-center mb-8">
+              <Button onClick={handleRetryCheck} variant="outline" className="gap-2">
+                <RefreshCw className="w-4 h-4" />
+                Check Again
+              </Button>
+            </div>
+          )}
+
           {/* Order Details */}
-          {orderDetails && (
+          {orderDetails && paymentStatus === 'success' && (
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -120,14 +238,14 @@ const PaymentSuccess = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Order Total</p>
+                    <p className="text-sm text-muted-foreground">Order Total</p>
                     <p className="text-lg font-semibold">${orderDetails.total_amount?.toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Payment Method</p>
+                    <p className="text-sm text-muted-foreground">Payment Method</p>
                     <p className="text-lg font-semibold flex items-center space-x-2">
                       <CreditCard className="w-4 h-4" />
-                      <span>Card Payment</span>
+                      <span>{orderDetails.payment_method || 'PesePay'}</span>
                     </p>
                   </div>
                 </div>
@@ -135,57 +253,47 @@ const PaymentSuccess = () => {
             </Card>
           )}
 
-          {/* Next Steps */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Truck className="w-5 h-5" />
-                <span>What happens next?</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-600 text-sm font-medium">1</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Order Confirmation</h3>
-                    <p className="text-gray-600 text-sm">You'll receive an email confirmation shortly with your order details.</p>
-                  </div>
+          {/* Next Steps (only on success) */}
+          {paymentStatus === 'success' && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Truck className="w-5 h-5" />
+                  <span>What happens next?</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { step: '1', title: 'Order Confirmation', desc: "You'll receive an email confirmation shortly with your order details." },
+                    { step: '2', title: 'Processing', desc: "We'll prepare your items for shipment within 1-2 business days." },
+                    { step: '3', title: 'Shipping', desc: "Your order will be shipped and you'll receive tracking information." },
+                  ].map(({ step, title, desc }) => (
+                    <div key={step} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-accent rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-primary text-sm font-medium">{step}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-foreground">{title}</h3>
+                        <p className="text-muted-foreground text-sm">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-600 text-sm font-medium">2</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Processing</h3>
-                    <p className="text-gray-600 text-sm">We'll prepare your items for shipment within 1-2 business days.</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-600 text-sm font-medium">3</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Shipping</h3>
-                    <p className="text-gray-600 text-sm">Your order will be shipped and you'll receive tracking information.</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
+            <Button
               onClick={() => navigate('/orders')}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex-1"
             >
               <Package className="w-4 h-4 mr-2" />
               View Order Status
             </Button>
-            <Button 
+            <Button
               onClick={() => navigate('/')}
               variant="outline"
               className="flex-1"
