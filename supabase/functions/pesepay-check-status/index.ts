@@ -42,12 +42,15 @@ serve(async (req) => {
   }
 
   try {
-    const integrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY")?.trim().replace(/[\r\n]/g, '');
-    const encryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY")?.trim().replace(/[\r\n]/g, '');
+    const rawIntegrationKey = Deno.env.get("PESEPAY_INTEGRATION_KEY");
+    const rawEncryptionKey = Deno.env.get("PESEPAY_ENCRYPTION_KEY");
 
-    if (!integrationKey || !encryptionKey) {
+    if (!rawIntegrationKey || !rawEncryptionKey) {
       throw new Error("PesePay credentials not configured");
     }
+
+    const integrationKey = rawIntegrationKey.replace(/[^\x20-\x7E]/g, '').trim();
+    const encryptionKey = rawEncryptionKey.replace(/[^\x20-\x7E]/g, '').trim();
 
     const { referenceNumber } = await req.json();
 
@@ -61,19 +64,29 @@ serve(async (req) => {
         ? `https://api.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=${encodeURIComponent(referenceNumber)}`
         : `https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/check-payment?referenceNumber=${encodeURIComponent(referenceNumber)}`;
 
-    const response = await fetch(apiUrl, {
-      method: "GET",
-      headers: {
-        Authorization: integrationKey,
-        "Content-Type": "application/json",
-      },
+    // Use curl to avoid Deno's strict HTTP header parsing issues with PesePay
+    const curlProcess = new Deno.Command("curl", {
+      args: [
+        "-s",
+        "-X", "GET",
+        apiUrl,
+        "-H", `Authorization: ${integrationKey}`,
+        "-H", "Content-Type: application/json",
+        "--max-time", "30",
+      ],
+      stdout: "piped",
+      stderr: "piped",
     });
 
-    const responseData = await response.json();
+    const curlResult = await curlProcess.output();
+    const curlStdout = new TextDecoder().decode(curlResult.stdout);
 
-    if (!response.ok) {
-      throw new Error(`PesePay API error (${response.status}): ${JSON.stringify(responseData)}`);
+    if (!curlResult.success) {
+      const curlStderr = new TextDecoder().decode(curlResult.stderr);
+      throw new Error(`Failed to connect to PesePay: ${curlStderr}`);
     }
+
+    const responseData = JSON.parse(curlStdout);
 
     let transactionData = responseData;
     if (responseData.payload && typeof responseData.payload === "string") {
