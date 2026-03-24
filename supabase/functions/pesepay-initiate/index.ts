@@ -120,19 +120,11 @@ async function encryptPayload(data: string, encryptionKey: string): Promise<stri
 
   const encoded = new TextEncoder().encode(data);
 
-  // PKCS7 padding
-  const blockSize = 16;
-  const padLen = blockSize - (encoded.length % blockSize);
-  const padded = new Uint8Array(encoded.length + padLen);
-  padded.set(encoded);
-  for (let i = encoded.length; i < padded.length; i++) {
-    padded[i] = padLen;
-  }
-
+  // Web Crypto API handles PKCS7 padding automatically for AES-CBC
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-CBC", iv },
     cryptoKey,
-    padded
+    encoded
   );
 
   const bytes = new Uint8Array(encrypted);
