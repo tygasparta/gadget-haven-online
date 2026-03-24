@@ -115,9 +115,7 @@ async function decryptPayload(encryptedBase64: string, encryptionKey: string): P
   );
 
   const decoded = new TextDecoder().decode(decrypted);
-  const padLen = decoded.charCodeAt(decoded.length - 1);
-  const unpadded = decoded.slice(0, decoded.length - padLen);
-  return JSON.parse(unpadded);
+  return JSON.parse(decoded);
 }
 
 serve(async (req) => {
