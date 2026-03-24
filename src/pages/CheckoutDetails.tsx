@@ -211,12 +211,12 @@ const CheckoutDetails = () => {
 
   if (cartError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <p className="text-red-600 mb-4">Error loading checkout: {cartError.message}</p>
-            <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
+            <p className="text-destructive mb-4">Error loading checkout: {cartError.message}</p>
+            <Button onClick={() => navigate('/checkout')}>
               Back to Cart
             </Button>
           </div>
