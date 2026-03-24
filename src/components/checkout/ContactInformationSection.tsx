@@ -31,11 +31,11 @@ const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1 }}
     >
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+      <Card className="shadow-lg border-0 bg-card">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-gray-800">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <User className="w-5 h-5 text-blue-600" />
+          <CardTitle className="flex items-center space-x-3 text-card-foreground">
+            <div className="p-2 bg-accent rounded-lg">
+              <User className="w-5 h-5 text-primary" />
             </div>
             <span>Contact Information</span>
           </CardTitle>

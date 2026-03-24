@@ -48,7 +48,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
       transition={{ delay: 0.3 }}
     >
       <Card className="sticky top-4 bg-white border-0 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+        <CardHeader className="bg-accent rounded-t-xl">
           <CardTitle className="flex items-center space-x-2 text-gray-800">
             <ShoppingCart className="w-5 h-5 text-blue-600" />
             <span>Order Summary</span>
@@ -147,7 +147,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           <Button
             onClick={onSubmit}
             disabled={isProcessing}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
           >
             {isProcessing ? (
               <div className="flex items-center justify-center space-x-2">

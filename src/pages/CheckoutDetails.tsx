@@ -196,11 +196,11 @@ const CheckoutDetails = () => {
 
   if (cartLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading checkout details...</p>
           </div>
         </div>
@@ -211,12 +211,12 @@ const CheckoutDetails = () => {
 
   if (cartError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <p className="text-red-600 mb-4">Error loading checkout: {cartError.message}</p>
-            <Button onClick={() => navigate('/checkout')} className="bg-blue-600 hover:bg-blue-700">
+            <p className="text-destructive mb-4">Error loading checkout: {cartError.message}</p>
+            <Button onClick={() => navigate('/checkout')}>
               Back to Cart
             </Button>
           </div>
@@ -228,12 +228,12 @@ const CheckoutDetails = () => {
 
   if (!cartItems || cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <p className="text-gray-600 mb-4">Your cart is empty</p>
-            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+            <p className="text-muted-foreground mb-4">Your cart is empty</p>
+            <Button onClick={() => navigate('/')}>
               Continue Shopping
             </Button>
           </div>
@@ -246,7 +246,7 @@ const CheckoutDetails = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-background">
       <Header />
       
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -264,7 +264,7 @@ const CheckoutDetails = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-foreground">
                 Checkout Details
               </h1>
               <p className="text-gray-500 mt-1">Complete your order securely</p>

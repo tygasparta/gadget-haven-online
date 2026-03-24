@@ -360,7 +360,7 @@ const Checkout = () => {
                 </div>
 
                 <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   onClick={() => navigate('/checkout/details')}
                 >
                   Proceed to Checkout
