@@ -164,6 +164,7 @@ const OrdersTab = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">Source</TableHead>
                   <TableHead className="font-semibold">Order ID</TableHead>
                   <TableHead className="font-semibold">Date</TableHead>
                   <TableHead className="font-semibold">Customer</TableHead>
