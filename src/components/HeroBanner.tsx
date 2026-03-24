@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-
 export interface BannerSlide {
   id: string;
   image: string;
@@ -12,9 +11,9 @@ export interface BannerSlide {
 }
 
 const DEFAULT_SLIDES: BannerSlide[] = [
-  { id: '1', image: '/banners/audio-banner.jpg', path: '/audio', alt: 'Premium Audio Collection', type: 'image' },
-  { id: '2', image: '/banners/phones-banner.jpg', path: '/phones', alt: 'Latest Smartphones', type: 'image' },
-  { id: '3', image: '/banners/electronics-banner.jpg', path: '/deals', alt: 'Electronics Mega Deals', type: 'image' },
+  { id: '1', image: '/__l5e/assets-v1/1ddfd330-aa3a-46d4-9c59-06521289b21b/audio-banner.mp4', path: '/audio', alt: 'Premium Audio Collection', type: 'video' },
+  { id: '2', image: '/__l5e/assets-v1/49b13230-6457-4e0c-8052-33852a23853f/phones-banner.mp4', path: '/phones', alt: 'Latest Smartphones', type: 'video' },
+  { id: '3', image: '/__l5e/assets-v1/24a7bc0e-1b19-4688-83f5-3754dbde12fc/electronics-banner.mp4', path: '/deals', alt: 'Electronics Mega Deals', type: 'video' },
 ];
 
 const HeroBanner = () => {
