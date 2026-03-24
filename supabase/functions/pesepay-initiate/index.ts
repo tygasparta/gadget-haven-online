@@ -144,8 +144,8 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ payload: encryptedPayload }),
+      // @ts-ignore - Deno-specific option to force HTTP/1.1
       client: httpClient,
-    } as any);
     });
 
     const responseData = await response.json();
