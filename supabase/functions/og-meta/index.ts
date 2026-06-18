@@ -12,7 +12,13 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url)
-    const productId = url.searchParams.get('id')
+    // Accept ?id=123 or path-style /og-meta/123
+    let productId = url.searchParams.get('id')
+    if (!productId) {
+      const parts = url.pathname.split('/').filter(Boolean)
+      productId = parts[parts.length - 1] || null
+      if (productId === 'og-meta') productId = null
+    }
     
     if (!productId) {
       return new Response('Product ID required', { status: 400 })
@@ -36,6 +42,18 @@ Deno.serve(async (req) => {
     // Get the site URL from environment or use default
     const siteUrl = 'https://gadgetgenie.org'
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+    const productUrl = `${siteUrl}/product/${productId}`
+
+    // Detect social-media crawlers vs. real users. Real users get a 302
+    // straight to the product page; crawlers get static OG HTML.
+    const ua = (req.headers.get('user-agent') || '').toLowerCase()
+    const isCrawler = /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|slackbot|linkedinbot|discordbot|pinterest|redditbot|skypeuripreview|googlebot|bingbot|applebot|embedly|quora link preview|outbrain|vkshare|w3c_validator|yandex|baiduspider/i.test(ua)
+    if (!isCrawler) {
+      return new Response(null, {
+        status: 302,
+        headers: { ...corsHeaders, Location: productUrl },
+      })
+    }
     
     // Convert image URL to absolute URL
     const getAbsoluteImageUrl = (imageUrl: string) => {
@@ -56,8 +74,15 @@ Deno.serve(async (req) => {
     }
 
     const imageUrl = getAbsoluteImageUrl(product.image)
-    const productUrl = `${siteUrl}/product/${productId}`
-    const description = product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`
+    const rawDesc = product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`
+    const esc = (s: string) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const title = esc(`${product.name} - GadgetGenie`)
+    const description = esc(rawDesc).slice(0, 300)
+    const safeImage = esc(imageUrl)
+    const safeUrl = esc(productUrl)
+    const safeBrand = product.brand ? esc(product.brand) : ''
+    const safeName = esc(product.name)
+    const safePrice = esc(String(product.price))
 
     // Generate HTML with proper meta tags
     const html = `<!DOCTYPE html>
@@ -67,41 +92,41 @@ Deno.serve(async (req) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Primary Meta Tags -->
-    <title>${product.name} - GadgetGenie</title>
-    <meta name="title" content="${product.name} - GadgetGenie">
+    <title>${title}</title>
+    <meta name="title" content="${title}">
     <meta name="description" content="${description}">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="product">
-    <meta property="og:url" content="${productUrl}">
-    <meta property="og:title" content="${product.name} - GadgetGenie">
+    <meta property="og:url" content="${safeUrl}">
+    <meta property="og:title" content="${title}">
     <meta property="og:description" content="${description}">
-    <meta property="og:image" content="${imageUrl}">
-    <meta property="og:image:secure_url" content="${imageUrl}">
+    <meta property="og:image" content="${safeImage}">
+    <meta property="og:image:secure_url" content="${safeImage}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="${product.name}">
+    <meta property="og:image:alt" content="${safeName}">
     <meta property="og:site_name" content="GadgetGenie">
-    <meta property="product:price:amount" content="${product.price}">
+    <meta property="product:price:amount" content="${safePrice}">
     <meta property="product:price:currency" content="USD">
-    ${product.brand ? `<meta property="product:brand" content="${product.brand}">` : ''}
+    ${safeBrand ? `<meta property="product:brand" content="${safeBrand}">` : ''}
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="${productUrl}">
-    <meta name="twitter:title" content="${product.name} - GadgetGenie">
+    <meta name="twitter:url" content="${safeUrl}">
+    <meta name="twitter:title" content="${title}">
     <meta name="twitter:description" content="${description}">
-    <meta name="twitter:image" content="${imageUrl}">
-    <meta name="twitter:image:alt" content="${product.name}">
+    <meta name="twitter:image" content="${safeImage}">
+    <meta name="twitter:image:alt" content="${safeName}">
     
 </head>
 <body>
     <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
         <div style="text-align: center;">
-            <h1>${product.name}</h1>
-            <p>$${product.price}</p>
-            <a href="${productUrl}">View product</a>
+            <h1>${safeName}</h1>
+            <p>$${safePrice}</p>
+            <a href="${safeUrl}">View product</a>
         </div>
     </div>
 </body>

@@ -158,7 +158,10 @@ const ProductDetail = () => {
     return `https://gadgetgenie.org/product/${id}`;
   };
 
-  // Short share URL via Cloudflare Worker custom domain
+  // Short share URL via Cloudflare Worker on share.gadgetgenie.org.
+  // The worker serves Open Graph HTML to social crawlers
+  // (Facebook, WhatsApp, Twitter, LinkedIn, Telegram, etc.) and
+  // 302-redirects real users straight to the product page.
   const getOgMetaUrl = () => {
     return `https://share.gadgetgenie.org/${id}`;
   };
