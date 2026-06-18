@@ -65,24 +65,23 @@ const PWAInstallPrompt = () => {
   }
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 shadow-lg border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+    <Card className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 shadow-lg border-border bg-card">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Download className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Download className="w-5 h-5 text-primary-foreground" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-sm">Install Gadget Genie</h3>
-            <p className="text-gray-600 text-xs mt-1">
+            <h3 className="font-semibold text-foreground text-sm">Install Gadget Genie</h3>
+            <p className="text-muted-foreground text-xs mt-1">
               Get quick access to your favorite tech store. Install now for a better experience!
             </p>
             <div className="flex gap-2 mt-3">
               <Button
                 onClick={handleInstallClick}
                 size="sm"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
               >
                 Install
               </Button>
@@ -90,7 +89,6 @@ const PWAInstallPrompt = () => {
                 onClick={handleDismiss}
                 variant="outline"
                 size="sm"
-                className="text-gray-600"
               >
                 Maybe Later
               </Button>
@@ -98,7 +96,7 @@ const PWAInstallPrompt = () => {
           </div>
           <button
             onClick={handleDismiss}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+            className="flex-shrink-0 text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4" />
           </button>
