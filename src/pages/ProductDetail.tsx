@@ -158,9 +158,11 @@ const ProductDetail = () => {
     return `https://gadgetgenie.org/product/${id}`;
   };
 
-  // Short share URL via Cloudflare Worker custom domain
+  // Share URL points at our Supabase og-meta edge function. It serves
+  // proper Open Graph tags to crawlers (Facebook, WhatsApp, Twitter,
+  // LinkedIn) and 302-redirects real users to the product page.
   const getOgMetaUrl = () => {
-    return `https://share.gadgetgenie.org/${id}`;
+    return `https://ktpxqjyfguxckdzlqwai.supabase.co/functions/v1/og-meta?id=${id}`;
   };
 
   const handleShare = async (platform: string) => {
