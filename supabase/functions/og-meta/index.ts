@@ -73,7 +73,9 @@ Deno.serve(async (req) => {
       return `${siteUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`
     }
 
-    const imageUrl = getAbsoluteImageUrl(product.image)
+    const rawImageUrl = getAbsoluteImageUrl(product.image)
+    // Composed OG image with price tag overlay (1200x630 PNG)
+    const imageUrl = `${supabaseUrl}/functions/v1/og-image?id=${productId}`
     const rawDesc = product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`
     const esc = (s: string) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const title = esc(`${product.name} - GadgetGenie`)
