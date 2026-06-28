@@ -158,12 +158,12 @@ const ProductDetail = () => {
     return `https://gadgetgenie.org/product/${id}`;
   };
 
-  // Short share URL via Cloudflare Worker on share.gadgetgenie.org.
-  // The worker serves Open Graph HTML to social crawlers
-  // (Facebook, WhatsApp, Twitter, LinkedIn, Telegram, etc.) and
-  // 302-redirects real users straight to the product page.
+  // Share URL served by the `og-meta` Supabase edge function.
+  // - Social crawlers (Facebook, WhatsApp, Twitter, LinkedIn, Telegram, etc.)
+  //   receive rendered Open Graph HTML with the product title, image and price.
+  // - Real users are 302-redirected straight to the product page.
   const getOgMetaUrl = () => {
-    return `https://share.gadgetgenie.org/${id}`;
+    return `https://ktpxqjyfguxckdzlqwai.supabase.co/functions/v1/og-meta?id=${id}`;
   };
 
   const handleShare = async (platform: string) => {
