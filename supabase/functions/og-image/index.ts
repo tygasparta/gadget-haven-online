@@ -66,22 +66,22 @@ Deno.serve(async (req) => {
 
     const font = await getFont()
     const priceText = `$${Number(product.price).toFixed(2)}`
-    const priceImg = await Image.renderText(font, 84, priceText, 0xffffffff)
+    const priceImg = await Image.renderText(font, 48, priceText, 0xffffffff)
 
-    const padX = 36, padY = 22
+    const padX = 20, padY = 12
     const badgeW = priceImg.width + padX * 2
     const badgeH = priceImg.height + padY * 2
-    const badge = new Image(badgeW, badgeH).fill(0xdc2626ff) // red-600
-    const bx = 40
-    const by = H - badgeH - 40
+    const badge = new Image(badgeW, badgeH).fill(0x0982c3ff) // brand blue (hsl 201 91% 40%)
+    const bx = 32
+    const by = H - badgeH - 32
     canvas.composite(badge, bx, by)
     canvas.composite(priceImg, bx + padX, by + padY)
 
-    // Optional original price strikethrough-ish (just smaller faded text)
+    // Optional original price (smaller faded text)
     if (product.original_price && Number(product.original_price) > Number(product.price)) {
       const orig = `was $${Number(product.original_price).toFixed(2)}`
-      const origImg = await Image.renderText(font, 36, orig, 0x666666ff)
-      canvas.composite(origImg, bx, by - origImg.height - 8)
+      const origImg = await Image.renderText(font, 24, orig, 0x666666ff)
+      canvas.composite(origImg, bx, by - origImg.height - 6)
     }
 
     const png = await canvas.encode()
