@@ -78,127 +78,119 @@ serve(async (req) => {
       );
     }
 
-    // Generate image using AI gateway
-    const aiResponse = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an expert at generating wide cinematic banner images for e-commerce websites. Always create images in ultra-wide 1920x544 aspect ratio suitable for website hero banners. Make images vibrant, professional, and visually striking with good contrast.",
-            },
-            {
-              role: "user",
-              content: `Generate a wide cinematic e-commerce banner image (1920x544 aspect ratio): ${prompt.trim()}`,
-            },
-          ],
-          modalities: ["image", "text"],
-        }),
-      }
-    );
+    // Generate image using Lovable AI gateway, with model fallbacks
+    const models = [
+      "google/gemini-3-pro-image",
+      "google/gemini-3.1-flash-image",
+      "google/gemini-2.5-flash-image",
+    ];
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI gateway error:", aiResponse.status, errorText);
+    let imageBase64: string | null = null;
+    let lastError = "";
+    let lastStatus = 500;
 
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error: "Rate limit exceeded. Please try again in a moment.",
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({
-            error:
-              "AI credits exhausted. Please add funds in Settings > Workspace > Usage.",
-          }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ error: "Failed to generate image" }),
+    for (const model of models) {
+      const aiResponse = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are an expert at generating wide cinematic banner images for e-commerce websites. Always create images in ultra-wide 1920x544 aspect ratio suitable for website hero banners. Make images vibrant, professional, and visually striking with good contrast.",
+              },
+              {
+                role: "user",
+                content: `Generate a wide cinematic e-commerce banner image (1920x544 aspect ratio): ${prompt.trim()}`,
+              },
+            ],
+            modalities: ["image", "text"],
+          }),
         }
       );
-    }
 
-    const aiData = await aiResponse.json();
-    console.log("AI response keys:", Object.keys(aiData));
+      if (!aiResponse.ok) {
+        lastStatus = aiResponse.status;
+        lastError = await aiResponse.text();
+        console.error("AI gateway error:", model, aiResponse.status, lastError);
 
-    // Extract image from response - check both images array and content parts
-    let imageBase64: string | null = null;
-    const message = aiData.choices?.[0]?.message;
-
-    // Check the images array first (gateway format)
-    if (message?.images && Array.isArray(message.images)) {
-      for (const img of message.images) {
-        if (img.image_url?.url?.startsWith("data:")) {
-          const base64Match = img.image_url.url.match(
-            /^data:image\/[^;]+;base64,(.+)$/
+        // Terminal errors: stop immediately
+        if (aiResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
-          if (base64Match) {
-            imageBase64 = base64Match[1];
-            break;
+        }
+        if (aiResponse.status === 402) {
+          return new Response(
+            JSON.stringify({
+              error: "Lovable AI credits exhausted. Please add funds in Settings > Workspace > Usage.",
+            }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        continue; // try next model
+      }
+
+      const aiData = await aiResponse.json();
+      const message = aiData.choices?.[0]?.message;
+
+      // Gateway format: images array
+      if (message?.images && Array.isArray(message.images)) {
+        for (const img of message.images) {
+          const url = img?.image_url?.url;
+          if (typeof url === "string" && url.startsWith("data:")) {
+            const m = url.match(/^data:image\/[^;]+;base64,(.+)$/);
+            if (m) {
+              imageBase64 = m[1];
+              break;
+            }
           }
         }
       }
-    }
 
-    // Fallback: check content parts
-    if (!imageBase64 && message?.content) {
-      const parts = Array.isArray(message.content)
-        ? message.content
-        : [{ type: "text", text: message.content }];
-
-      for (const part of parts) {
-        if (
-          part.type === "image_url" &&
-          part.image_url?.url?.startsWith("data:")
-        ) {
-          const base64Match = part.image_url.url.match(
-            /^data:image\/[^;]+;base64,(.+)$/
-          );
-          if (base64Match) {
-            imageBase64 = base64Match[1];
-            break;
+      // Fallback: content parts
+      if (!imageBase64 && message?.content && Array.isArray(message.content)) {
+        for (const part of message.content) {
+          const url = part?.image_url?.url;
+          if (typeof url === "string" && url.startsWith("data:")) {
+            const m = url.match(/^data:image\/[^;]+;base64,(.+)$/);
+            if (m) {
+              imageBase64 = m[1];
+              break;
+            }
           }
         }
       }
-    }
 
-    console.log("Image extracted:", !!imageBase64);
+      if (imageBase64) {
+        console.log("Image generated with model:", model);
+        break;
+      }
+
+      lastError = "Model returned no image";
+      console.error("No image returned by model:", model);
+    }
 
     if (!imageBase64) {
       return new Response(
         JSON.stringify({
-          error: "AI did not return an image. Try a different prompt.",
+          error: `AI did not return an image. ${lastError ? lastError.slice(0, 300) : "Try a different prompt."}`,
         }),
         {
-          status: 422,
+          status: lastStatus === 500 ? 422 : lastStatus,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
+
 
     // Decode and upload to Supabase storage
     const imageBytes = Uint8Array.from(atob(imageBase64), (c) =>
