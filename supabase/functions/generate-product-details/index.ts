@@ -1,82 +1,22 @@
-
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+const SYSTEM_PROMPT = `You are an expert e-commerce product manager. Generate compelling product details that will help products sell well.
 
-  try {
-    const { prompt } = await req.json();
-
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
-    }
-
-    if (!prompt) {
-      throw new Error('Prompt is required');
-    }
-
-    console.log('Generating product details with prompt:', prompt);
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: `You are an expert e-commerce product manager. Generate compelling product details that will help products sell well. 
-
-IMPORTANT: You must respond with ONLY valid JSON. Do not include any markdown formatting, explanations, or additional text. The response should be a raw JSON object that can be parsed directly.
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any markdown formatting, code fences, explanations, or additional text.
 
 CRITICAL: Always include a "specifications" array with REAL specification names based on the product type. NEVER use generic names like "Feature 1", "Feature 2", etc.
 
-Based on the product type, use these REAL specification names:
-
-For tablets/iPads: 
-- "Display": "10.9-inch Liquid Retina display"
-- "Storage": "64GB/256GB/512GB"  
-- "Processor": "A14 Bionic chip"
-- "Connectivity": "Wi-Fi 6, Bluetooth 5.0"
-- "Battery Life": "Up to 10 hours"
-- "Operating System": "iPadOS 16"
-- "Weight": "461 grams"
-- "Dimensions": "247.6 x 178.5 x 6.1 mm"
-- "Camera": "12MP rear, 12MP front"
-
-For smartphones:
-- "Display": "6.7-inch AMOLED, 2800x1260"
-- "Storage": "128GB/256GB/512GB internal"
-- "RAM": "8GB/12GB RAM"
-- "Processor": "Snapdragon 8 Gen 2"
-- "Battery": "4500mAh with 25W fast charging"
-- "Camera": "108MP triple camera system"
-- "Operating System": "Android 14"
-- "Connectivity": "5G, Wi-Fi 6, Bluetooth 5.2"
-
-For laptops:
-- "Display": "13.3-inch Retina, 2560x1600"
-- "Processor": "Intel Core i5/i7 or Apple M1/M2"
-- "RAM": "8GB/16GB/32GB"
-- "Storage": "256GB/512GB/1TB SSD"
-- "Graphics": "Integrated Intel Iris Xe"
-- "Operating System": "Windows 11 or macOS"
-- "Battery Life": "Up to 12 hours"
-- "Weight": "1.4 kg"
+For tablets/iPads use: Display, Storage, Processor, Connectivity, Battery Life, Operating System, Weight, Dimensions, Camera.
+For smartphones use: Display, Storage, RAM, Processor, Battery, Camera, Operating System, Connectivity.
+For laptops use: Display, Processor, RAM, Storage, Graphics, Operating System, Battery Life, Weight.
 
 The JSON structure must be exactly:
 {
@@ -91,77 +31,160 @@ The JSON structure must be exactly:
   "specifications": [
     {"key": "Display", "value": "10.9-inch Liquid Retina display"},
     {"key": "Storage", "value": "256GB internal storage"},
-    {"key": "Processor", "value": "A14 Bionic chip"},
-    {"key": "RAM", "value": "8GB RAM"},
-    {"key": "Battery Life", "value": "Up to 10 hours"},
-    {"key": "Operating System", "value": "iPadOS 16"}
+    {"key": "Processor", "value": "A14 Bionic chip"}
   ]
 }
 
-MANDATORY: The specifications array MUST contain at least 5-8 real specifications with proper technical names, not generic placeholders.` 
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+MANDATORY: The specifications array MUST contain at least 5-8 real specifications with proper technical names, not generic placeholders.`;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(errorData.error?.message || `OpenAI API request failed with status ${response.status}`);
+function stripFences(text: string) {
+  return text.trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
+}
+
+async function callLovable(prompt: string) {
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3.7-flash",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    const err: any = new Error(
+      res.status === 429
+        ? "Rate limit exceeded. Please try again in a moment."
+        : res.status === 402
+        ? "AI credits exhausted. Please add funds in Settings > Workspace > Usage."
+        : `AI gateway error (${res.status}): ${errorText.slice(0, 300)}`,
+    );
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("AI returned an empty response");
+  return stripFences(content);
+}
+
+async function callOpenAI(prompt: string) {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${openAIApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`OpenAI error (${res.status}): ${errorText.slice(0, 300)}`);
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("OpenAI returned an empty response");
+  return stripFences(content);
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { prompt } = await req.json();
+    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+      return new Response(JSON.stringify({ error: "Prompt is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response structure from OpenAI');
+    let generatedData: string | null = null;
+    let lastError: any = null;
+
+    // Primary: Lovable AI (no OpenAI credits needed)
+    if (LOVABLE_API_KEY) {
+      try {
+        generatedData = await callLovable(prompt);
+      } catch (e) {
+        lastError = e;
+        console.error("Lovable AI failed:", e instanceof Error ? e.message : e);
+      }
     }
 
-    const generatedData = data.choices[0].message.content;
+    // Fallback: OpenAI, only if a key is configured
+    if (!generatedData && openAIApiKey) {
+      try {
+        generatedData = await callOpenAI(prompt);
+      } catch (e) {
+        lastError = e;
+        console.error("OpenAI fallback failed:", e instanceof Error ? e.message : e);
+      }
+    }
 
-    console.log('Generated product details:', generatedData);
+    if (!generatedData) {
+      const status = lastError?.status === 429 || lastError?.status === 402 ? lastError.status : 500;
+      return new Response(
+        JSON.stringify({ error: lastError?.message || "No AI provider configured" }),
+        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
-    // Validate that the response is valid JSON
-    let parsedData;
+    let parsedData: any;
     try {
       parsedData = JSON.parse(generatedData);
-    } catch (parseError) {
-      console.error('Generated data is not valid JSON:', generatedData);
-      throw new Error('AI generated invalid JSON format');
+    } catch {
+      console.error("Generated data is not valid JSON:", generatedData.slice(0, 500));
+      return new Response(JSON.stringify({ error: "AI generated invalid JSON format" }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Ensure specifications array exists and has proper format
-    if (!parsedData.specifications || !Array.isArray(parsedData.specifications) || parsedData.specifications.length === 0) {
-      console.error('Missing or invalid specifications array in generated data');
-      throw new Error('AI failed to generate proper specifications');
+    if (
+      !Array.isArray(parsedData.specifications) ||
+      parsedData.specifications.length === 0 ||
+      !parsedData.specifications.every(
+        (s: any) =>
+          typeof s?.key === "string" &&
+          typeof s?.value === "string" &&
+          !s.key.toLowerCase().includes("feature"),
+      )
+    ) {
+      return new Response(
+        JSON.stringify({ error: "AI failed to generate proper specifications. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    // Validate specifications have proper structure
-    const hasValidSpecs = parsedData.specifications.every((spec: any) => 
-      spec.key && spec.value && 
-      typeof spec.key === 'string' && 
-      typeof spec.value === 'string' &&
-      !spec.key.toLowerCase().includes('feature')
-    );
-
-    if (!hasValidSpecs) {
-      console.error('Specifications contain invalid or generic names:', parsedData.specifications);
-      throw new Error('AI generated specifications with invalid names');
-    }
-
-    return new Response(JSON.stringify({ generatedData }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ generatedData: JSON.stringify(parsedData) }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    console.error('Error in generate-product-details function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message || 'An unexpected error occurred',
-      details: error.stack || 'No additional details available'
-    }), {
+    console.error("Error in generate-product-details function:", error);
+    return new Response(JSON.stringify({ error: error?.message || "An unexpected error occurred" }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
