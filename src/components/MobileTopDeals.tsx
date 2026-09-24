@@ -63,7 +63,7 @@ const MobileTopDeals = () => {
             )}
             
             <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover"
+              <img src={product.image} alt={product.name} className="w-full h-full object-contain p-2"
                 onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"; }}
               />
             </div>
