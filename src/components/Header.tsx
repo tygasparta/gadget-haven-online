@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, User, Heart, Menu, LogOut, X, Home, Grid3X3, Tag, Headphones, Smartphone, Settings, Phone, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartItems } from '@/hooks/useCart';
@@ -50,11 +50,17 @@ const Header = () => {
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
+  const location = useLocation();
+  const currentUrl = location.pathname + location.search;
   const navTabs = [
-    { label: 'New Arrivals', path: '/categories?featured=new' },
-    { label: 'Fire Sale', path: '/deals', highlight: 'red' },
-    { label: 'Brands Store', path: '/products' },
-    { label: 'Clearance', path: '/deals' },
+    { label: 'Deals', path: '/deals', highlight: 'red' },
+    { label: 'New Arrivals', path: '/products?filter=new-arrivals' },
+    { label: 'Smartphones', path: '/products?category=smartphones' },
+    { label: 'Laptops', path: '/products?category=laptops' },
+    { label: 'Gaming', path: '/products?category=gaming' },
+    { label: 'Accessories', path: '/products?category=accessories' },
+    { label: 'Smart Home', path: '/products?category=smart-home' },
+    { label: 'Brands', path: '/products' },
   ];
 
   const menuItems = [
@@ -158,20 +164,20 @@ const Header = () => {
         </div>
 
         {/* Navigation tabs + mega menu trigger */}
-        <div className="hidden md:block border-t border-border bg-muted/30">
+        <div className="hidden md:block border-t border-border bg-background">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center divide-x divide-border">
+            <div className="flex items-center gap-1 overflow-x-auto">
               <div
                 className="relative"
                 onMouseEnter={() => setIsMegaMenuOpen(true)}
               >
                 <button
                   onClick={() => navigate('/categories')}
-                  className={`flex items-center gap-1.5 px-6 py-2 text-sm font-medium transition-colors ${
-                    isMegaMenuOpen ? 'text-primary bg-background' : 'text-foreground hover:text-primary hover:bg-muted'
+                  className={`flex items-center gap-1.5 pr-4 py-2.5 text-sm font-semibold transition-colors whitespace-nowrap ${
+                    isMegaMenuOpen ? 'text-primary' : 'text-foreground hover:text-primary'
                   }`}
                 >
-                  <Grid3X3 className="w-4 h-4" />
+                  <Grid3X3 className="w-4 h-4" strokeWidth={1.75} />
                   All Categories
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isMegaMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -181,10 +187,12 @@ const Header = () => {
                   key={tab.path + tab.label}
                   to={tab.path}
                   onMouseEnter={() => setIsMegaMenuOpen(false)}
-                  className={`px-6 py-2 text-sm font-medium transition-colors ${
-                    tab.highlight === 'red'
-                      ? 'text-destructive hover:opacity-80'
-                      : 'text-foreground hover:text-primary hover:bg-muted'
+                  className={`px-3 py-2.5 text-sm transition-colors whitespace-nowrap border-b-2 ${
+                    currentUrl === tab.path
+                      ? 'border-primary text-primary font-medium'
+                      : tab.highlight === 'red'
+                        ? 'border-transparent text-destructive font-medium hover:opacity-80'
+                        : 'border-transparent text-foreground/80 hover:text-primary'
                   }`}
                 >
                   {tab.label}
