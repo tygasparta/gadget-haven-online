@@ -199,7 +199,7 @@ const PaymentSuccess = () => {
     }
 
     setPaymentStatus('pending');
-  }, [sessionId, reference, verifySessionPayment, checkPesePayStatus]);
+  }, [sessionId, reference, provider, paypalToken, returnedOrderId, verifySessionPayment, checkPesePayStatus, handlePaymentSuccess, toast]);
 
   const handleRetryCheck = async () => {
     if (!reference) return;
