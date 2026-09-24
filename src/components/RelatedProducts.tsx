@@ -13,19 +13,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ category, excludeId }
   const related = allProducts
     .filter((p) => p.id !== excludeId && category && p.category?.toLowerCase() === category.toLowerCase())
     .slice(0, 4)
-    .map((p) => ({
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      originalPrice: p.original_price,
-      rating: p.rating,
-      reviews: p.reviews,
-      image: p.image,
-      brand: p.brand,
-      stock: p.stock,
-      discount: p.discount_percentage > 0 ? `${p.discount_percentage}% OFF` : undefined,
-      isFlash: p.is_flash_sale,
-    }));
+    .map(toCardProduct);
 
   if (related.length === 0) return null;
 
