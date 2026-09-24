@@ -125,6 +125,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) =>
     if (generatedData.tags && Array.isArray(generatedData.tags)) setProductTags(generatedData.tags);
     if (generatedData.whats_in_box && Array.isArray(generatedData.whats_in_box)) setWhatsInBox(generatedData.whats_in_box);
     if (generatedData.colors && Array.isArray(generatedData.colors)) setSelectedColors(generatedData.colors);
+    if (Array.isArray(generatedData.specifications) && generatedData.specifications.length > 0) setProductSpecs(generatedData.specifications);
     setShowAIGenerator(false);
     toast({ title: "AI Generation Complete!", description: `Product "${generatedData.name}" has been generated ($${generatedData.price})` });
   };
