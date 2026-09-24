@@ -1,19 +1,9 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface FormData {
-  email: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  city: string;
-  zipCode: string;
-  country: string;
+  email: string; firstName: string; lastName: string; address: string; city: string; zipCode: string; country: string;
 }
 
 interface ContactInformationSectionProps {
@@ -21,72 +11,27 @@ interface ContactInformationSectionProps {
   setFormData: (data: FormData) => void;
 }
 
-const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
-  formData,
-  setFormData
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.1 }}
-    >
-      <Card className="shadow-lg border-0 bg-card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-card-foreground">
-            <div className="p-2 bg-accent rounded-lg">
-              <User className="w-5 h-5 text-primary" />
-            </div>
-            <span>Contact Information</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-foreground">
-              Email Address *
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="h-12 border-border focus:border-primary focus:ring-blue-500/20 transition-all bg-white"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-sm font-medium text-foreground">
-                First Name *
-              </Label>
-              <Input
-                id="firstName"
-                value={formData.firstName}
-                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                className="h-12 border-border focus:border-primary focus:ring-blue-500/20 transition-all bg-white"
-                placeholder="John"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-sm font-medium text-foreground">
-                Last Name *
-              </Label>
-              <Input
-                id="lastName"
-                value={formData.lastName}
-                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                className="h-12 border-border focus:border-primary focus:ring-blue-500/20 transition-all bg-white"
-                placeholder="Doe"
-                required
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({ formData, setFormData }) => (
+  <section className="bg-background border border-border rounded-lg p-4 space-y-3">
+    <h2 className="text-sm font-semibold">Contact details</h2>
+    <div className="space-y-1.5">
+      <Label htmlFor="email" className="text-xs">Email</Label>
+      <Input id="email" type="email" inputMode="email" autoComplete="email" className="h-11" value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="you@example.com" required />
+    </div>
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="firstName" className="text-xs">First name</Label>
+        <Input id="firstName" autoComplete="given-name" className="h-11" value={formData.firstName}
+          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} required />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="lastName" className="text-xs">Last name</Label>
+        <Input id="lastName" autoComplete="family-name" className="h-11" value={formData.lastName}
+          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} required />
+      </div>
+    </div>
+  </section>
+);
 
 export default ContactInformationSection;

@@ -1,411 +1,184 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, RefreshCw, User, Calendar, DollarSign, MapPin, CreditCard, Phone } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ArrowLeft, Package, RefreshCw, ChevronRight } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOrders } from '@/hooks/useOrders';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
+import OrderStatusBadge from '@/components/OrderStatusBadge';
+
+const FALLBACK = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
+const FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'active', label: 'In progress' },
+  { key: 'done', label: 'Completed' },
+  { key: 'cancelled', label: 'Cancelled' },
+];
+const DONE = ['completed', 'delivered'];
+const CANCELLED = ['cancelled', 'failed'];
+
+const Address = ({ label, a }: { label: string; a: any }) => {
+  if (!a || typeof a !== 'object') return null;
+  const name = a.name || [a.firstName, a.lastName].filter(Boolean).join(' ');
+  const street = a.street || a.address;
+  return (
+    <div>
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{label}</h4>
+      <p className="text-sm">{name}</p>
+      {street && <p className="text-sm text-muted-foreground">{street}</p>}
+      <p className="text-sm text-muted-foreground">{[a.city, a.zipCode, a.country].filter(Boolean).join(', ')}</p>
+      {a.phone && <p className="text-sm text-muted-foreground">{a.phone}</p>}
+    </div>
+  );
+};
 
 const Orders = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { data: orders = [], isLoading, refetch } = useOrders();
-  const [selectedOrder, setSelectedOrder] = React.useState(null);
+  const { data: orders = [], isLoading, isFetching, refetch } = useOrders();
+  const [selected, setSelected] = React.useState<any>(null);
+  const [filter, setFilter] = React.useState('all');
 
   React.useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
+    if (!user) navigate('/auth');
   }, [user, navigate]);
 
   if (!user) return null;
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'delivered':
-        return <CheckCircle className="w-4 h-4 text-success" />;
-      case 'shipped':
-      case 'in_transit':
-        return <Truck className="w-4 h-4 text-primary" />;
-      case 'pending':
-      case 'processing':
-        return <Clock className="w-4 h-4 text-warning" />;
-      default:
-        return <Package className="w-4 h-4 text-muted-foreground" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'delivered':
-        return 'bg-success/10 text-success';
-      case 'shipped':
-      case 'in_transit':
-        return 'bg-primary/10 text-primary';
-      case 'pending':
-      case 'processing':
-        return 'bg-warning/10 text-warning';
-      default:
-        return 'bg-muted text-foreground';
-    }
-  };
-
-  const handleTrackOrder = (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/track-order?orderId=${orderId}`);
-  };
-
-  const handleOrderClick = (order: any) => {
-    setSelectedOrder(order);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-muted/50">
-        <Header />
-        <div className="flex items-center justify-center py-16">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading your orders...</p>
-          </div>
-        </div>
-        {!isMobile && <Footer />}
-      </div>
-    );
-  }
+  const filtered = orders.filter((o) => {
+    const s = o.status || 'pending';
+    if (filter === 'done') return DONE.includes(s);
+    if (filter === 'cancelled') return CANCELLED.includes(s);
+    if (filter === 'active') return !DONE.includes(s) && !CANCELLED.includes(s);
+    return true;
+  });
 
   return (
-    <div className="min-h-screen bg-muted/50">
+    <div className="min-h-screen bg-muted/30">
       <Header />
-      
-      <div className={`max-w-4xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-              className="p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">My Orders</h1>
-              <p className="text-muted-foreground">Track and manage your orders</p>
-            </div>
+      <div className="max-w-3xl mx-auto px-4 py-4 md:py-8">
+        <div className="flex items-center gap-2 mb-4">
+          <button onClick={() => navigate('/dashboard')} aria-label="Back" className="h-10 w-10 -ml-2 grid place-items-center rounded-md hover:bg-muted">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-lg md:text-2xl font-bold text-foreground">My orders</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">{orders.length} total</p>
           </div>
-          
-          <Button
-            onClick={() => refetch()}
-            variant="outline"
-            className="flex items-center gap-2"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <button onClick={() => refetch()} aria-label="Refresh" className="h-10 w-10 grid place-items-center rounded-md hover:bg-muted">
+            <RefreshCw className={`w-[18px] h-[18px] ${isFetching ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
-        {/* Orders List */}
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <Card 
-              key={order.id} 
-              className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleOrderClick(order)}
-            >
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">#{order.id.slice(-8).toUpperCase()}</CardTitle>
-                    <p className="text-sm text-muted-foreground">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
-                  </div>
-                  <Badge className={`${getStatusColor(order.status || 'pending')} flex items-center space-x-1`}>
-                    {getStatusIcon(order.status || 'pending')}
-                    <span className="capitalize">{order.status?.replace('_', ' ') || 'pending'}</span>
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Order Items */}
-                  {order.order_items && order.order_items.length > 0 ? (
-                    order.order_items.map((item, index) => (
-                      <div key={index} className="flex items-center space-x-4">
-                        <img
-                          src={item.products?.image || "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"}
-                          alt={item.products?.name || 'Product'}
-                          className="w-16 h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                          }}
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium text-foreground">{item.products?.name || 'Unknown Product'}</h3>
-                          <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-primary">${Number(item.price).toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-muted-foreground text-center py-4">
-                      No items found for this order
-                    </div>
-                  )}
-                  
-                  {/* Order Total */}
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <span className="text-lg font-semibold">Total:</span>
-                    <span className="text-xl font-bold text-primary">${Number(order.total_amount).toFixed(2)}</span>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex space-x-3 pt-4">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={(e) => handleTrackOrder(order.id, e)}
-                    >
-                      Track Order
-                    </Button>
-                    {order.status === 'pending' && (
-                      <Button
-                        variant="outline"
-                        className="flex-1 text-destructive border-destructive/20 hover:bg-destructive/10"
-                        onClick={() => navigate('/contact')}
-                      >
-                        Cancel Order
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="flex gap-5 border-b border-border mb-4 overflow-x-auto no-scrollbar">
+          {FILTERS.map((f) => (
+            <button key={f.key} onClick={() => setFilter(f.key)}
+              className={`pb-2 text-sm whitespace-nowrap border-b-2 -mb-px ${filter === f.key ? 'border-primary text-primary font-semibold' : 'border-transparent text-muted-foreground'}`}>
+              {f.label}
+            </button>
           ))}
         </div>
 
-        {/* Empty State */}
-        {orders.length === 0 && (
-          <Card className="text-center py-16">
-            <CardContent>
-              <Package className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No orders yet</h3>
-              <p className="text-muted-foreground mb-6">When you place orders, they'll appear here</p>
-              <Button onClick={() => navigate('/')}>
-                Start Shopping
-              </Button>
-            </CardContent>
-          </Card>
+        {isLoading ? (
+          <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-32 rounded-lg" />)}</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 bg-background border border-border rounded-lg">
+            <Package className="w-10 h-10 mx-auto text-muted-foreground" strokeWidth={1.5} />
+            <h2 className="mt-4 text-lg font-semibold">{orders.length ? 'No orders here' : 'No orders yet'}</h2>
+            <p className="text-sm text-muted-foreground mt-1">Orders you place will show up here.</p>
+            <Button className="mt-6" onClick={() => navigate('/')}>Start shopping</Button>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {filtered.map((o) => {
+              const items = o.order_items || [];
+              const count = items.reduce((t: number, i: any) => t + i.quantity, 0);
+              return (
+                <li key={o.id} className="bg-background border border-border rounded-lg">
+                  <button onClick={() => setSelected(o)} className="w-full text-left p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold">#{o.id.slice(-8).toUpperCase()}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                      </div>
+                      <OrderStatusBadge status={o.status} />
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      {items.slice(0, 4).map((i: any, idx: number) => (
+                        <div key={idx} className="w-12 h-12 rounded-md border border-border p-1 bg-background">
+                          <img src={i.products?.image || FALLBACK} alt={i.products?.name || ''} loading="lazy" className="w-full h-full object-contain"
+                            onError={(e) => { e.currentTarget.src = FALLBACK; }} />
+                        </div>
+                      ))}
+                      {items.length > 4 && <span className="text-xs text-muted-foreground">+{items.length - 4}</span>}
+                      <ChevronRight className="ml-auto w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{count} {count === 1 ? 'item' : 'items'}</span>
+                      <span className="font-bold">${Number(o.total_amount).toFixed(2)}</span>
+                    </div>
+                  </button>
+                  <div className="flex border-t border-border divide-x divide-border">
+                    <button onClick={() => navigate(`/track-order?orderId=${o.id}`)} className="flex-1 h-11 text-sm font-medium text-primary">Track order</button>
+                    {o.status === 'pending' && (
+                      <button onClick={() => navigate('/contact')} className="flex-1 h-11 text-sm text-muted-foreground">Need help?</button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
 
-      {/* Order Details Modal */}
-      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedOrder && (
+      <Sheet open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <SheetContent side={isMobile ? 'bottom' : 'right'} className={`overflow-y-auto ${isMobile ? 'max-h-[88vh] rounded-t-xl' : 'w-full sm:max-w-md'}`}>
+          {selected && (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold">
-                  Order Details - #{selectedOrder.id.slice(-8).toUpperCase()}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <div className="space-y-6">
-                {/* Order Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-4 h-4 text-primary" />
-                      <p className="text-sm text-muted-foreground">Order Date</p>
-                    </div>
-                    <p className="font-medium">{new Date(selectedOrder.created_at).toLocaleString()}</p>
-                  </div>
-                  
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <User className="w-4 h-4 text-success" />
-                      <p className="text-sm text-muted-foreground">Customer ID</p>
-                    </div>
-                    <p className="font-medium">{selectedOrder.user_id.slice(-12)}</p>
-                  </div>
-                  
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-4 h-4 text-warning" />
-                      <p className="text-sm text-muted-foreground">Total Amount</p>
-                    </div>
-                    <p className="font-medium text-success text-lg">${Number(selectedOrder.total_amount).toFixed(2)}</p>
-                  </div>
-                  
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="w-4 h-4 text-primary" />
-                      <p className="text-sm text-muted-foreground">Payment Method</p>
-                    </div>
-                    <p className="font-medium">{selectedOrder.payment_method || 'Credit Card'}</p>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    Order Status
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    <Badge className={`${getStatusColor(selectedOrder.status || 'pending')} flex items-center gap-1`}>
-                      {getStatusIcon(selectedOrder.status || 'pending')}
-                      {(selectedOrder.status || 'pending').charAt(0).toUpperCase() + (selectedOrder.status || 'pending').slice(1)}
-                    </Badge>
-                  </div>
-                </div>
-
-                <Separator />
-                
-                {/* Order Items */}
-                {selectedOrder.order_items && selectedOrder.order_items.length > 0 && (
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2">
-                      <Package className="w-5 h-5" />
-                      Order Items ({selectedOrder.order_items.length})
-                    </h4>
-                    <div className="space-y-3">
-                      {selectedOrder.order_items.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center p-3 bg-white rounded border">
-                          <div className="flex items-center gap-4">
-                            {item.products?.image && (
-                              <img 
-                                src={item.products.image} 
-                                alt={item.products.name}
-                                className="w-16 h-16 object-cover rounded"
-                              />
-                            )}
-                            <div>
-                              <p className="font-medium">{item.products?.name || 'Unknown Product'}</p>
-                              <p className="text-sm text-muted-foreground">Product ID: {item.product_id}</p>
-                              <p className="text-sm text-primary">Quantity: {item.quantity}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium text-success">${Number(item.price).toFixed(2)}</p>
-                            <p className="text-sm text-muted-foreground">per item</p>
-                            <p className="text-sm font-medium">
-                              Total: ${(Number(item.price) * item.quantity).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Addresses */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {selectedOrder.shipping_address && (
-                    <div className="bg-muted/50 p-4 rounded-lg">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        Shipping Address
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        {typeof selectedOrder.shipping_address === 'object' ? (
-                          <>
-                            <p className="font-medium">{selectedOrder.shipping_address.name || 'N/A'}</p>
-                            <p className="text-muted-foreground">{selectedOrder.shipping_address.street || 'N/A'}</p>
-                            <p className="text-muted-foreground">
-                              {selectedOrder.shipping_address.city || 'N/A'}, {selectedOrder.shipping_address.state || 'N/A'} {selectedOrder.shipping_address.zipCode || 'N/A'}
-                            </p>
-                            <p className="text-muted-foreground">{selectedOrder.shipping_address.country || 'N/A'}</p>
-                            {selectedOrder.shipping_address.phone && (
-                              <p className="text-primary flex items-center gap-1">
-                                <Phone className="w-3 h-3" />
-                                {selectedOrder.shipping_address.phone}
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-muted-foreground">Address information not available</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedOrder.billing_address && (
-                    <div className="bg-muted/50 p-4 rounded-lg">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-success" />
-                        Billing Address
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        {typeof selectedOrder.billing_address === 'object' ? (
-                          <>
-                            <p className="font-medium">{selectedOrder.billing_address.name || 'N/A'}</p>
-                            <p className="text-muted-foreground">{selectedOrder.billing_address.street || 'N/A'}</p>
-                            <p className="text-muted-foreground">
-                              {selectedOrder.billing_address.city || 'N/A'}, {selectedOrder.billing_address.state || 'N/A'} {selectedOrder.billing_address.zipCode || 'N/A'}
-                            </p>
-                            <p className="text-muted-foreground">{selectedOrder.billing_address.country || 'N/A'}</p>
-                            {selectedOrder.billing_address.phone && (
-                              <p className="text-primary flex items-center gap-1">
-                                <Phone className="w-3 h-3" />
-                                {selectedOrder.billing_address.phone}
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-muted-foreground">Billing address same as shipping</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Order Timeline */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-warning" />
-                    Order Timeline
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Order Created:</span>
-                      <span className="font-medium">{new Date(selectedOrder.created_at).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Last Updated:</span>
-                      <span className="font-medium">{new Date(selectedOrder.updated_at).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Processing Time:</span>
-                      <span className="text-primary font-medium">
-                        {Math.ceil((new Date(selectedOrder.updated_at).getTime() - new Date(selectedOrder.created_at).getTime()) / (1000 * 60 * 60 * 24))} days
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <SheetHeader className="text-left">
+                <SheetTitle>Order #{selected.id.slice(-8).toUpperCase()}</SheetTitle>
+              </SheetHeader>
+              <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                <OrderStatusBadge status={selected.status} />
+                <span>Placed {new Date(selected.created_at).toLocaleString()}</span>
               </div>
+
+              <ul className="mt-4 divide-y divide-border border-y border-border">
+                {(selected.order_items || []).map((i: any) => (
+                  <li key={i.id} className="flex gap-3 py-3">
+                    <div className="w-14 h-14 shrink-0 rounded-md border border-border p-1">
+                      <img src={i.products?.image || FALLBACK} alt="" className="w-full h-full object-contain" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm line-clamp-2">{i.products?.name || 'Product'}</p>
+                      <p className="text-xs text-muted-foreground">Qty {i.quantity} × ${Number(i.price).toFixed(2)}</p>
+                    </div>
+                    <p className="text-sm font-medium">${(Number(i.price) * i.quantity).toFixed(2)}</p>
+                  </li>
+                ))}
+              </ul>
+
+              <dl className="mt-4 space-y-2 text-sm">
+                <div className="flex justify-between"><dt className="text-muted-foreground">Payment</dt><dd className="capitalize">{selected.payment_method || '—'}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Delivery</dt><dd>{selected.shipping_method === 'shipping' ? 'Home delivery' : 'Collect at shop'}</dd></div>
+                <div className="flex justify-between text-base font-bold pt-2 border-t border-border"><dt>Total</dt><dd>${Number(selected.total_amount).toFixed(2)}</dd></div>
+              </dl>
+
+              <div className="mt-5 space-y-4">
+                <Address label="Delivery address" a={selected.shipping_address} />
+                <Address label="Billing address" a={selected.billing_address} />
+              </div>
+
+              <Button className="w-full h-11 mt-6" onClick={() => navigate(`/track-order?orderId=${selected.id}`)}>Track this order</Button>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {!isMobile && <Footer />}
     </div>

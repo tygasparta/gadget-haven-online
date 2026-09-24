@@ -1,20 +1,8 @@
-
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  User, 
-  Package, 
-  ShoppingCart, 
-  Heart, 
-  Settings, 
-  LogOut,
-  CreditCard,
-  MapPin,
-  Bell,
-  Shield
+import {
+  User, Package, Heart, CreditCard, MapPin, Bell, Shield, LogOut, ChevronRight, HelpCircle, Truck,
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -23,6 +11,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { useWishlist } from '@/hooks/useWishlist';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import OrderStatusBadge from '@/components/OrderStatusBadge';
 
 const Dashboard = () => {
   const { user, signOut } = useAuthContext();
@@ -33,218 +22,127 @@ const Dashboard = () => {
   const { data: wishlistItems = [] } = useWishlist();
 
   React.useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
+    if (!user) navigate('/auth');
   }, [user, navigate]);
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   const handleLogout = async () => {
     try {
       await signOut();
       navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch (e) {
+      console.error('Logout error:', e);
     }
   };
 
-  // Calculate stats from real data
-  const totalOrders = orders.length;
-  const wishlistCount = wishlistItems.length;
-  const completedOrders = orders.filter(order => order.status === 'completed' || order.status === 'delivered').length;
-  const loyaltyPoints = Math.floor(completedOrders * 20 + totalOrders * 5); // Sample calculation
+  const name = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'there';
+  const avatar = user.user_metadata?.avatar_url as string | undefined;
+  const active = orders.filter((o) => !['completed', 'delivered', 'cancelled'].includes(o.status || '')).length;
 
-  const menuItems = [
+  const groups = [
     {
-      title: 'Profile Settings',
-      description: 'Manage your personal information',
-      icon: User,
-      action: () => navigate('/profile'),
-      color: 'text-primary'
+      title: 'Shopping',
+      items: [
+        { label: 'My orders', icon: Package, to: '/orders', meta: orders.length ? String(orders.length) : '' },
+        { label: 'Track an order', icon: Truck, to: '/track-order' },
+        { label: 'Wishlist', icon: Heart, to: '/wishlist', meta: wishlistItems.length ? String(wishlistItems.length) : '' },
+      ],
     },
     {
-      title: 'My Orders',
-      description: 'Track your orders and purchase history',
-      icon: Package,
-      action: () => navigate('/orders'),
-      color: 'text-success'
+      title: 'Account settings',
+      items: [
+        { label: 'Profile details', icon: User, to: '/profile' },
+        { label: 'Addresses', icon: MapPin, to: '/addresses' },
+        { label: 'Payment methods', icon: CreditCard, to: '/payment-methods' },
+        { label: 'Notifications', icon: Bell, to: '/notifications' },
+      ],
     },
     {
-      title: 'Wishlist',
-      description: 'View your saved items',
-      icon: Heart,
-      action: () => navigate('/wishlist'),
-      color: 'text-pink-600'
+      title: 'Support',
+      items: [{ label: 'Help centre', icon: HelpCircle, to: '/help' }],
     },
-    {
-      title: 'Payment Methods',
-      description: 'Manage your payment options',
-      icon: CreditCard,
-      action: () => navigate('/payment-methods'),
-      color: 'text-primary'
-    },
-    {
-      title: 'Addresses',
-      description: 'Manage shipping and billing addresses',
-      icon: MapPin,
-      action: () => navigate('/addresses'),
-      color: 'text-orange-600'
-    },
-    {
-      title: 'Notifications',
-      description: 'Control your notification preferences',
-      icon: Bell,
-      action: () => navigate('/notifications'),
-      color: 'text-warning'
-    }
   ];
 
   return (
-    <div className="min-h-screen bg-muted/50">
+    <div className="min-h-screen bg-muted/30">
       <Header />
-      
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-              {user.email?.[0].toUpperCase()}
+      <div className="max-w-3xl mx-auto px-4 py-4 md:py-8 space-y-4">
+        {/* Profile */}
+        <section className="bg-background border border-border rounded-lg p-4 flex items-center gap-3">
+          {avatar ? (
+            <img src={avatar} alt="" className="w-14 h-14 rounded-full object-cover border border-border" />
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground grid place-items-center text-xl font-semibold">
+              {name[0]?.toUpperCase()}
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Welcome back!</h1>
-              <p className="text-muted-foreground">{user.email}</p>
-              {isAdmin && (
-                <Badge className="mt-2 bg-primary/10 text-primary">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Admin
-                </Badge>
-              )}
-            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Hello,</p>
+            <h1 className="text-lg font-bold text-foreground truncate capitalize">{name}</h1>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
           </div>
-          
-          {isAdmin && !isMobile && (
-            <Button 
-              onClick={() => navigate('/admin')}
-              className="bg-primary hover:bg-primary/90 text-white"
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Admin Dashboard
+          {isAdmin && (
+            <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="shrink-0">
+              <Shield className="w-4 h-4 mr-1.5" /> Admin
             </Button>
           )}
-        </div>
+        </section>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-primary-foreground/90">Total Orders</p>
-                  <p className="text-3xl font-bold">{totalOrders}</p>
-                </div>
-                <Package className="w-8 h-8 text-primary-foreground/90" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-success-foreground/90">Wishlist Items</p>
-                  <p className="text-3xl font-bold">{wishlistCount}</p>
-                </div>
-                <Heart className="w-8 h-8 text-success-foreground/90" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-primary-foreground/90">Loyalty Points</p>
-                  <p className="text-3xl font-bold">{loyaltyPoints}</p>
-                </div>
-                <Settings className="w-8 h-8 text-primary-foreground/90" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats */}
+        <section className="grid grid-cols-3 bg-background border border-border rounded-lg divide-x divide-border text-center">
+          <Link to="/orders" className="py-3"><p className="text-lg font-bold">{orders.length}</p><p className="text-[11px] text-muted-foreground">Orders</p></Link>
+          <Link to="/orders" className="py-3"><p className="text-lg font-bold">{active}</p><p className="text-[11px] text-muted-foreground">In progress</p></Link>
+          <Link to="/wishlist" className="py-3"><p className="text-lg font-bold">{wishlistItems.length}</p><p className="text-[11px] text-muted-foreground">Saved</p></Link>
+        </section>
 
-        {/* Recent Orders Summary */}
+        {/* Recent orders */}
         {orders.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {orders.slice(0, 3).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                    <div>
-                      <p className="font-medium">#{order.id.slice(-8).toUpperCase()}</p>
-                      <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
+          <section className="bg-background border border-border rounded-lg">
+            <div className="flex items-center justify-between px-4 pt-3 pb-2">
+              <h2 className="text-sm font-semibold">Recent orders</h2>
+              <Link to="/orders" className="text-xs font-medium text-primary">See all</Link>
+            </div>
+            <ul className="divide-y divide-border">
+              {orders.slice(0, 3).map((o) => (
+                <li key={o.id}>
+                  <Link to="/orders" className="flex items-center gap-3 px-4 py-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">#{o.id.slice(-8).toUpperCase()}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()} · ${Number(o.total_amount).toFixed(2)}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${Number(order.total_amount).toFixed(2)}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {order.status?.replace('_', ' ') || 'pending'}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {orders.length > 3 && (
-                <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/orders')}>
-                  View All Orders
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+                    <OrderStatusBadge status={o.status} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
-        {/* Menu Items */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {menuItems.map((item, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-300 cursor-pointer group" onClick={item.action}>
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className={`p-3 rounded-lg bg-muted group-hover:bg-muted transition-colors ${item.color}`}>
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Menu */}
+        {groups.map((g) => (
+          <section key={g.title}>
+            <h2 className="px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.title}</h2>
+            <ul className="bg-background border border-border rounded-lg divide-y divide-border">
+              {g.items.map((i) => (
+                <li key={i.label}>
+                  <Link to={i.to} className="flex items-center gap-3 px-4 h-12 hover:bg-muted/50">
+                    <i.icon className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                    <span className="flex-1 text-sm text-foreground">{i.label}</span>
+                    {'meta' in i && i.meta && <span className="text-xs text-muted-foreground">{i.meta}</span>}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
-        {/* Logout Button */}
-        <Card className="border-destructive/20">
-          <CardContent className="p-6">
-            <Button 
-              onClick={handleLogout}
-              variant="outline"
-              className="w-full text-destructive border-destructive/20 hover:bg-destructive/10 hover:border-destructive/20"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
+        <button onClick={handleLogout} className="w-full h-12 flex items-center justify-center gap-2 bg-background border border-border rounded-lg text-sm font-medium text-destructive">
+          <LogOut className="w-4 h-4" /> Sign out
+        </button>
       </div>
-
-      {/* Footer - Desktop Only */}
       {!isMobile && <Footer />}
-      
-      {/* Mobile Navigation */}
     </div>
   );
 };

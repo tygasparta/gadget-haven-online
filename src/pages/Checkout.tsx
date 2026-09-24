@@ -1,369 +1,182 @@
-
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { 
-  ShoppingCart, 
-  CreditCard, 
-  MapPin, 
-  User, 
-  ArrowLeft,
-  Plus,
-  Minus,
-  Trash2,
-  Star,
-  Shield,
-  Truck
-} from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Trash2, ShoppingCart, Truck, ShieldCheck, RotateCcw } from 'lucide-react';
 import { useCartItems, useUpdateCartItem, useRemoveFromCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductColorSelector from '@/components/ProductColorSelector';
-import OneClickCheckout from '@/components/OneClickCheckout';
 import ProductComparison from '@/components/ProductComparison';
-import ShippingMethodSection from '@/components/checkout/ShippingMethodSection';
-import { motion, AnimatePresence } from 'framer-motion';
+import CheckoutStepper from '@/components/checkout/CheckoutStepper';
+
+const FALLBACK = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
+const money = (n: number) => `$${n.toFixed(2)}`;
 
 const Checkout = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const isTablet = !isMobile && window.innerWidth < 1024;
-  const { data: cartItems = [] } = useCartItems();
+  const { data: cartItems = [], isLoading } = useCartItems();
   const updateCartItem = useUpdateCartItem();
   const removeFromCart = useRemoveFromCart();
-  
   const [selectedColors, setSelectedColors] = useState<Record<string, string>>({});
   const [showComparison, setShowComparison] = useState(false);
-  const [shippingMethod, setShippingMethod] = useState<'shipping' | 'collection'>('collection');
 
   React.useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
+    if (!user) navigate('/auth');
   }, [user, navigate]);
 
   if (!user) return null;
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    updateCartItem.mutate({ id, quantity: newQuantity });
+  const subtotal = cartItems.reduce((t, i) => t + i.products.price * i.quantity, 0);
+  const totalItems = cartItems.reduce((t, i) => t + i.quantity, 0);
+  const savings = cartItems.reduce((s, i) => s + ((i.products.original_price || i.products.price) - i.products.price) * i.quantity, 0);
+  const tax = subtotal * 0.02;
+  const total = subtotal + tax;
+
+  const setQty = (id: string, q: number) => {
+    if (q < 1) return;
+    updateCartItem.mutate({ id, quantity: q });
   };
 
-  const handleRemoveFromCart = (id: string) => {
-    removeFromCart.mutate(id);
-  };
+  const TopBar = (
+    <div className="flex items-center gap-2 mb-4">
+      <button onClick={() => navigate(-1)} aria-label="Back" className="h-10 w-10 -ml-2 grid place-items-center rounded-md hover:bg-muted">
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <h1 className="text-lg md:text-2xl font-bold text-foreground">Cart</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">{totalItems} {totalItems === 1 ? 'item' : 'items'}</p>
+      </div>
+      {!isMobile && cartItems.length > 1 && (
+        <Button variant="outline" size="sm" onClick={() => setShowComparison(!showComparison)}>Compare</Button>
+      )}
+    </div>
+  );
 
-  const handleColorSelect = (itemId: string, color: string) => {
-    setSelectedColors(prev => ({
-      ...prev,
-      [itemId]: color
-    }));
-  };
-
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => {
-      return total + (item.products.price * item.quantity);
-    }, 0);
-  };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const getSavings = () => {
-    return cartItems.reduce((savings, item) => {
-      const originalPrice = item.products.original_price || item.products.price;
-      return savings + ((originalPrice - item.products.price) * item.quantity);
-    }, 0);
-  };
-
-  const getShippingCost = () => {
-    return shippingMethod === 'shipping' ? 5.00 : 0;
-  };
-
-  const getTaxAmount = () => {
-    return getTotalPrice() * 0.02; // 2% tax
-  };
-
-  const totalPrice = getTotalPrice();
-  const totalItems = getTotalItems();
-  const savings = getSavings();
-  const shipping = getShippingCost();
-  const tax = getTaxAmount();
-  const finalTotal = totalPrice + shipping + tax;
-
-  if (cartItems.length === 0) {
+  if (!isLoading && cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-muted/20">
+      <div className="min-h-screen bg-background">
         <Header />
-        <div className={`max-w-2xl mx-auto px-4 py-16 text-center ${isMobile ? 'pb-20' : ''}`}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <ShoppingCart className="w-24 h-24 mx-auto text-muted-foreground/30" />
-            <h1 className="text-3xl font-bold text-foreground">Your cart is empty</h1>
-            <p className="text-muted-foreground">Start shopping to add items to your cart</p>
-            <Button
-              onClick={() => navigate('/')}
-              className="bg-primary hover:bg-primary/90"
-            >
-              Continue Shopping
-            </Button>
-          </motion.div>
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          {TopBar}
+          <div className="text-center py-16 border border-border rounded-lg">
+            <ShoppingCart className="w-10 h-10 mx-auto text-muted-foreground" strokeWidth={1.5} />
+            <h2 className="mt-4 text-lg font-semibold">Your cart is empty</h2>
+            <p className="text-sm text-muted-foreground mt-1">Browse deals and categories to find something you like.</p>
+            <div className="mt-6 flex gap-2 justify-center">
+              <Button onClick={() => navigate('/')}>Start shopping</Button>
+              <Button variant="outline" onClick={() => navigate('/deals')}>View deals</Button>
+            </div>
+          </div>
         </div>
-        <Footer />
+        {!isMobile && <Footer />}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/20">
+    <div className="min-h-screen bg-muted/30">
       <Header />
-
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        {/* Mobile Header */}
-        {isMobile && (
-          <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold text-foreground">Shopping Cart</h1>
-            <Badge className="bg-primary/10 text-primary">
-              {totalItems} items
-            </Badge>
-          </div>
-        )}
-
-        {/* Desktop/Tablet Header */}
-        {!isMobile && (
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-3">
-              <ShoppingCart className="w-8 h-8 text-primary" />
-              <div>
-                <h1 className={`font-bold text-foreground ${isTablet ? 'text-2xl' : 'text-3xl'}`}>
-                  Shopping Cart
-                </h1>
-                <p className="text-muted-foreground">{totalItems} items in your cart</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowComparison(!showComparison)}
-              >
-                Compare Products
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/')}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Continue Shopping
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Product Comparison */}
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8 pb-32 md:pb-8">
+        {TopBar}
+        <div className="mb-5 bg-background border border-border rounded-lg p-3">
+          <CheckoutStepper steps={['Cart', 'Delivery & Payment', 'Confirmation']} currentStep={0} />
+        </div>
         {showComparison && <ProductComparison />}
 
-        {/* One-Click Checkout */}
-        <OneClickCheckout />
-
-        {/* Shipping Method Selection */}
-        <ShippingMethodSection 
-          shippingMethod={shippingMethod}
-          setShippingMethod={setShippingMethod}
-        />
-
-        <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3'}`}>
-          {/* Cart Items */}
-          <div className={isMobile ? 'order-1' : isTablet ? 'order-1' : 'lg:col-span-2'}>
-            <Card className="shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center justify-between">
-                  <span>Your Items</span>
-                  {savings > 0 && (
-                    <Badge className="bg-success/10 text-success">
-                      Save ${savings.toFixed(2)}
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <AnimatePresence>
-                  {cartItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -100 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex flex-col space-y-4 p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="relative">
-                          <img
-                            src={item.products.image}
-                            alt={item.products.name}
-                            className={`object-cover rounded-lg ${isMobile ? 'w-20 h-20' : isTablet ? 'w-24 h-24' : 'w-28 h-28'}`}
-                            onError={(e) => {
-                              e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                            }}
-                          />
-                          {item.products.original_price && item.products.original_price > item.products.price && (
-                            <div className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-full">
-                              Sale
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">{item.products.name}</h3>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-lg font-bold text-primary">${item.products.price}</span>
-                            {item.products.original_price && item.products.original_price > item.products.price && (
-                              <span className="text-muted-foreground line-through text-sm">${item.products.original_price}</span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center space-x-2 bg-muted rounded-lg p-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 hover:bg-muted-foreground/10"
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              >
-                                <Minus className="w-4 h-4" />
-                              </Button>
-                              <span className="w-8 text-center font-medium">{item.quantity}</span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 hover:bg-muted-foreground/10"
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              >
-                                <Plus className="w-4 h-4" />
-                              </Button>
-                            </div>
-
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => handleRemoveFromCart(item.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+          <section className="lg:col-span-2 bg-background border border-border rounded-lg divide-y divide-border">
+            {cartItems.map((item) => {
+              const onSale = !!item.products.original_price && item.products.original_price > item.products.price;
+              return (
+                <article key={item.id} className="p-3 md:p-4">
+                  <div className="flex gap-3">
+                    <Link to={`/product/${item.products.id}`} className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-md border border-border bg-background p-1.5">
+                      <img
+                        src={item.products.image || FALLBACK}
+                        alt={item.products.name}
+                        loading="lazy"
+                        className="w-full h-full object-contain"
+                        onError={(e) => { e.currentTarget.src = FALLBACK; }}
+                      />
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <Link to={`/product/${item.products.id}`} className="text-sm font-medium text-foreground line-clamp-2 leading-snug">
+                        {item.products.name}
+                      </Link>
+                      <div className="mt-1 flex items-baseline gap-2">
+                        <span className="text-base font-bold text-foreground">{money(item.products.price)}</span>
+                        {onSale && <span className="text-xs text-muted-foreground line-through">{money(item.products.original_price!)}</span>}
                       </div>
-
-                      {/* Color Selection */}
-                      {item.products.colors && Array.isArray(item.products.colors) && item.products.colors.length > 0 && (
-                        <div className="pt-3 border-t border-border">
-                          <ProductColorSelector
-                            colors={item.products.colors}
-                            selectedColor={selectedColors[item.id] || null}
-                            onColorSelect={(color) => handleColorSelect(item.id, color)}
-                            size={isMobile ? 'sm' : 'md'}
-                            showSelectedName={true}
-                            className="w-full"
-                          />
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="flex items-center border border-border rounded-md h-9">
+                          <button aria-label="Decrease" className="w-9 h-full grid place-items-center disabled:opacity-40" disabled={item.quantity <= 1} onClick={() => setQty(item.id, item.quantity - 1)}>
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                          <button aria-label="Increase" className="w-9 h-full grid place-items-center" onClick={() => setQty(item.id, item.quantity + 1)}>
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Order Summary */}
-          <div className={isMobile ? 'order-2' : ''}>
-            <Card className="sticky top-4 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="w-5 h-5" />
-                  <span>Order Summary</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal ({totalItems} items)</span>
-                    <span className="font-medium">${totalPrice.toFixed(2)}</span>
+                        <button onClick={() => removeFromCart.mutate(item.id)} className="h-9 px-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive">
+                          <Trash2 className="w-4 h-4" /> Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
-
-                  {savings > 0 && (
-                    <div className="flex justify-between text-success">
-                      <span>You Save</span>
-                      <span className="font-medium">-${savings.toFixed(2)}</span>
+                  {Array.isArray(item.products.colors) && item.products.colors.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <ProductColorSelector
+                        colors={item.products.colors}
+                        selectedColor={selectedColors[item.id] || null}
+                        onColorSelect={(c) => setSelectedColors((p) => ({ ...p, [item.id]: c }))}
+                        size="sm"
+                        showSelectedName
+                        className="w-full"
+                      />
                     </div>
                   )}
+                </article>
+              );
+            })}
+          </section>
 
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">
-                      {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex justify-between items-center text-lg font-bold">
-                    <span>Total</span>
-                    <span className="text-primary">${finalTotal.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Shipping Info */}
-                <div className={`${shipping === 0 ? 'bg-success/10 border-success/20' : 'bg-primary/10 border-primary/20'} border rounded-lg p-3 flex items-center space-x-2`}>
-                  <Truck className={`w-5 h-5 ${shipping === 0 ? 'text-success' : 'text-primary'}`} />
-                  <span className={`text-sm font-medium ${shipping === 0 ? 'text-success' : 'text-primary'}`}>
-                    {shipping === 0 ? '🎉 FREE collection at shop!' : `$5.00 delivery to your address`}
-                  </span>
-                </div>
-
-                {/* Security Badge */}
-                <div className="bg-muted/50 rounded-lg p-3 flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Secure checkout guaranteed</span>
-                </div>
-
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => navigate('/checkout/details')}
-                >
-                  Proceed to Checkout
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <aside className="space-y-3">
+            <div className="bg-background border border-border rounded-lg p-4 lg:sticky lg:top-24">
+              <h2 className="text-sm font-semibold mb-3">Order summary</h2>
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal ({totalItems})</dt><dd>{money(subtotal)}</dd></div>
+                {savings > 0 && <div className="flex justify-between text-success"><dt>You save</dt><dd>-{money(savings)}</dd></div>}
+                <div className="flex justify-between"><dt className="text-muted-foreground">Tax (2%)</dt><dd>{money(tax)}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Delivery</dt><dd className="text-muted-foreground">Chosen next</dd></div>
+                <div className="flex justify-between pt-2 border-t border-border text-base font-bold"><dt>Total</dt><dd>{money(total)}</dd></div>
+              </dl>
+              <Button className="w-full mt-4 h-11 hidden md:flex" onClick={() => navigate('/checkout/details')}>Proceed to checkout</Button>
+            </div>
+            <ul className="bg-background border border-border rounded-lg p-4 space-y-3 text-sm">
+              <li className="flex gap-3"><Truck className="w-[18px] h-[18px] text-primary shrink-0" strokeWidth={1.75} /><span><b className="font-medium">Free collection</b> at our shop, or $5.00 home delivery</span></li>
+              <li className="flex gap-3"><ShieldCheck className="w-[18px] h-[18px] text-primary shrink-0" strokeWidth={1.75} /><span>Secure payment with PesePay or PayPal</span></li>
+              <li className="flex gap-3"><RotateCcw className="w-[18px] h-[18px] text-primary shrink-0" strokeWidth={1.75} /><span>Easy returns on eligible items</span></li>
+            </ul>
+          </aside>
         </div>
       </div>
 
-      <Footer />
+      {/* Sticky mobile checkout bar */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border safe-area-pb">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-[11px] text-muted-foreground">Total</p>
+            <p className="text-lg font-bold leading-tight">{money(total)}</p>
+          </div>
+          <Button className="flex-1 h-11" onClick={() => navigate('/checkout/details')}>Checkout</Button>
+        </div>
+      </div>
+
+      {!isMobile && <Footer />}
     </div>
   );
 };

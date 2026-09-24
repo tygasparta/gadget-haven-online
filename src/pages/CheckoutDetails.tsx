@@ -244,53 +244,33 @@ const CheckoutDetails = () => {
 
   if (!user) return null;
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 bg-card rounded-2xl p-6 shadow-sm border border-border space-y-6"
-        >
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/checkout')}
-              className="p-3 rounded-xl hover:bg-muted transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                Checkout Details
-              </h1>
-              <p className="text-muted-foreground mt-1">Complete your order securely</p>
-            </div>
-          </div>
-          <CheckoutStepper steps={CHECKOUT_STEPS} currentStep={1} />
-        </motion.div>
+  const isProcessing = isPesePayProcessing || isPayPalProcessing;
 
-        <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-5 gap-8'}`}>
-          <div className={`${isMobile ? '' : 'col-span-3'} space-y-6`}>
-            <ContactInformationSection 
-              formData={formData}
-              setFormData={setFormData}
-            />
-            
-            <ShippingMethodSection 
-              shippingMethod={shippingMethod}
-              setShippingMethod={setShippingMethod}
-            />
-            
+  return (
+    <div className="min-h-screen bg-muted/30">
+      <Header />
+
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8 pb-32 md:pb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <button onClick={() => navigate('/checkout')} aria-label="Back to cart" className="h-10 w-10 -ml-2 grid place-items-center rounded-md hover:bg-muted">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-lg md:text-2xl font-bold text-foreground">Checkout</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">Delivery and payment</p>
+          </div>
+        </div>
+        <div className="mb-5 bg-background border border-border rounded-lg p-3">
+          <CheckoutStepper steps={CHECKOUT_STEPS} currentStep={1} />
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid gap-4 md:gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3 space-y-4">
+            <ContactInformationSection formData={formData} setFormData={setFormData} />
+            <ShippingMethodSection shippingMethod={shippingMethod} setShippingMethod={setShippingMethod} />
             {shippingMethod === 'shipping' && (
-              <ShippingAddressSection 
-                formData={formData}
-                setFormData={setFormData}
-              />
+              <ShippingAddressSection formData={formData} setFormData={setFormData} />
             )}
-            
             <PaymentMethodSection
               paymentMethod={paymentMethod}
               setPaymentMethod={setPaymentMethod}
@@ -301,9 +281,8 @@ const CheckoutDetails = () => {
               isPayPalProcessing={isPayPalProcessing}
             />
           </div>
-
-          <div className={`${isMobile ? '' : 'col-span-2'}`}>
-            <OrderSummarySection 
+          <div className="lg:col-span-2">
+            <OrderSummarySection
               cartItems={cartItems}
               subtotal={getSubtotal()}
               tax={getTaxAmount()}
@@ -311,14 +290,29 @@ const CheckoutDetails = () => {
               finalTotal={finalTotal}
               paymentMethod={paymentMethod}
               mobileMethod=""
-              isProcessing={isPesePayProcessing || isPayPalProcessing}
+              isProcessing={isProcessing}
               onSubmit={handleSubmit}
+              hideAction={isMobile}
             />
           </div>
-        </div>
+        </form>
       </div>
 
-      <Footer />
+      {isMobile && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border safe-area-pb">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-[11px] text-muted-foreground">Total</p>
+              <p className="text-lg font-bold leading-tight">${finalTotal.toFixed(2)}</p>
+            </div>
+            <Button className="flex-1 h-11" disabled={isProcessing} onClick={() => handleSubmit()}>
+              {isProcessing ? 'Processing…' : `Pay with ${paymentMethod === 'paypal' ? 'PayPal' : 'PesePay'}`}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!isMobile && <Footer />}
     </div>
   );
 };

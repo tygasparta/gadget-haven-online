@@ -1,173 +1,103 @@
-
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Heart, ShoppingCart, Trash2, Star } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft, Heart, Star, X } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWishlist, useRemoveFromWishlist } from '@/hooks/useWishlist';
 import { useAddToCart } from '@/hooks/useCart';
 import { useProducts } from '@/hooks/useProducts';
 
+const FALLBACK = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
+
 const Wishlist = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist();
+  const { data: wishlistItems, isLoading } = useWishlist();
   const { data: products } = useProducts();
   const { mutate: removeFromWishlist } = useRemoveFromWishlist();
-  const { mutate: addToCart } = useAddToCart();
+  const { mutate: addToCart, isPending } = useAddToCart();
 
-  // Redirect to auth if not logged in
   React.useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
+    if (!user) navigate('/auth');
   }, [user, navigate]);
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
-  // Get products that are in the wishlist
-  const wishlistProducts = products?.filter(product => 
-    wishlistItems?.some(item => item.product_id === product.id)
-  ) || [];
-
-  const handleRemoveFromWishlist = (productId: number) => {
-    removeFromWishlist(productId);
-  };
-
-  const handleAddToCart = (productId: number) => {
-    addToCart({ productId });
-  };
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-rating fill-current' : 'text-muted-foreground/50'
-        }`}
-      />
-    ));
-  };
-
-  if (wishlistLoading) {
-    return (
-      <div className="min-h-screen bg-muted/50">
-        <Header />
-        <div className="flex items-center justify-center h-96">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      </div>
-    );
-  }
+  const items = products?.filter((p) => wishlistItems?.some((w) => w.product_id === p.id)) || [];
 
   return (
-    <div className="min-h-screen bg-muted/50">
+    <div className="min-h-screen bg-background">
       <Header />
-      
-      <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        <div className="flex items-center mb-8">
-          <Heart className="w-8 h-8 text-destructive mr-3" />
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
+        <div className="flex items-center gap-2 mb-4">
+          <button onClick={() => navigate(-1)} aria-label="Back" className="h-10 w-10 -ml-2 grid place-items-center rounded-md hover:bg-muted">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">My Wishlist</h1>
-            <p className="text-muted-foreground mt-1">{wishlistProducts.length} items saved</p>
+            <h1 className="text-lg md:text-2xl font-bold text-foreground">Wishlist</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">{items.length} saved {items.length === 1 ? 'item' : 'items'}</p>
           </div>
         </div>
 
-        {wishlistProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <Heart className="w-24 h-24 text-muted-foreground/50 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-foreground mb-2">Your wishlist is empty</h2>
-            <p className="text-muted-foreground mb-8">Save items you love to buy them later</p>
-            <Button onClick={() => navigate('/')} className="bg-primary hover:bg-primary/90">
-              Continue Shopping
-            </Button>
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] rounded-lg" />)}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-16 border border-border rounded-lg">
+            <Heart className="w-10 h-10 mx-auto text-muted-foreground" strokeWidth={1.5} />
+            <h2 className="mt-4 text-lg font-semibold">Nothing saved yet</h2>
+            <p className="text-sm text-muted-foreground mt-1">Tap the heart on any product to keep it here.</p>
+            <Button className="mt-6" onClick={() => navigate('/categories')}>Browse categories</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {wishlistProducts.map((product) => (
-              <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-64 object-cover rounded-t-lg cursor-pointer"
-                      onClick={() => navigate(`/product/${product.id}`)}
-                      onError={(e) => {
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                      }}
-                    />
-                    <button
-                      onClick={() => handleRemoveFromWishlist(product.id)}
-                      className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </button>
-                    {product.original_price && product.original_price > product.price && (
-                      <div className="absolute top-3 left-3 bg-destructive text-white px-2 py-1 rounded-full text-sm font-bold">
-                        {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% OFF
-                      </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {items.map((p) => {
+              const inStock = !!p.stock && p.stock > 0;
+              const discount = p.original_price && p.original_price > p.price
+                ? Math.round(((p.original_price - p.price) / p.original_price) * 100) : 0;
+              return (
+                <article key={p.id} className="flex flex-col border border-border rounded-lg overflow-hidden bg-background">
+                  <div className="relative aspect-square bg-background p-3">
+                    <Link to={`/product/${p.id}`}>
+                      <img src={p.image || FALLBACK} alt={p.name} loading="lazy" className="w-full h-full object-contain"
+                        onError={(e) => { e.currentTarget.src = FALLBACK; }} />
+                    </Link>
+                    {discount > 0 && (
+                      <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[11px] font-semibold px-1.5 py-0.5 rounded-sm">-{discount}%</span>
                     )}
+                    <button onClick={() => removeFromWishlist(p.id)} aria-label="Remove from wishlist"
+                      className="absolute top-1.5 right-1.5 h-8 w-8 grid place-items-center rounded-full bg-background border border-border text-muted-foreground hover:text-destructive">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  
-                  <div className="p-4">
-                    <h3 
-                      className="font-semibold text-foreground mb-2 line-clamp-2 cursor-pointer hover:text-primary"
-                      onClick={() => navigate(`/product/${product.id}`)}
-                    >
-                      {product.name}
-                    </h3>
-                    
-                    <div className="flex items-center mb-3">
-                      <div className="flex">{renderStars(product.rating || 0)}</div>
-                      <span className="text-sm text-muted-foreground ml-2">({product.reviews || 0})</span>
+                  <div className="flex-1 flex flex-col p-3 pt-0">
+                    <Link to={`/product/${p.id}`} className="text-sm text-foreground line-clamp-2 leading-snug min-h-[2.5rem]">{p.name}</Link>
+                    <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      {p.reviews ? (<><Star className="w-3.5 h-3.5 fill-rating text-rating" />{Number(p.rating || 0).toFixed(1)} ({p.reviews})</>) : 'No reviews yet'}
                     </div>
-                    
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <span className="text-2xl font-bold text-primary">${product.price}</span>
-                        {product.original_price && product.original_price > product.price && (
-                          <span className="text-sm text-muted-foreground line-through ml-2">
-                            ${product.original_price}
-                          </span>
-                        )}
-                      </div>
-                      <div className={`text-sm font-medium ${product.stock && product.stock > 0 ? 'text-success' : 'text-destructive'}`}>
-                        {product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                      </div>
+                    <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
+                      <span className="text-base font-bold">${p.price}</span>
+                      {discount > 0 && <span className="text-xs text-muted-foreground line-through">${p.original_price}</span>}
                     </div>
-                    
-                    <Button 
-                      className={`w-full ${
-                        product.stock && product.stock > 0
-                          ? 'bg-primary hover:bg-primary/90' 
-                          : 'bg-muted-foreground/40 cursor-not-allowed'
-                      }`}
-                      disabled={!product.stock || product.stock === 0}
-                      onClick={() => handleAddToCart(product.id)}
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {product.stock && product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                    <p className={`text-xs mt-0.5 ${inStock ? 'text-success' : 'text-destructive'}`}>{inStock ? 'In stock' : 'Out of stock'}</p>
+                    <Button size="sm" className="mt-2 h-9 w-full" variant={inStock ? 'default' : 'outline'} disabled={!inStock || isPending}
+                      onClick={() => addToCart({ productId: p.id })}>
+                      {inStock ? 'Move to cart' : 'Unavailable'}
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </div>
-
-      {/* Footer - Desktop Only */}
       {!isMobile && <Footer />}
-      
-      {/* Mobile Navigation - Always visible on mobile */}
     </div>
   );
 };
