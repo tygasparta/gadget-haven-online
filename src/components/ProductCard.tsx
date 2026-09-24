@@ -188,11 +188,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = fals
           {product.name}
         </h3>
 
+        {(product.reviews ?? 0) > 0 ? (
         <div className="flex items-center gap-1 mt-1.5">
           <Star className="w-3.5 h-3.5 text-rating fill-current" strokeWidth={1.5} />
           <span className="text-xs font-medium text-foreground">{Number(product.rating || 0).toFixed(1)}</span>
-          <span className="text-xs text-muted-foreground">({product.reviews ?? 0})</span>
+          <span className="text-xs text-muted-foreground">({product.reviews})</span>
         </div>
+        ) : (
+          <p className="text-xs text-muted-foreground mt-1.5">No reviews yet</p>
+        )}
 
         <div className="flex items-baseline gap-2 mt-2">
           <span className="text-lg font-bold text-foreground">${product.price}</span>

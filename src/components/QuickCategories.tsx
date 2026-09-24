@@ -22,9 +22,9 @@ const QuickCategories = () => {
   const counts = useCategoryCounts();
 
   return (
-    <section className="mb-8 sm:mb-12">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg sm:text-2xl font-bold text-foreground">Shop by Category</h2>
+    <section className="mb-12">
+      <div className="flex items-end justify-between mb-4 pb-3 border-b border-border">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">Shop by Category</h2>
         <Link to="/categories" className="text-sm font-medium text-primary hover:opacity-80">View all →</Link>
       </div>
       <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
