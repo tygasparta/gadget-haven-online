@@ -42,10 +42,10 @@ const AppPromoBanner = () => (
         </div>
       </div>
 
-      {/* Two real screenshots, staggered and anchored to the bottom edge */}
-      <div className="flex justify-center items-start gap-4 h-64 md:h-80 pt-2 md:pt-10 overflow-hidden">
-        <PhoneFrame src={appHomeImg} alt="Gadget Genie home screen on mobile" className="" />
-        <PhoneFrame src={appProductImg} alt="Gadget Genie product page on mobile" className="mt-8" />
+      {/* Two full phone images, shown whole */}
+      <div className="flex justify-center items-center gap-4 py-8 md:py-10">
+        <PhoneFrame src={appHomeImg} alt="Gadget Genie home screen on mobile" />
+        <PhoneFrame src={appProductImg} alt="Gadget Genie categories page on mobile" />
       </div>
     </div>
   </section>
