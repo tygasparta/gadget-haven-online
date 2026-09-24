@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Star, TrendingUp, ArrowRight } from 'lucide-react';
+import { Star, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 
 const trendingProducts = [
   {
@@ -47,26 +46,19 @@ const TrendingCarousel = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="mb-8 sm:mb-16">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-warning to-warning/80 text-warning-foreground">
-            <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-2xl font-bold text-foreground">Trending Now</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">Most searched this week</p>
-          </div>
+    <div className="mb-12">
+      <div className="flex items-end justify-between gap-4 mb-4 pb-3 border-b border-border">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">Trending Now</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Most searched this week</p>
         </div>
-        <Button
-          variant="outline"
-          className="border-warning text-warning hover:bg-warning/5 px-3 sm:px-6 py-2 font-semibold rounded-lg text-sm whitespace-nowrap flex-shrink-0"
+        <button
+          className="flex items-center text-sm font-medium text-primary hover:underline whitespace-nowrap"
           onClick={() => navigate('/products?trending=true')}
         >
-          <span className="hidden sm:inline">View All</span>
-          <span className="sm:hidden">All</span>
-          <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-        </Button>
+          View all
+          <ChevronRight className="w-4 h-4" strokeWidth={1.75} />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -74,10 +66,10 @@ const TrendingCarousel = () => {
           <button
             key={product.id}
             onClick={() => navigate(`/product/${product.id}`)}
-            className="relative text-left bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-warning/40 hover:shadow-md transition-all group"
+            className="relative text-left bg-card border border-border rounded-lg p-3 sm:p-4 hover:shadow-md transition-all group"
           >
-            <span className="absolute top-2.5 left-2.5 w-6 h-6 bg-warning text-warning-foreground rounded-full flex items-center justify-center text-xs font-bold z-10">
-              {index + 1}
+            <span className="absolute top-2.5 left-2.5 text-[11px] font-semibold text-muted-foreground bg-background/90 px-1.5 py-0.5 rounded-[3px] z-10 tabular-nums">
+              #{index + 1}
             </span>
             <div className="aspect-square bg-muted/40 rounded-lg overflow-hidden mb-3">
               <img
@@ -91,10 +83,10 @@ const TrendingCarousel = () => {
             <div className="flex items-center gap-1 mt-1">
               <Star className="w-3 h-3 text-rating fill-current" />
               <span className="text-xs text-muted-foreground">{product.rating}</span>
-              <span className="text-xs text-success font-medium ml-1">{product.discount} searches</span>
+              
             </div>
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-sm font-bold text-primary">${product.price}</span>
+              <span className="text-sm font-bold text-foreground">${product.price}</span>
               <span className="text-xs text-muted-foreground line-through">${product.originalPrice}</span>
             </div>
           </button>
