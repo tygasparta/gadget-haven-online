@@ -5,7 +5,7 @@ import appHomeImg from '@/assets/marketing/gadget-genie-app-home.webp';
 import appProductImg from '@/assets/marketing/gadget-genie-app-product.webp';
 
 const PhoneFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => (
-  <div className={cn('w-40 lg:w-44 aspect-[390/844] rounded-[1.9rem] bg-background border-[6px] border-foreground shadow-xl overflow-hidden flex-shrink-0', className)}>
+  <div className={cn('w-32 sm:w-40 lg:w-44 aspect-[390/844] rounded-[1.9rem] bg-background border-[6px] border-foreground shadow-xl overflow-hidden flex-shrink-0', className)}>
     <img src={src} alt={alt} width={600} height={1298} loading="lazy" className="w-full h-full object-cover object-top" />
   </div>
 );
@@ -41,9 +41,9 @@ const AppPromoBanner = () => (
       </div>
 
       {/* Two real screenshots, staggered and anchored to the bottom edge */}
-      <div className="flex justify-center items-end gap-4 h-64 md:h-80 overflow-hidden">
-        <PhoneFrame src={appHomeImg} alt="Gadget Genie home screen on mobile" className="translate-y-6" />
-        <PhoneFrame src={appProductImg} alt="Gadget Genie product page on mobile" className="translate-y-16" />
+      <div className="flex justify-center items-start gap-4 h-64 md:h-80 pt-2 md:pt-10 overflow-hidden">
+        <PhoneFrame src={appHomeImg} alt="Gadget Genie home screen on mobile" className="" />
+        <PhoneFrame src={appProductImg} alt="Gadget Genie product page on mobile" className="mt-8" />
       </div>
     </div>
   </section>
