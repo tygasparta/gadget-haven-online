@@ -1,31 +1,14 @@
-
 {
-  "name": "GadgetGenie",
-  "short_name": "GadgetGenie",
-  "description": "Your Ultimate Tech Destination",
+  "id": "/",
+  "name": "Gadget Genie",
+  "short_name": "Gadget Genie",
+  "description": "Tech for a smarter tomorrow",
   "icons": [
-    {
-      "src": "/favicon.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/logo.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/logo.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    }
+    { "src": "/favicon.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ],
-  "theme_color": "#3B82F6",
+  "theme_color": "#0982C3",
   "background_color": "#ffffff",
   "display": "standalone",
   "start_url": "/",

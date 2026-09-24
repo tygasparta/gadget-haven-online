@@ -486,7 +486,7 @@ const ProductDetail = () => {
       </div>
 
       {/* Sticky mobile add-to-cart bar */}
-      <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-background border-t border-border px-4 py-3 flex items-center gap-3 shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 safe-area-pb bg-background border-t border-border px-4 py-3 flex items-center gap-3 shadow-lg">
         <div className="flex-1 min-w-0">
           <p className="text-lg font-bold text-primary truncate">${product.price}</p>
           <p className={`text-xs ${stockLabel.tone}`}>{stockLabel.text}</p>
