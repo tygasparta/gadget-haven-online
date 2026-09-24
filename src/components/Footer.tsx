@@ -60,12 +60,12 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-r from-slate-900 to-sky-950 text-white pt-10 pb-24 md:py-12 border-t border-sky-800">
+    <footer className="bg-foreground text-white pt-10 pb-24 md:py-12 border-t border-border">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-700 rounded-xl flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center">
                 <span className="text-white font-bold text-xl">G</span>
               </div>
               <div>

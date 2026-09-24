@@ -20,17 +20,17 @@ export const PromoBanner: React.FC<{ promo: PromoAsset }> = ({ promo }) => {
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover object-right transition-transform duration-500 group-hover:scale-[1.03]"
       />
-      <div className="relative h-full w-[55%] flex flex-col justify-center p-4 sm:p-6">
-        <span className={cn('text-[10px] sm:text-xs font-bold tracking-[0.14em] uppercase mb-1', dark ? 'text-primary-foreground/80' : 'text-primary')}>
+      <div className="relative h-full w-[55%] flex flex-col justify-center p-4 sm:p-5 lg:p-6">
+        <span className={cn('text-[10px] sm:text-[11px] font-semibold tracking-[0.06em] uppercase mb-1', dark ? 'text-primary-foreground/80' : 'text-primary')}>
           {promo.label}
         </span>
-        <h3 className={cn('text-lg sm:text-2xl font-extrabold leading-tight tracking-tight', dark ? 'text-primary-foreground' : 'text-foreground')}>
+        <h3 className={cn('text-lg sm:text-xl lg:text-2xl font-extrabold leading-tight tracking-tight', dark ? 'text-primary-foreground' : 'text-foreground')}>
           {promo.headline}
         </h3>
-        <p className={cn('text-xs sm:text-sm mt-1 mb-3 line-clamp-2', dark ? 'text-primary-foreground/75' : 'text-muted-foreground')}>
+        <p className={cn('text-xs sm:text-sm mt-1 mb-3 line-clamp-1 md:hidden xl:block', dark ? 'text-primary-foreground/75' : 'text-muted-foreground')}>
           {promo.copy}
         </p>
-        <Button size="sm" className="self-start font-semibold pointer-events-none">{promo.cta.text}</Button>
+        <Button size="sm" className="self-start font-semibold pointer-events-none mt-2 md:mt-3 xl:mt-0">{promo.cta.text}</Button>
       </div>
     </Link>
   );

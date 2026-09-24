@@ -19,7 +19,7 @@ const BrandTile = ({ brand }: { brand: BrandAsset }) => {
           width={96}
           height={32}
           onError={() => setFailed(true)}
-          className="h-7 w-auto max-w-[70%] object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+          className="h-8 w-28 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
         />
       ) : (
         <span className="text-base font-extrabold tracking-wide uppercase text-muted-foreground group-hover:text-foreground transition-colors">
@@ -32,7 +32,7 @@ const BrandTile = ({ brand }: { brand: BrandAsset }) => {
 
 const FeaturedBrands = () => (
   <section className="w-full mb-8 sm:mb-12">
-    <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-4">Popular Brands</h2>
+    <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight mb-4 pb-3 border-b border-border">Popular Brands</h2>
     <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
       {BRAND_ASSETS.map(b => <BrandTile key={b.name} brand={b} />)}
     </div>
