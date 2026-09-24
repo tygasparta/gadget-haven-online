@@ -1,4 +1,5 @@
 import React from 'react';
+import sellPhoneImg from '@/assets/promotions/gadget-genie-sell-with-us-phone.jpg';
 import { useNavigate } from 'react-router-dom';
 import { Apple, PlayCircle, ArrowRight, Search, Flame, Truck } from 'lucide-react';
 
@@ -99,9 +100,13 @@ const AppPromoBanner = () => {
 
       {/* Sell with us */}
       <div className="rounded-lg overflow-hidden relative bg-foreground text-background">
-        <div
-          className="absolute inset-0 opacity-25 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1553413077-190dd305871c?w=1200&q=60')" }}
+        <img
+          src={sellPhoneImg}
+          alt="Seller managing their Gadget Genie store on a smartphone"
+          width={1280}
+          height={768}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover object-right"
         />
         <div className="relative z-10 px-6 sm:px-8 py-8 h-full flex flex-col justify-center">
           <p className="text-xs font-semibold tracking-wide text-primary uppercase mb-2">Sell with us</p>
