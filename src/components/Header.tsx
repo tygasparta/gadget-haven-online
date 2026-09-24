@@ -8,8 +8,15 @@ import { useCartItems } from '@/hooks/useCart';
 import { useUserRole } from '@/hooks/useUserRole';
 import MegaMenu from './MegaMenu';
 import SearchAutocomplete from './SearchAutocomplete';
+import MobileHeader from './MobileHeader';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileHeader /> : <DesktopHeader />;
+};
+
+const DesktopHeader = () => {
   const { user, signOut } = useAuthContext();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { data: cartItems = [] } = useCartItems();
