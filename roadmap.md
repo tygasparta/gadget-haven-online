@@ -1,10 +1,8 @@
 # Mobile-first redesign
 
-- [ ] Establish shared mobile header, side menu, bottom navigation, product cards, sheets, spacing, and safe-area behavior
-- [ ] Redesign Home and Categories for mobile-first shopping
-- [ ] Redesign category/product listings with working sort and filter sheets
-- [ ] Redesign Product Details and Cart with mobile purchase controls
-- [ ] Redesign Search, Deals, Wishlist, Account, Orders, and side navigation
-- [ ] Add manifest-only installed-app presentation and branded installed-app splash assets
-- [ ] Verify existing data, auth, cart, checkout, wishlist, and order behavior remains intact
-- [ ] Test 320, 360, 375, 390, 393, 412, 430, and 768px layouts
+- [x] Shared phone header, side menu, five-item bottom menu, safe areas
+- [x] Home-screen app settings (no loading screen, no offline caching)
+- [x] Deals page phone layout; full uncropped deal photos
+- [x] Product page buy bar pinned to screen bottom
+- [ ] Deeper per-screen rework: Categories, product listings with sort/filter sheets, Product Details, Cart, Search, Wishlist, Account, Orders
+- [ ] Full test pass at 360, 375, 393, 412 and 768px
