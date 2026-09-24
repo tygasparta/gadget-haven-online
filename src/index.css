@@ -181,19 +181,22 @@
   }
 }
 
-/* Safe area for mobile navigation */
+/* Safe areas for installed/mobile use */
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom);
 }
-
-/* Ensure mobile navigation stays on top */
-.z-\[999\] {
-  z-index: 999;
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top);
 }
 
-/* Prevent scroll when mobile navigation is present */
-@media (max-width: 768px) {
+/* Keep page content clear of the fixed bottom menu on phones */
+@media (max-width: 767px) {
   body {
-    padding-bottom: env(safe-area-inset-bottom, 64px);
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    -webkit-tap-highlight-color: transparent;
   }
+  html, body { overflow-x: hidden; }
 }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

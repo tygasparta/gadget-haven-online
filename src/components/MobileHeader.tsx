@@ -1,17 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ShoppingCart, User, Heart } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { ShoppingCart, Menu, ChevronLeft, Search } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCartItems } from '@/hooks/useCart';
 import SearchAutocomplete from './SearchAutocomplete';
+import SideMenu from './SideMenu';
+
+const ROOT_PATHS = ['/', '/categories', '/deals', '/dashboard', '/profile', '/auth'];
 
 const MobileHeader = () => {
-  const { user } = useAuthContext();
   const { data: cartItems = [] } = useCartItems();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [focusSearchSignal, setFocusSearchSignal] = useState(0);
   const searchWrapperRef = useRef<HTMLDivElement>(null);
-
+  const isRoot = ROOT_PATHS.includes(pathname);
+  const showSearch = pathname === '/' || pathname.startsWith('/search') || pathname.startsWith('/products');
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
@@ -23,49 +27,55 @@ const MobileHeader = () => {
     return () => window.removeEventListener('focusSearch', handleFocusSearch);
   }, []);
 
-  const handleCartClick = () => {
-    window.dispatchEvent(new Event('openCart'));
-  };
-
   return (
-    <div className="md:hidden">
-      <div className="bg-background shadow-sm border-b border-border sticky top-0 z-50">
-        <div className="flex items-center justify-between px-3 py-2.5">
-          <Link to="/" className="flex items-center">
-            <div className="w-7 h-7 bg-primary rounded flex items-center justify-center mr-2">
-              <span className="text-primary-foreground font-bold text-xs">G</span>
-            </div>
-            <h1 className="text-base font-bold text-primary">GadgetGenie</h1>
-          </Link>
+    <header className="md:hidden sticky top-0 z-50 bg-background border-b border-border safe-area-pt">
+      <div className="flex items-center gap-1 h-14 px-2">
+        {isRoot ? (
+          <button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="h-10 w-10 grid place-items-center text-foreground">
+            <Menu className="w-5 h-5" strokeWidth={1.75} />
+          </button>
+        ) : (
+          <button onClick={() => navigate(-1)} aria-label="Go back" className="h-10 w-10 grid place-items-center text-foreground">
+            <ChevronLeft className="w-5 h-5" strokeWidth={1.75} />
+          </button>
+        )}
 
-          <div className="flex items-center space-x-1">
-            {user ? (
-              <button onClick={() => navigate('/wishlist')} className="p-2 text-muted-foreground">
-                <Heart className="w-5 h-5" />
-              </button>
-            ) : (
-              <button onClick={() => navigate('/auth')} className="p-2 text-muted-foreground">
-                <User className="w-5 h-5" />
-              </button>
-            )}
+        <Link to="/" className="flex-1 min-w-0 leading-none">
+          <span className="block text-[17px] font-bold tracking-tight text-foreground">
+            Gadget <span className="text-primary">Genie</span>
+          </span>
+          <span className="block text-[9px] font-medium uppercase tracking-[0.12em] text-muted-foreground mt-1 truncate">
+            Tech for a smarter tomorrow
+          </span>
+        </Link>
 
-            <button onClick={handleCartClick} className="p-2 text-muted-foreground relative">
-              <ShoppingCart className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold animate-badge-pop">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
+        {!showSearch && (
+          <button onClick={() => navigate('/search')} aria-label="Search" className="h-10 w-10 grid place-items-center text-foreground">
+            <Search className="w-5 h-5" strokeWidth={1.75} />
+          </button>
+        )}
+        <button
+          onClick={() => window.dispatchEvent(new Event('openCart'))}
+          aria-label={`Cart, ${cartCount} items`}
+          className="relative h-10 w-10 grid place-items-center text-foreground"
+        >
+          <ShoppingCart className="w-5 h-5" strokeWidth={1.75} />
+          {cartCount > 0 && (
+            <span className="absolute top-1 right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold grid place-items-center">
+              {cartCount}
+            </span>
+          )}
+        </button>
+      </div>
 
-        {/* Search bar always visible */}
-        <div ref={searchWrapperRef} className="px-3 pb-2.5">
+      {showSearch && (
+        <div ref={searchWrapperRef} className="px-3 pb-3">
           <SearchAutocomplete variant="mobile" autoFocus={focusSearchSignal} />
         </div>
-      </div>
-    </div>
+      )}
+
+      <SideMenu open={menuOpen} onOpenChange={setMenuOpen} />
+    </header>
   );
 };
 
