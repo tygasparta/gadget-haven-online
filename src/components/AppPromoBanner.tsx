@@ -1,7 +1,5 @@
 import React from 'react';
-import sellPhoneImg from '@/assets/promotions/gadget-genie-sell-with-us-phone.jpg';
-import { useNavigate } from 'react-router-dom';
-import { Apple, PlayCircle, ArrowRight } from 'lucide-react';
+import { Apple, PlayCircle } from 'lucide-react';
 import appHomeImg from '@/assets/marketing/gadget-genie-app-home.webp';
 import appProductImg from '@/assets/marketing/gadget-genie-app-product.webp';
 
@@ -12,10 +10,9 @@ const PhoneFrame: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
 );
 
 const AppPromoBanner = () => {
-  const navigate = useNavigate();
 
   return (
-    <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+    <div className="mb-12 grid grid-cols-1">
       {/* Get the app */}
       <div className="rounded-lg overflow-hidden bg-muted/40 border border-border">
         <div className="flex items-center gap-6 px-6 sm:px-8 py-8 h-full">
@@ -45,33 +42,6 @@ const AppPromoBanner = () => {
         </div>
       </div>
 
-      {/* Sell with us */}
-      <div className="rounded-lg overflow-hidden relative bg-foreground text-background">
-        <img
-          src={sellPhoneImg}
-          alt="Seller managing their Gadget Genie store on a smartphone"
-          width={1280}
-          height={768}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-right"
-        />
-        <div className="relative z-10 px-6 sm:px-8 py-8 h-full flex flex-col justify-center">
-          <p className="text-xs font-semibold tracking-wide text-primary uppercase mb-2">Sell with us</p>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2 leading-tight">
-            Grow Your Business<br />with Gadget Genie
-          </h2>
-          <p className="text-background/70 text-sm mb-6 max-w-sm">
-            Reach thousands of customers across Zimbabwe. List your products, manage your store and grow your sales.
-          </p>
-          <button
-            onClick={() => navigate('/sell')}
-            className="flex items-center gap-2 bg-background text-foreground rounded-md px-5 py-2.5 text-sm font-semibold hover:bg-background/90 transition-colors w-fit"
-          >
-            Start Selling
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
