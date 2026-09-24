@@ -49,14 +49,14 @@ const CategoryTile = ({ name, count, compact }: { name: string; count?: number; 
       to={c.path}
       className="group flex flex-col bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:border-foreground/20 hover:shadow-md hover:-translate-y-0.5"
     >
-      <div className="aspect-[4/3] bg-muted/40 overflow-hidden">
+      <div className="aspect-square bg-muted/40 overflow-hidden">
         <img
           src={c.image}
           alt={`${name} at Gadget Genie`}
           width={800}
           height={800}
           loading="lazy"
-          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />
       </div>
       <div className={cn('flex flex-col flex-1', compact ? 'p-3' : 'p-3 sm:p-4')}>
