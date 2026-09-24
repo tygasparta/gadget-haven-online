@@ -23,9 +23,11 @@ interface ProductCardProps {
     countdownTimer?: string;
     stock?: number;
   };
+  /** Only Flash Deal cards show Add to Cart */
+  showAddToCart?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = false }) => {
   const { mutate: addToCart } = useAddToCart();
   const { mutate: addToWishlist } = useAddToWishlist();
   const { mutate: removeFromWishlist } = useRemoveFromWishlist();
@@ -256,6 +258,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             Delivery available
           </span>
         </div>
+        {showAddToCart && (
+          <Button
+            onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+            disabled={product.stock !== undefined && product.stock <= 0}
+            className="w-full mt-3 font-semibold"
+            size="sm"
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Add to Cart
+          </Button>
+        )}
       </div>
     </div>
   );
