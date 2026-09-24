@@ -23,9 +23,11 @@ interface ProductCardProps {
     countdownTimer?: string;
     stock?: number;
   };
+  /** Only Flash Deal cards show Add to Cart */
+  showAddToCart?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = false }) => {
   const { mutate: addToCart } = useAddToCart();
   const { mutate: addToWishlist } = useAddToWishlist();
   const { mutate: removeFromWishlist } = useRemoveFromWishlist();
@@ -144,20 +146,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute top-3 left-3 z-10">
           {product.isFlash ? (
             <div className="flex flex-col space-y-1">
-              <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-sm animate-badge-pop">
+              <div className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-sm animate-badge-pop">
                 <Zap className="w-3 h-3 mr-1" />
                 FLASH
               </div>
-              <span className="bg-gradient-to-r from-success to-success/80 text-success-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm">
+              <span className="bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm">
                 {product.discount}
               </span>
             </div>
           ) : product.discount === "NEW" ? (
-            <span className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm animate-badge-pop">
+            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm animate-badge-pop">
               {product.discount}
             </span>
           ) : (
-            <span className="bg-gradient-to-r from-warning to-warning/80 text-warning-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm animate-badge-pop">
+            <span className="bg-warning text-warning-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm animate-badge-pop">
               {product.discount}
             </span>
           )}
@@ -256,6 +258,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             Delivery available
           </span>
         </div>
+        {showAddToCart && (
+          <Button
+            onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+            disabled={product.stock !== undefined && product.stock <= 0}
+            className="w-full mt-3 font-semibold"
+            size="sm"
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Add to Cart
+          </Button>
+        )}
       </div>
     </div>
   );

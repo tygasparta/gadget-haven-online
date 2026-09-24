@@ -8,6 +8,7 @@ import TrendingCarousel from '@/components/TrendingCarousel';
 import FeaturedBrands from '@/components/FeaturedBrands';
 import AppPromoBanner from '@/components/AppPromoBanner';
 import ProductSection from '@/components/ProductSection';
+import PromoBanners from '@/components/PromoBanner';
 import Footer from '@/components/Footer';
 import CartSidebar from '@/components/CartSidebar';
 import MobileQuickCategories from '@/components/MobileQuickCategories';
@@ -32,7 +33,7 @@ const Index = () => {
     brand: product.brand,
     discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
     isFlash: product.is_flash_sale,
-    countdownTimer: product.is_flash_sale ? "02:15:23" : undefined
+    stock: product.stock
   });
 
   const transformedFlashSale = flashSaleProducts.slice(0, 8).map(transformProduct);
@@ -60,7 +61,7 @@ const Index = () => {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 pb-24 md:pb-6">
         <main>
           {/* Hero */}
-          {!isMobile && <HeroBanner />}
+          <HeroBanner />
 
           {/* Trust strip */}
           <TrustStrip />
@@ -90,6 +91,9 @@ const Index = () => {
               />
             )
           )}
+
+          {/* Promotions */}
+          <PromoBanners ids={['deals', 'laptops', 'gaming']} />
 
           {/* Trending */}
           <TrendingCarousel />
@@ -135,6 +139,8 @@ const Index = () => {
               viewAllPath="/products?filter=best-sellers"
             />
           )}
+
+          <PromoBanners ids={['smartphones', 'audio', 'smart-home']} />
 
           {/* Popular brands */}
           <FeaturedBrands />
