@@ -106,7 +106,7 @@ const AppPromoBanner = () => {
         <div className="relative z-10 px-6 sm:px-8 py-8 h-full flex flex-col justify-center">
           <p className="text-xs font-semibold tracking-wide text-primary uppercase mb-2">Sell with us</p>
           <h2 className="text-2xl sm:text-3xl font-bold mb-2 leading-tight">
-            Grow Your Business<br />with <span className="text-primary">Gadget Genie</span>
+            Grow Your Business<br />with Gadget Genie
           </h2>
           <p className="text-background/70 text-sm mb-6 max-w-sm">
             Reach thousands of customers across Zimbabwe. List your products, manage your store and grow your sales.

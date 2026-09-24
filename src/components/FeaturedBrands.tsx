@@ -19,7 +19,7 @@ const BrandTile = ({ brand }: { brand: BrandAsset }) => {
           width={96}
           height={32}
           onError={() => setFailed(true)}
-          className="h-7 w-auto max-w-[70%] object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+          className="h-8 w-28 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
         />
       ) : (
         <span className="text-base font-extrabold tracking-wide uppercase text-muted-foreground group-hover:text-foreground transition-colors">
