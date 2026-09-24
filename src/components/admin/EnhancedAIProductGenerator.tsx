@@ -63,7 +63,7 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
     setIsGenerating(true); setError(''); setGenerationStage('Initializing AI generation...');
     const stageInterval = simulateGenerationStages();
     try {
-      const enhancedPrompt = `Generate a complete product listing for: ${prompt}\\\\n\\\\nPlease return a valid JSON object with the following structure:\\\\n{\\\"name\\\": \\\"Product name\\\", \\\"description\\\": \\\"Product description (2-3 sentences)\\\", \\\"category\\\": \\\"Category from: Smartphones, Laptops, Tablets, Headphones, Cameras, Gaming, Accessories, Smart Watches, Audio, Home & Garden, Electronics\\\", \\\"brand\\\": \\\"Brand name\\\", \\\"price\\\": 299.99, \\\"features\\\": [\\\"Feature 1\\\", \\\"Feature 2\\\", \\\"Feature 3\\\"], \\\"whats_in_box\\\": [\\\"Item 1\\\", \\\"Item 2\\\", \\\"Item 3\\\"], \\\"tags\\\": [\\\"tag1\\\", \\\"tag2\\\", \\\"tag3\\\"]}\\\\n\\\\nOnly return the JSON object, no additional text.`;
+      const enhancedPrompt = `Generate a complete product listing for: ${prompt}\n\nReturn only the JSON object described in your instructions, including a "specifications" array of 5-8 real technical specs as {"key": "...", "value": "..."} objects.`;
       const { data, error: functionError } = await supabase.functions.invoke('generate-product-details', { body: { prompt: enhancedPrompt } });
       if (functionError) throw new Error(functionError.message || 'Failed to generate product details');
       if (!data || !data.generatedData) throw new Error('No data received from AI generation');
@@ -79,7 +79,12 @@ const EnhancedAIProductGenerator: React.FC<EnhancedAIProductGeneratorProps> = ({
         features: Array.isArray(parsedData.features) ? parsedData.features : [],
         whats_in_box: Array.isArray(parsedData.whats_in_box) ? parsedData.whats_in_box : [parsedData.name || 'Product', 'USB Cable', 'User Manual', 'Warranty Card'],
         tags: Array.isArray(parsedData.tags) ? parsedData.tags : [detectedBrand.toLowerCase(), (parsedData.category || 'electronics').toLowerCase()],
-        colors: generatedColors
+        colors: generatedColors,
+        specifications: Array.isArray(parsedData.specifications)
+          ? parsedData.specifications
+              .filter((s: any) => typeof s?.key === 'string' && typeof s?.value === 'string')
+              .map((s: any) => ({ key: s.key, value: s.value }))
+          : []
       };
       clearInterval(stageInterval); setGenerationStage('Generation complete!');
       setTimeout(() => { onGenerate(enhancedData); setPrompt(''); setGenerationStage(''); toast({ title: "✨ AI Generation Complete!", description: `Successfully generated \"${parsedData.name}\" with brand: ${enhancedData.brand} ($${enhancedData.price})` }); }, 1000);
