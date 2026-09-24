@@ -27,10 +27,10 @@ export const PromoBanner: React.FC<{ promo: PromoAsset }> = ({ promo }) => {
         <h3 className={cn('text-lg sm:text-xl lg:text-2xl font-extrabold leading-tight tracking-tight', dark ? 'text-primary-foreground' : 'text-foreground')}>
           {promo.headline}
         </h3>
-        <p className={cn('text-xs sm:text-sm mt-1 mb-3 line-clamp-1 md:hidden lg:block lg:line-clamp-2', dark ? 'text-primary-foreground/75' : 'text-muted-foreground')}>
+        <p className={cn('text-xs sm:text-sm mt-1 mb-3 line-clamp-1 md:hidden xl:block', dark ? 'text-primary-foreground/75' : 'text-muted-foreground')}>
           {promo.copy}
         </p>
-        <Button size="sm" className="self-start font-semibold pointer-events-none mt-2 md:mt-3 lg:mt-0">{promo.cta.text}</Button>
+        <Button size="sm" className="self-start font-semibold pointer-events-none mt-2 md:mt-3 xl:mt-0">{promo.cta.text}</Button>
       </div>
     </Link>
   );
