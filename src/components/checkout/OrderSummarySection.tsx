@@ -1,21 +1,11 @@
-
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Package, Truck, CreditCard } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 interface CartItem {
   id: string;
   quantity: number;
-  products: {
-    id: number;
-    name: string;
-    price: number;
-    image: string;
-  };
+  products: { id: number; name: string; price: number; image: string };
 }
 
 interface OrderSummarySectionProps {
@@ -28,146 +18,45 @@ interface OrderSummarySectionProps {
   mobileMethod: string;
   isProcessing: boolean;
   onSubmit: () => void;
+  hideAction?: boolean;
 }
 
+const money = (n: number) => `$${n.toFixed(2)}`;
+
 const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
-  cartItems,
-  subtotal,
-  tax,
-  shipping,
-  finalTotal,
-  paymentMethod,
-  mobileMethod,
-  isProcessing,
-  onSubmit
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.3 }}
-    >
-      <Card className="sticky top-4 bg-white border-0 shadow-xl">
-        <CardHeader className="bg-accent rounded-t-xl">
-          <CardTitle className="flex items-center space-x-2 text-foreground">
-            <ShoppingCart className="w-5 h-5 text-primary" />
-            <span>Order Summary</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-4">
-          {/* Cart Items */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
-              <Package className="w-4 h-4" />
-              <span>{cartItems.length} Items</span>
-            </div>
-            
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                <div className="relative">
-                  <img
-                    src={item.products.image}
-                    alt={item.products.name}
-                    className="w-12 h-12 object-cover rounded-md"
-                  />
-                  <Badge
-                    variant="secondary"
-                    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs bg-primary text-white"
-                  >
-                    {item.quantity}
-                  </Badge>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {item.products.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    ${item.products.price.toFixed(2)} each
-                  </p>
-                </div>
-                <div className="text-sm font-semibold text-foreground">
-                  ${(item.products.price * item.quantity).toFixed(2)}
-                </div>
-              </div>
-            ))}
+  cartItems, subtotal, tax, shipping, finalTotal, paymentMethod, isProcessing, onSubmit, hideAction,
+}) => (
+  <section className="bg-background border border-border rounded-lg p-4 lg:sticky lg:top-24">
+    <h2 className="text-sm font-semibold mb-3">Order summary · {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}</h2>
+    <ul className="space-y-3 max-h-72 overflow-y-auto">
+      {cartItems.map((item) => (
+        <li key={item.id} className="flex items-center gap-3">
+          <div className="w-12 h-12 shrink-0 rounded-md border border-border p-1 bg-background">
+            <img src={item.products.image} alt={item.products.name} loading="lazy" className="w-full h-full object-contain" />
           </div>
-
-          <Separator />
-
-          {/* Order Totals */}
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tax (2%)</span>
-              <span className="font-medium">${tax.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex justify-between text-sm">
-              <div className="flex items-center space-x-1">
-                <Truck className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Shipping</span>
-              </div>
-              <span className="font-medium">
-                {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-              </span>
-            </div>
-
-            <Separator />
-            
-            <div className="flex justify-between text-lg font-bold text-foreground">
-              <span>Total</span>
-              <span>${finalTotal.toFixed(2)}</span>
-            </div>
-
-            {shipping === 0 && (
-              <p className="text-xs text-success text-center">
-                🎉 You saved $5.00 on shipping by choosing collection!
-              </p>
-            )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-foreground line-clamp-1">{item.products.name}</p>
+            <p className="text-xs text-muted-foreground">Qty {item.quantity} × {money(item.products.price)}</p>
           </div>
-
-          <Separator />
-
-          {/* Payment Method Display */}
-          <div className="flex items-center space-x-2 text-sm">
-            <CreditCard className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Payment:</span>
-            <Badge variant="outline" className="capitalize">
-              {paymentMethod === 'dischub' ? 'Dischub Payment' : 
-               paymentMethod === 'cod' ? 'Cash on Delivery' : 
-               mobileMethod || paymentMethod}
-            </Badge>
-          </div>
-
-          {/* Action Button */}
-          <Button
-            onClick={onSubmit}
-            disabled={isProcessing}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
-          >
-            {isProcessing ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Processing...</span>
-              </div>
-            ) : (
-              <span>Complete Order • ${finalTotal.toFixed(2)}</span>
-            )}
-          </Button>
-
-          {/* Security Notice */}
-          <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>🔒 Your payment information is secure and encrypted</p>
-            <p>✅ Tax calculated at checkout</p>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+          <p className="text-sm font-medium">{money(item.products.price * item.quantity)}</p>
+        </li>
+      ))}
+    </ul>
+    <dl className="mt-4 pt-3 border-t border-border space-y-2 text-sm">
+      <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd>{money(subtotal)}</dd></div>
+      <div className="flex justify-between"><dt className="text-muted-foreground">Tax (2%)</dt><dd>{money(tax)}</dd></div>
+      <div className="flex justify-between"><dt className="text-muted-foreground">Delivery</dt><dd className={shipping === 0 ? 'text-success' : ''}>{shipping === 0 ? 'Free' : money(shipping)}</dd></div>
+      <div className="flex justify-between pt-2 border-t border-border text-base font-bold"><dt>Total</dt><dd>{money(finalTotal)}</dd></div>
+    </dl>
+    {!hideAction && (
+      <Button onClick={onSubmit} disabled={isProcessing} className="w-full h-11 mt-4">
+        {isProcessing ? 'Processing…' : `Pay ${money(finalTotal)} with ${paymentMethod === 'paypal' ? 'PayPal' : 'PesePay'}`}
+      </Button>
+    )}
+    <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+      <Lock className="w-3.5 h-3.5" /> Payments are encrypted and secure
+    </p>
+  </section>
+);
 
 export default OrderSummarySection;
