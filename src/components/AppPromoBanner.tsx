@@ -1,49 +1,52 @@
 import React from 'react';
 import { Apple, PlayCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import appHomeImg from '@/assets/marketing/gadget-genie-app-home.webp';
 import appProductImg from '@/assets/marketing/gadget-genie-app-product.webp';
 
-const PhoneFrame: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
-  <div className="w-32 sm:w-36 aspect-[390/844] rounded-[1.75rem] bg-background border-[6px] border-foreground shadow-xl overflow-hidden flex-shrink-0">
+const PhoneFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => (
+  <div className={cn('w-32 sm:w-40 lg:w-44 aspect-[390/844] rounded-[1.9rem] bg-background border-[6px] border-foreground shadow-xl overflow-hidden flex-shrink-0', className)}>
     <img src={src} alt={alt} width={600} height={1298} loading="lazy" className="w-full h-full object-cover object-top" />
   </div>
 );
 
-const AppPromoBanner = () => {
+const StoreButton: React.FC<{ icon: React.ElementType; top: string; bottom: string }> = ({ icon: Icon, top, bottom }) => (
+  <button
+    type="button"
+    className="inline-flex items-center gap-2.5 bg-foreground text-background rounded-md h-12 w-44 px-4 hover:opacity-90 transition-opacity"
+  >
+    <Icon className="w-5 h-5 flex-shrink-0" />
+    <span className="text-left leading-tight">
+      <span className="block text-[10px] opacity-80">{top}</span>
+      <span className="block text-sm font-semibold">{bottom}</span>
+    </span>
+  </button>
+);
 
-  return (
-    <div className="mb-12 grid grid-cols-1">
-      {/* Get the app */}
-      <div className="rounded-lg overflow-hidden bg-muted/40 border border-border">
-        <div className="flex items-center gap-6 px-6 sm:px-8 py-8 h-full">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold tracking-wide text-primary uppercase mb-2">Get the Gadget Genie app</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 leading-tight">
-              Shop Smarter<br />On The Go
-            </h2>
-            <p className="text-muted-foreground text-sm mb-6">
-              Browse, shop, track orders and get exclusive app deals — anytime, anywhere.
-            </p>
-            <div className="flex flex-col xs:flex-row gap-2">
-              <button className="flex items-center gap-2 bg-foreground text-background rounded-lg px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity">
-                <Apple className="w-4 h-4" />
-                <span className="text-left leading-tight">Download on the<br /><span className="text-[11px] font-semibold">App Store</span></span>
-              </button>
-              <button className="flex items-center gap-2 bg-foreground text-background rounded-lg px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity">
-                <PlayCircle className="w-4 h-4" />
-                <span className="text-left leading-tight">GET IT ON<br /><span className="text-[11px] font-semibold">Google Play</span></span>
-              </button>
-            </div>
-          </div>
-          <div className="hidden sm:flex flex-shrink-0 items-end gap-2 -mr-2">
-            <PhoneFrame src={appHomeImg} alt="Gadget Genie home screen on mobile" />
-            <PhoneFrame src={appProductImg} alt="Gadget Genie product page on mobile" />
-          </div>
+const AppPromoBanner = () => (
+  <section className="mb-12 rounded-lg overflow-hidden bg-muted/40 border border-border">
+    <div className="grid md:grid-cols-2 items-center gap-8 px-6 sm:px-10 lg:px-14 pt-8 md:pt-0">
+      <div className="md:py-12">
+        <p className="text-xs font-semibold tracking-wide text-primary uppercase mb-2">Get the Gadget Genie app</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 leading-tight">
+          Shop Smarter On The Go
+        </h2>
+        <p className="text-muted-foreground text-sm mb-6 max-w-sm">
+          Browse, shop, track orders and get exclusive app deals — anytime, anywhere.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <StoreButton icon={Apple} top="Download on the" bottom="App Store" />
+          <StoreButton icon={PlayCircle} top="Get it on" bottom="Google Play" />
         </div>
       </div>
 
+      {/* Two real screenshots, staggered and anchored to the bottom edge */}
+      <div className="flex justify-center items-start gap-4 h-64 md:h-80 pt-2 md:pt-10 overflow-hidden">
+        <PhoneFrame src={appHomeImg} alt="Gadget Genie home screen on mobile" className="" />
+        <PhoneFrame src={appProductImg} alt="Gadget Genie product page on mobile" className="mt-8" />
+      </div>
     </div>
-  );
-};
+  </section>
+);
 
 export default AppPromoBanner;
