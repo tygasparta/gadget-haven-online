@@ -1,3 +1,4 @@
+import { toCardProduct } from '@/lib/productCard';
 import React, { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
 import { useProducts } from '@/hooks/useProducts';
@@ -42,19 +43,7 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({ excludeId }) => {
     .map((id) => allProducts.find((p) => p.id === id))
     .filter((p): p is NonNullable<typeof p> => Boolean(p))
     .slice(0, 4)
-    .map((p) => ({
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      originalPrice: p.original_price,
-      rating: p.rating,
-      reviews: p.reviews,
-      image: p.image,
-      brand: p.brand,
-      stock: p.stock,
-      discount: p.discount_percentage > 0 ? `${p.discount_percentage}% OFF` : undefined,
-      isFlash: p.is_flash_sale,
-    }));
+    .map(toCardProduct);
 
   if (viewed.length === 0) return null;
 
