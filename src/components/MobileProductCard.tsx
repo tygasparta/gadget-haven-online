@@ -46,7 +46,7 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative">
+    <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow relative">
       <div className="relative aspect-square overflow-hidden bg-gray-50 cursor-pointer" onClick={handleProductClick}>
         <img src={image} alt={name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"; }}
@@ -54,16 +54,16 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
         
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {isFlash && (
-            <Badge className="bg-red-500 text-white px-2 py-1 text-xs font-bold">
+            <Badge className="bg-destructive text-destructive-foreground px-1.5 py-0.5 text-[11px] font-semibold rounded-[3px]">
               <Zap className="w-3 h-3 mr-1" />FLASH
             </Badge>
           )}
           {discount && (
-            <Badge className="bg-green-500 text-white px-2 py-1 text-xs font-bold">{discount}</Badge>
+            <Badge className="bg-destructive text-destructive-foreground px-1.5 py-0.5 text-[11px] font-semibold rounded-[3px]">{discount}</Badge>
           )}
         </div>
 
-        <Button variant="ghost" size="sm" className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white shadow-lg" onClick={handleWishlist}>
+        <Button variant="ghost" size="sm" className="absolute top-3 right-3 p-2 bg-background/90 rounded-md hover:bg-background" onClick={handleWishlist}>
           <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
         </Button>
       </div>

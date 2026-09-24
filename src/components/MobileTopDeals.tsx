@@ -41,7 +41,7 @@ const MobileTopDeals = () => {
   if (topDeals.length === 0) return null;
 
   return (
-    <div className="md:hidden bg-white rounded-2xl shadow-lg p-4 mb-6">
+    <div className="md:hidden bg-card border border-border rounded-lg p-3 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-800">Top Deals</h3>
         <Button variant="ghost" size="sm" className="text-sky-600 hover:text-sky-700" onClick={handleSeeAll}>
@@ -57,7 +57,7 @@ const MobileTopDeals = () => {
             onClick={(e) => handleProductClick(product.id, e)}
           >
             {product.discount_percentage > 0 && (
-              <Badge className="absolute top-2 left-2 bg-destructive text-white text-xs px-2 py-1 rounded-full z-10">
+              <Badge className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[11px] font-semibold px-1.5 py-0.5 rounded-[3px] z-10 hover:bg-destructive">
                 {product.discount_percentage}% OFF
               </Badge>
             )}
