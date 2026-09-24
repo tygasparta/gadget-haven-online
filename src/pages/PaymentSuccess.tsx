@@ -36,7 +36,12 @@ const PaymentSuccess = () => {
   const hasProcessedSuccessRef = useRef(false);
 
   const sessionId = searchParams.get('session_id');
-  const reference = searchParams.get('reference') || searchParams.get('referenceNumber');
+  const provider = searchParams.get('provider');
+  const returnedOrderId = searchParams.get('order_id');
+  const paypalToken = searchParams.get('token');
+  const reference = searchParams.get('reference') || searchParams.get('referenceNumber') ||
+    (provider === 'pesepay' ? sessionStorage.getItem('gg_pesepay_ref') : null);
+  const paypalCapturedRef = useRef(false);
 
   const clearCartItems = useCallback(async () => {
     if (!user) return;
@@ -144,6 +149,27 @@ const PaymentSuccess = () => {
   useEffect(() => {
     if (sessionId) {
       verifySessionPayment();
+      return;
+    }
+
+    if (provider === 'paypal' && paypalToken && returnedOrderId) {
+      if (paypalCapturedRef.current) return;
+      paypalCapturedRef.current = true;
+      (async () => {
+        const { data, error } = await supabase.functions.invoke('paypal-capture-order', {
+          body: { paypalOrderId: paypalToken, orderDbId: returnedOrderId },
+        });
+        if (error || !data?.success) {
+          setPaymentStatus('failed');
+          toast({ title: "Payment Failed", description: data?.error || error?.message || "PayPal could not complete the payment.", variant: "destructive" });
+          return;
+        }
+        const { data: order } = await supabase.from('orders').select('*').eq('id', returnedOrderId).maybeSingle();
+        setOrderDetails(order);
+        setPaymentStatus('success');
+        toast({ title: "Payment Confirmed!", description: "Your order has been processed successfully." });
+        handlePaymentSuccess(order);
+      })();
       return;
     }
 

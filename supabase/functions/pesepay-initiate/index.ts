@@ -186,7 +186,9 @@ serve(async (req) => {
       throw new Error("Invalid payment amount");
     }
 
-    const returnUrl = "https://gadgetgenie.org/payment-success";
+    const returnUrl = orderDbId
+      ? `https://gadgetgenie.org/payment-success?provider=pesepay&order_id=${encodeURIComponent(orderDbId)}`
+      : "https://gadgetgenie.org/payment-success?provider=pesepay";
     const resultUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/pesepay-result`;
 
     const paymentBody = {

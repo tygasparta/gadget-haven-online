@@ -39,6 +39,7 @@ export const usePesePay = () => {
       }
 
       console.log('PesePay payment initiated:', response.referenceNumber);
+      if (response.referenceNumber) sessionStorage.setItem('gg_pesepay_ref', response.referenceNumber);
 
       toast({
         title: "Redirecting to PesePay",
