@@ -2,7 +2,6 @@ import React from 'react';
 import Header from '@/components/Header';
 import MobileHeader from '@/components/MobileHeader';
 import HeroBanner from '@/components/HeroBanner';
-import TrustStrip from '@/components/TrustStrip';
 import QuickCategories from '@/components/QuickCategories';
 import TrendingCarousel from '@/components/TrendingCarousel';
 import FeaturedBrands from '@/components/FeaturedBrands';
@@ -64,7 +63,6 @@ const Index = () => {
           <HeroBanner />
 
           {/* Trust strip */}
-          <TrustStrip />
 
           {/* Shop by category */}
           {isMobile ? (
