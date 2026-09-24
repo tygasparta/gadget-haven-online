@@ -5,24 +5,12 @@ import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '@/hooks/useWishlist';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useMainImages } from '@/hooks/useMainImages';
+import type { CardProduct } from '@/lib/productCard';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    originalPrice?: number;
-    rating: number;
-    reviews: number;
-    image: string;
-    brand?: string;
-    discount?: string;
-    isFlash?: boolean;
-    countdownTimer?: string;
-    stock?: number;
-  };
+  product: CardProduct & { countdownTimer?: string };
   /** Only Flash Deal cards show Add to Cart */
   showAddToCart?: boolean;
 }
@@ -34,59 +22,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = fals
   const { data: wishlistItems } = useWishlist();
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const [productImage, setProductImage] = useState('');
-  const [imageLoading, setImageLoading] = useState(true);
-
+  const { data: mainImages } = useMainImages();
+  const FALLBACK = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
+  const productImage = mainImages?.[product.id] || (product.image?.startsWith('http') || product.image?.startsWith('/') ? product.image : FALLBACK);
   const isInWishlist = wishlistItems?.some(item => item.product_id === product.id) || false;
-
-  useEffect(() => {
-    loadProductImage();
-  }, [product.id, product.image]);
-
-  const loadProductImage = async () => {
-    try {
-      setImageLoading(true);
-      console.log('Loading image for product:', product.id);
-      
-      const { data: galleryData, error } = await supabase
-        .from('product_galleries')
-        .select('image_url')
-        .eq('product_id', product.id)
-        .eq('is_main', true)
-        .single();
-
-      if (!error && galleryData?.image_url) {
-        console.log('Found main gallery image:', galleryData.image_url);
-        setProductImage(galleryData.image_url);
-      } else {
-        const { data: firstImage, error: firstError } = await supabase
-          .from('product_galleries')
-          .select('image_url')
-          .eq('product_id', product.id)
-          .order('display_order')
-          .limit(1)
-          .single();
-
-        if (!firstError && firstImage?.image_url) {
-          console.log('Found first gallery image:', firstImage.image_url);
-          setProductImage(firstImage.image_url);
-        } else {
-          if (product.image && product.image.includes('http')) {
-            console.log('Using product image URL:', product.image);
-            setProductImage(product.image);
-          } else {
-            console.log('No images found, using placeholder');
-            setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading product image:', error);
-      setProductImage('https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop');
-    } finally {
-      setImageLoading(false);
-    }
-  };
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -163,9 +102,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = fals
       </button>
 
       <div className="aspect-square bg-background relative overflow-hidden cursor-pointer" onClick={handleProductClick}>
-        {imageLoading ? (
-          <div className="w-full h-full animate-shimmer" />
-        ) : (
           <img
             src={productImage}
             alt={product.name}
@@ -175,7 +111,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = fals
               e.currentTarget.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
             }}
           />
-        )}
       </div>
 
       <div className="p-3 sm:p-4 flex flex-col flex-1 border-t border-border">
@@ -205,7 +140,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showAddToCart = fals
           )}
         </div>
 
-        <p className={`text-xs mt-1 ${stockLabel?.tone ?? 'text-success'}`}>{stockLabel?.text ?? 'In stock'}</p>
+        {stockLabel && <p className={`text-xs mt-1 ${stockLabel.tone}`}>{stockLabel.text}</p>}
+
+        {product.colors && product.colors.length > 0 && (
+          <div className="flex items-center gap-1 mt-2" aria-label={`${product.colors.length} colours`}>
+            {product.colors.slice(0, 5).map((c) => (
+              <span key={c.name} title={c.name} className="w-3.5 h-3.5 rounded-full border border-border" style={{ backgroundColor: c.hex_code }} />
+            ))}
+            {product.colors.length > 5 && <span className="text-[11px] text-muted-foreground">+{product.colors.length - 5}</span>}
+          </div>
+        )}
 
         {showAddToCart && (
           <Button

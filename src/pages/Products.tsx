@@ -1,3 +1,4 @@
+import { toCardProduct } from '@/lib/productCard';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
@@ -50,22 +51,7 @@ const Products = () => {
 
   const baseProducts = getFilteredProducts();
 
-  const transformProduct = (product: any) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    originalPrice: product.original_price,
-    rating: product.rating,
-    reviews: product.reviews,
-    image: product.image,
-    category: product.category,
-    brand: product.brand,
-    stock: product.stock,
-    discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
-    isFlash: product.is_flash_sale,
-    countdownTimer: product.is_flash_sale ? "02:15:23" : undefined,
-    isNew: filter === 'new-arrivals'
-  });
+  const transformProduct = toCardProduct;
 
   const transformedProducts = baseProducts.map(transformProduct);
 

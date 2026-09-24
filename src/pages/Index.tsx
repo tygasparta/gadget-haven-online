@@ -1,3 +1,4 @@
+import { toCardProduct } from '@/lib/productCard';
 import React from 'react';
 import Header from '@/components/Header';
 import MobileHeader from '@/components/MobileHeader';
@@ -21,19 +22,7 @@ const Index = () => {
   const { data: flashSaleProducts = [] } = useFlashSaleProducts();
   const { data: featuredProducts = [] } = useFeaturedProducts();
 
-  const transformProduct = (product: any) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    originalPrice: product.original_price,
-    rating: product.rating,
-    reviews: product.reviews,
-    image: product.image,
-    brand: product.brand,
-    discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
-    isFlash: product.is_flash_sale,
-    stock: product.stock
-  });
+  const transformProduct = toCardProduct;
 
   const transformedFlashSale = flashSaleProducts.slice(0, 8).map(transformProduct);
   const transformedFeatured = featuredProducts.slice(0, 8).map(transformProduct);

@@ -1,3 +1,4 @@
+import { toCardProduct } from '@/lib/productCard';
 
 import React from 'react';
 import Header from '../components/Header';
@@ -12,18 +13,7 @@ const Deals = () => {
   const isMobile = useIsMobile();
 
   // Transform products to match the expected format
-  const transformProduct = (product: any) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    originalPrice: product.original_price,
-    rating: product.rating,
-    reviews: product.reviews,
-    image: product.image,
-    discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
-    isFlash: product.is_flash_sale,
-    countdownTimer: product.is_flash_sale ? "02:15:23" : undefined
-  });
+  const transformProduct = toCardProduct;
 
   const transformedFlashSale = flashSaleProducts.map(transformProduct);
   const transformedFeatured = featuredProducts.map(transformProduct);
