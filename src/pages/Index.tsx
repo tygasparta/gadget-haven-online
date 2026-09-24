@@ -54,7 +54,7 @@ const Index = () => {
   const laptopRail = byCategory('laptop');
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {isMobile ? <MobileHeader /> : <Header />}
       <CartSidebar />
 
@@ -83,7 +83,7 @@ const Index = () => {
           ) : (
             transformedFlashSale.length > 0 && (
               <ProductSection
-                title="Flash Sale ⚡"
+                title="Flash Deals"
                 subtitle="Limited time offers"
                 products={transformedFlashSale}
                 variant="deal"
