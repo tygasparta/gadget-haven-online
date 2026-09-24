@@ -55,20 +55,20 @@ const PaymentMethods = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Payment Methods</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold text-foreground mb-4">Payment Methods</h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             We offer multiple secure payment options to make your shopping experience convenient and safe.
           </p>
         </div>
         
         {/* Payment Methods */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Accepted Payment Methods</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8">Accepted Payment Methods</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {paymentMethods.map((method, index) => (
               <div key={index} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
@@ -78,16 +78,16 @@ const PaymentMethods = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{method.name}</h3>
+                      <h3 className="text-lg font-semibold text-foreground">{method.name}</h3>
                       {method.accepted && (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <CheckCircle className="w-5 h-5 text-success" />
                       )}
                     </div>
-                    <p className="text-gray-600 mb-3 text-sm">{method.description}</p>
+                    <p className="text-muted-foreground mb-3 text-sm">{method.description}</p>
                     <ul className="space-y-1">
                       {method.features.map((feature, fIndex) => (
-                        <li key={fIndex} className="text-sm text-gray-500 flex items-center">
-                          <CheckCircle className="w-3 h-3 text-green-500 mr-2" />
+                        <li key={fIndex} className="text-sm text-muted-foreground flex items-center">
+                          <CheckCircle className="w-3 h-3 text-success mr-2" />
                           {feature}
                         </li>
                       ))}
@@ -101,15 +101,15 @@ const PaymentMethods = () => {
 
         {/* Security Information */}
         <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Payment Security</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8 text-center">Payment Security</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {securityFeatures.map((feature, index) => (
               <div key={index} className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <feature.icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -117,7 +117,7 @@ const PaymentMethods = () => {
 
         {/* Payment Process */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">How Payment Works</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8">How Payment Works</h2>
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="grid md:grid-cols-4 gap-6">
               {[
@@ -130,8 +130,8 @@ const PaymentMethods = () => {
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4">
                     {item.step}
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.desc}</p>
+                  <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -139,12 +139,12 @@ const PaymentMethods = () => {
         </div>
 
         {/* Billing Information */}
-        <div className="bg-gray-100 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Information</h2>
+        <div className="bg-muted rounded-2xl p-8">
+          <h2 className="text-2xl font-bold text-foreground mb-6">Billing Information</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Processing</h3>
-              <ul className="space-y-2 text-gray-600">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Payment Processing</h3>
+              <ul className="space-y-2 text-muted-foreground">
                 <li>• Payments are processed immediately upon order confirmation</li>
                 <li>• You will receive an email confirmation with payment details</li>
                 <li>• Billing address must match your payment method</li>
@@ -152,8 +152,8 @@ const PaymentMethods = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Refunds & Disputes</h3>
-              <ul className="space-y-2 text-gray-600">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Refunds & Disputes</h3>
+              <ul className="space-y-2 text-muted-foreground">
                 <li>• Refunds processed within 5-7 business days</li>
                 <li>• Original payment method will be credited</li>
                 <li>• Dispute resolution available through payment providers</li>

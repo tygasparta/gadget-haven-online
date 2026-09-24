@@ -36,21 +36,21 @@ const Audio = () => {
       name: 'Headphones',
       icon: Headphones,
       description: 'Over-ear, on-ear, and in-ear headphones',
-      color: 'bg-blue-500'
+      color: 'bg-primary'
     },
     {
       id: 2,
       name: 'Speakers',
       icon: Speaker,
       description: 'Bluetooth speakers and sound systems',
-      color: 'bg-green-500'
+      color: 'bg-success'
     },
     {
       id: 3,
       name: 'Microphones',
       icon: Mic,
       description: 'Professional and gaming microphones',
-      color: 'bg-purple-500'
+      color: 'bg-primary'
     }
   ];
 
@@ -62,7 +62,7 @@ const Audio = () => {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            <Headphones className="inline-block w-8 h-8 mr-2 text-blue-500" />
+            <Headphones className="inline-block w-8 h-8 mr-2 text-primary" />
             Audio Equipment
           </h1>
           <p className="text-xl text-gray-600">Discover premium audio gear for every need</p>
@@ -90,7 +90,7 @@ const Audio = () => {
             title="🎵 Featured Audio Products"
             subtitle="Premium sound quality for music lovers"
             products={audioProducts}
-            sectionColor="blue"
+            variant="default"
           />
         )}
       </div>

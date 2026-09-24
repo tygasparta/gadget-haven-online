@@ -10,7 +10,6 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 import { useToast } from '@/hooks/use-toast';
 import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
 
@@ -130,7 +129,7 @@ const Notifications = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className={`max-w-2xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -144,8 +143,8 @@ const Notifications = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-            <p className="text-gray-600">Manage your notifications and preferences</p>
+            <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
+            <p className="text-muted-foreground">Manage your notifications and preferences</p>
           </div>
         </div>
 
@@ -161,16 +160,16 @@ const Notifications = () => {
                   <div
                     key={notification.id}
                     className={`flex items-start space-x-3 p-3 rounded-lg ${
-                      notification.is_read ? 'bg-gray-50' : 'bg-blue-50'
+                      notification.is_read ? 'bg-muted/50' : 'bg-primary/10'
                     }`}
                   >
                     <div className={`w-2 h-2 rounded-full mt-2 ${
-                      notification.is_read ? 'bg-gray-400' : 'bg-blue-500'
+                      notification.is_read ? 'bg-muted-foreground/40' : 'bg-primary'
                     }`} />
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                      <p className="text-sm text-gray-600">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <h4 className="font-medium text-foreground">{notification.title}</h4>
+                      <p className="text-sm text-muted-foreground">{notification.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         {new Date(notification.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -205,14 +204,14 @@ const Notifications = () => {
                 {category.settings.map((setting) => (
                   <div key={setting.key} className="flex items-center justify-between py-2">
                     <div className="flex items-start space-x-3">
-                      <div className="text-gray-500 mt-1">
+                      <div className="text-muted-foreground mt-1">
                         {setting.icon}
                       </div>
                       <div className="flex-1">
-                        <Label htmlFor={setting.key} className="text-sm font-medium text-gray-900">
+                        <Label htmlFor={setting.key} className="text-sm font-medium text-foreground">
                           {setting.label}
                         </Label>
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {setting.description}
                         </p>
                       </div>
@@ -272,7 +271,6 @@ const Notifications = () => {
       </div>
 
       {!isMobile && <Footer />}
-      <MobileNavigation />
     </div>
   );
 };

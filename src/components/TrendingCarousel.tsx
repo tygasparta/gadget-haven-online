@@ -1,100 +1,105 @@
 
 import React from 'react';
-import { Star, TrendingUp } from 'lucide-react';
+import { Star, TrendingUp, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+
+const trendingProducts = [
+  {
+    id: 1,
+    name: 'Apple iPhone 15 Pro',
+    price: 1200,
+    originalPrice: 1299,
+    rating: 4.5,
+    discount: '+25%',
+    image: '/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png'
+  },
+  {
+    id: 2,
+    name: 'Samsung Galaxy A55 5G',
+    price: 449,
+    originalPrice: 549,
+    rating: 4.5,
+    discount: '+20%',
+    image: '/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png'
+  },
+  {
+    id: 3,
+    name: 'JBL Charge 5 Speaker',
+    price: 179,
+    originalPrice: 199,
+    rating: 4.5,
+    discount: '+15%',
+    image: '/lovable-uploads/0ddc703b-d046-4e1d-8c7d-8a5624da50a7.png'
+  },
+  {
+    id: 4,
+    name: 'Sony WH-1000XM5',
+    price: 349,
+    originalPrice: 399,
+    rating: 4.8,
+    discount: '+18%',
+    image: '/lovable-uploads/0ddc703b-d046-4e1d-8c7d-8a5624da50a7.png'
+  }
+];
 
 const TrendingCarousel = () => {
   const navigate = useNavigate();
 
-  const trendingProducts = [
-    {
-      id: 1,
-      name: 'Apple iPhone 15 Pro',
-      price: 1200,
-      originalPrice: 1299,
-      rating: 4.5,
-      discount: '+25%',
-      image: '/lovable-uploads/03f13398-33a0-4ca0-ae90-922ddc6089fb.png'
-    },
-    {
-      id: 2,
-      name: 'Samsung Galaxy A55 5G',
-      price: 449,
-      originalPrice: 549,
-      rating: 4.5,
-      discount: '+20%',
-      image: '/lovable-uploads/0d190627-ad58-4879-a433-67b3012a1faf.png'
-    },
-    {
-      id: 3,
-      name: 'JBL Charge 5 Speaker',
-      price: 179,
-      originalPrice: 199,
-      rating: 4.5,
-      discount: '+15%',
-      image: '/lovable-uploads/0ddc703b-d046-4e1d-8c7d-8a5624da50a7.png'
-    }
-  ];
-
-  const handleProductClick = (productId: number) => {
-    navigate(`/product/${productId}`);
-  };
-
-  const handleViewAllClick = () => {
-    navigate('/products?trending=true');
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
-            <TrendingUp className="w-4 h-4 text-white" />
+    <div className="mb-8 sm:mb-16">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-warning to-warning/80 text-warning-foreground">
+            <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">Trending Now</h3>
-            <p className="text-sm text-gray-600">Most searched products</p>
+            <h2 className="text-lg sm:text-2xl font-bold text-foreground">Trending Now</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">Most searched this week</p>
           </div>
         </div>
+        <Button
+          variant="outline"
+          className="border-warning text-warning hover:bg-warning/5 px-3 sm:px-6 py-2 font-semibold rounded-lg text-sm whitespace-nowrap flex-shrink-0"
+          onClick={() => navigate('/products?trending=true')}
+        >
+          <span className="hidden sm:inline">View All</span>
+          <span className="sm:hidden">All</span>
+          <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+        </Button>
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {trendingProducts.map((product, index) => (
-          <div 
+          <button
             key={product.id}
-            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-            onClick={() => handleProductClick(product.id)}
+            onClick={() => navigate(`/product/${product.id}`)}
+            className="relative text-left bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-warning/40 hover:shadow-md transition-all group"
           >
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <span className="absolute top-2.5 left-2.5 w-6 h-6 bg-warning text-warning-foreground rounded-full flex items-center justify-center text-xs font-bold z-10">
               {index + 1}
+            </span>
+            <div className="aspect-square bg-muted/40 rounded-lg overflow-hidden mb-3">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop'; }}
+              />
             </div>
-            <img 
-              src={product.image} 
-              alt={product.name}
-              className="w-12 h-12 object-cover rounded-lg"
-            />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-sm text-gray-900 truncate">{product.name}</h4>
-              <div className="flex items-center space-x-1">
-                <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                <span className="text-xs text-gray-600">{product.rating}</span>
-                <span className="text-xs text-green-600 font-medium">{product.discount}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-bold text-sky-600">${product.price}</span>
-                <span className="text-xs text-gray-400 line-through">${product.originalPrice}</span>
-              </div>
+            <h3 className="font-medium text-sm text-foreground truncate">{product.name}</h3>
+            <div className="flex items-center gap-1 mt-1">
+              <Star className="w-3 h-3 text-rating fill-current" />
+              <span className="text-xs text-muted-foreground">{product.rating}</span>
+              <span className="text-xs text-success font-medium ml-1">{product.discount} searches</span>
             </div>
-          </div>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-sm font-bold text-primary">${product.price}</span>
+              <span className="text-xs text-muted-foreground line-through">${product.originalPrice}</span>
+            </div>
+          </button>
         ))}
       </div>
-
-      <button 
-        className="w-full mt-4 bg-orange-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-orange-600 transition-colors"
-        onClick={handleViewAllClick}
-      >
-        View All Trending
-      </button>
     </div>
   );
 };

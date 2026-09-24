@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, Copy, Facebook, Twitter, MessageCircle } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, Copy, Facebook, Twitter, MessageCircle, X, PackageCheck, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '@/hooks/useWishlist';
@@ -11,6 +12,12 @@ import { useProduct } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ProductGallery from '@/components/ProductGallery';
+import ProductSpecifications from '@/components/ProductSpecifications';
+import ProductColorSelector from '@/components/ProductColorSelector';
+import RelatedProducts from '@/components/RelatedProducts';
+import FrequentlyBoughtTogether from '@/components/FrequentlyBoughtTogether';
+import RecentlyViewed, { recordProductView } from '@/components/RecentlyViewed';
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
@@ -21,17 +28,16 @@ const ProductDetail = () => {
   const { mutate: addToWishlist } = useAddToWishlist();
   const { mutate: removeFromWishlist } = useRemoveFromWishlist();
   const { data: wishlistItems } = useWishlist();
-  
+
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
 
   const productId = id ? parseInt(id, 10) : 0;
   const { data: product, isLoading, error } = useProduct(productId);
   const isInWishlist = wishlistItems?.some(item => item.product_id === productId) || false;
 
-  // Enhanced brand logos mapping with the new logos
   const brandLogos: { [key: string]: string } = {
     'Apple': 'https://logos-world.net/wp-content/uploads/2020/04/Apple-Logo.png',
     'Samsung': 'https://logos-world.net/wp-content/uploads/2020/04/Samsung-Logo.png',
@@ -63,14 +69,16 @@ const ProductDetail = () => {
   useEffect(() => {
     if (product) {
       loadGalleryImages();
+      recordProductView(productId);
+      setSelectedColor(product.colors?.[0]?.name ?? null);
+      setQuantity(1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   const loadGalleryImages = async () => {
     if (!product) return;
-    
     try {
-      // Load gallery images
       const { data: galleryData } = await supabase
         .from('product_galleries')
         .select('image_url')
@@ -81,9 +89,7 @@ const ProductDetail = () => {
       if (product.image && !images.includes(product.image)) {
         images.unshift(product.image);
       }
-      
       setGalleryImages(images.length > 0 ? images : [product.image]);
-      
     } catch (error) {
       console.error('Error loading gallery images:', error);
       setGalleryImages([product.image]);
@@ -96,12 +102,8 @@ const ProductDetail = () => {
       navigate('/auth');
       return;
     }
-    
-    if (isInWishlist) {
-      removeFromWishlist(productId);
-    } else {
-      addToWishlist(productId);
-    }
+    if (isInWishlist) removeFromWishlist(productId);
+    else addToWishlist(productId);
   };
 
   const handleAddToCart = () => {
@@ -110,79 +112,40 @@ const ProductDetail = () => {
       navigate('/auth');
       return;
     }
-    
     for (let i = 0; i < quantity; i++) {
       addToCart({ productId });
     }
+    toast.success(`${product?.name} added to cart${selectedColor ? ` — ${selectedColor}` : ''}`);
   };
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
-  };
+  const getBrandLogo = (brandName: string | null) => (brandName ? brandLogos[brandName] || null : null);
 
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
-  };
-
-  const getBrandLogo = (brandName: string | null) => {
-    if (!brandName) return null;
-    return brandLogos[brandName] || null;
-  };
-
-  // Share functionality - use clean production URL
-  const getShareText = () => {
-    return `Check out this amazing product: ${product?.name} - Only $${product?.price}!`;
-  };
+  const getShareText = () => `Check out this amazing product: ${product?.name} - Only $${product?.price}!`;
 
   const getAbsoluteImageUrl = (imageUrl: string) => {
     if (!imageUrl) return 'https://gadgetgenie.org/favicon.png';
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    
-    const domain = 'https://gadgetgenie.org';
-    
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
     if (imageUrl.includes('/storage/v1/object/public/')) {
       return `https://ktpxqjyfguxckdzlqwai.supabase.co${imageUrl}`;
     }
-    
-    return `${domain}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+    return `https://gadgetgenie.org${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
   };
 
-  // Clean production URL for sharing
-  const getShareUrl = () => {
-    return `https://gadgetgenie.org/product/${id}`;
-  };
-  
-  const getProductUrl = () => {
-    return `https://gadgetgenie.org/product/${id}`;
-  };
-
-  // Share URL served by share.gadgetgenie.org (Cloudflare Worker proxy to
-  // the `og-meta` edge function). Crawlers get rendered Open Graph HTML;
-  // real users are 302-redirected to the product page.
-  const getOgMetaUrl = () => {
-    return `https://share.gadgetgenie.org/${id}`;
-  };
+  const getShareUrl = () => `https://gadgetgenie.org/product/${id}`;
+  const getProductUrl = () => `https://gadgetgenie.org/product/${id}`;
+  const getOgMetaUrl = () => `https://share.gadgetgenie.org/${id}`;
 
   const handleShare = async (platform: string) => {
-    const url = getShareUrl();
     const text = getShareText();
-    const imageUrl = getAbsoluteImageUrl(product?.image || galleryImages[0]);
-    
     const ogUrl = getOgMetaUrl();
-    
+
     switch (platform) {
       case 'native':
         if (navigator.share) {
           try {
-            await navigator.share({
-              title: product?.name,
-              text: text,
-              url: ogUrl,
-            });
+            await navigator.share({ title: product?.name, text, url: ogUrl });
             toast.success('Shared successfully!');
-          } catch (error) {
+          } catch {
             console.log('Share cancelled');
           }
         } else {
@@ -194,18 +157,18 @@ const ProductDetail = () => {
           await navigator.clipboard.writeText(ogUrl);
           toast.success('Share link copied to clipboard!');
           setShowShareModal(false);
-        } catch (error) {
+        } catch {
           toast.error('Failed to copy link');
         }
         break;
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getOgMetaUrl())}`, '_blank');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ogUrl)}`, '_blank');
         break;
       case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(getOgMetaUrl())}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(ogUrl)}`, '_blank');
         break;
       case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + getOgMetaUrl())}`, '_blank');
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + ogUrl)}`, '_blank');
         break;
       default:
         break;
@@ -214,43 +177,52 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-muted/20">
         <Header />
-        <div className="flex items-center justify-center h-96">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="aspect-square rounded-xl animate-shimmer" />
+            <div className="space-y-4">
+              <div className="h-8 w-3/4 rounded animate-shimmer" />
+              <div className="h-5 w-1/3 rounded animate-shimmer" />
+              <div className="h-10 w-1/2 rounded animate-shimmer" />
+              <div className="h-32 w-full rounded animate-shimmer" />
+            </div>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-muted/20">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h1>
-            <Button onClick={() => navigate('/')}>Back to Home</Button>
-          </div>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Product Not Found</h1>
+          <Button onClick={() => navigate('/')}>Back to Home</Button>
         </div>
       </div>
     );
   }
 
-  const discountPercentage = product.original_price 
+  const discountPercentage = product.original_price
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;
 
+  const stockLabel = product.stock <= 0
+    ? { text: 'Out of stock', tone: 'text-destructive', Icon: PackageX }
+    : product.stock <= 5
+      ? { text: `Only ${product.stock} left`, tone: 'text-warning', Icon: PackageCheck }
+      : { text: 'In stock', tone: 'text-success', Icon: PackageCheck };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/20">
       <Helmet>
         <title>{product.name} - GadgetGenie</title>
         <meta name="description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href={getProductUrl()} />
-        
-        {/* Open Graph / Facebook */}
         <meta property="og:type" content="product" />
         <meta property="og:title" content={`${product.name} - GadgetGenie`} />
         <meta property="og:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
@@ -265,416 +237,314 @@ const ProductDetail = () => {
         <meta property="product:price:amount" content={product.price.toString()} />
         <meta property="product:price:currency" content="USD" />
         {product.brand && <meta property="product:brand" content={product.brand} />}
-        
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${product.name} - GadgetGenie`} />
         <meta name="twitter:description" content={product.description || `${product.name} - Available for just $${product.price}. ${product.brand ? `By ${product.brand}` : ''}`} />
         <meta name="twitter:image" content={getAbsoluteImageUrl(product.image)} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org/',
+            '@type': 'Product',
+            name: product.name,
+            image: getAbsoluteImageUrl(product.image),
+            description: product.description,
+            brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+            offers: {
+              '@type': 'Offer',
+              url: getProductUrl(),
+              priceCurrency: 'USD',
+              price: product.price,
+              availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            },
+            aggregateRating: product.reviews > 0 ? {
+              '@type': 'AggregateRating',
+              ratingValue: product.rating,
+              reviewCount: product.reviews,
+            } : undefined,
+          })}
+        </script>
       </Helmet>
       <Header />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-          <button onClick={() => navigate('/')} className="hover:text-blue-600">Home</button>
-          <span>/</span>
-          <span className="text-gray-800">{product.name}</span>
-        </div>
+
+      <div className="container mx-auto px-4 py-6 pb-24 md:pb-8">
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            {product.category && (
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/products?category=${product.category.toLowerCase()}`}>{product.category}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+              </>
+            )}
+            <BreadcrumbItem>
+              <BreadcrumbPage className="truncate max-w-[220px] sm:max-w-none">{product.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Product Images */}
-          <div className="space-y-4">
-            <div className="aspect-square bg-white rounded-lg overflow-hidden relative group">
-              <img
-                src={galleryImages[currentImageIndex]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop";
-                }}
-              />
-              
-              {galleryImages.length > 1 && (
-                <>
-                  <Button
-                    onClick={prevImage}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    size="sm"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={nextImage}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    size="sm"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-            </div>
-            
-            {/* Thumbnail strip */}
-            {galleryImages.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto">
-                {galleryImages.map((imageUrl, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                      index === currentImageIndex ? 'border-blue-500' : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={imageUrl}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductGallery images={galleryImages} alt={product.name} />
 
-          {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                <div className="flex items-center space-x-2">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{product.name}</h1>
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <button
                     onClick={() => setShowShareModal(true)}
-                    className="p-2 rounded-full border-2 border-gray-300 hover:border-blue-300 hover:text-blue-500 transition-colors"
+                    aria-label="Share product"
+                    className="p-2 rounded-full border border-border hover:border-primary/40 hover:text-primary transition-colors"
                   >
-                    <Share2 className="w-6 h-6" />
+                    <Share2 className="w-5 h-5" />
                   </button>
                   <button
                     onClick={handleAddToWishlist}
-                    className={`p-2 rounded-full border-2 transition-colors ${
-                      isInWishlist 
-                        ? 'border-red-500 bg-red-50 text-red-500' 
-                        : 'border-gray-300 hover:border-red-300 hover:text-red-500'
+                    aria-label="Toggle wishlist"
+                    className={`p-2 rounded-full border transition-colors ${
+                      isInWishlist ? 'border-destructive bg-destructive/10 text-destructive' : 'border-border hover:border-destructive/40 hover:text-destructive'
                     }`}
                   >
-                    <Heart className={`w-6 h-6 ${isInWishlist ? 'fill-current' : ''}`} />
+                    <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
                   </button>
                 </div>
               </div>
-              
+
               {product.brand && (
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3">
                   {getBrandLogo(product.brand) && (
-                    <img 
-                      src={getBrandLogo(product.brand)!} 
+                    <img
+                      src={getBrandLogo(product.brand)!}
                       alt={product.brand}
-                      className="h-6 w-auto object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
+                      className="h-5 w-auto object-contain"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                   )}
-                  <p className="text-lg text-gray-600">by {product.brand}</p>
+                  <p className="text-muted-foreground">by {product.brand}</p>
                 </div>
               )}
 
-              <div className="flex items-center space-x-2 mb-4">
+              <div className="flex items-center flex-wrap gap-2 mb-4">
                 <Badge variant={product.is_featured ? 'default' : 'secondary'}>
                   {product.is_featured ? 'Featured' : 'Standard'}
                 </Badge>
-                {product.is_flash_sale && (
-                  <Badge className="bg-red-500">Flash Sale</Badge>
-                )}
-                <Badge variant="outline">{product.category}</Badge>
+                {product.is_flash_sale && <Badge className="bg-destructive text-destructive-foreground">Flash Sale</Badge>}
+                {product.category && <Badge variant="outline">{product.category}</Badge>}
               </div>
             </div>
 
-            {/* Rating */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 {Array.from({ length: 5 }, (_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 ${
-                      i < Math.floor(product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                    }`}
-                  />
+                  <Star key={i} className={`w-5 h-5 ${i < Math.floor(product.rating || 0) ? 'text-rating fill-current' : 'text-muted'}`} />
                 ))}
               </div>
-              <span className="text-gray-600">({product.reviews} reviews)</span>
+              <span className="text-muted-foreground">({product.reviews} reviews)</span>
+              <span className={`flex items-center gap-1 text-sm font-medium ${stockLabel.tone}`}>
+                <stockLabel.Icon className="w-4 h-4" />
+                {stockLabel.text}
+              </span>
             </div>
 
-            {/* Price */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <span className="text-4xl font-bold text-blue-600">${product.price}</span>
+            <div className="space-y-1">
+              <div className="flex items-center flex-wrap gap-3">
+                <span className="text-3xl sm:text-4xl font-bold text-primary">${product.price}</span>
                 {product.original_price && (
                   <>
-                    <span className="text-xl text-gray-500 line-through">${product.original_price}</span>
-                    <Badge className="bg-green-500">{discountPercentage}% OFF</Badge>
+                    <span className="text-lg text-muted-foreground line-through">${product.original_price}</span>
+                    <Badge className="bg-success text-success-foreground">{discountPercentage}% OFF</Badge>
                   </>
                 )}
               </div>
               {product.original_price && (
-                <p className="text-green-600">You save ${product.original_price - product.price}</p>
+                <p className="text-success text-sm">You save ${product.original_price - product.price}</p>
               )}
             </div>
 
-            {/* Description */}
             {product.description && (
               <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                <h3 className="text-base font-semibold mb-2 text-foreground">Description</h3>
+                <p className="text-muted-foreground leading-relaxed">{product.description}</p>
               </div>
             )}
 
-            {/* Key Specifications - Prominently Displayed */}
-            {product.specifications && product.specifications.length > 0 && (
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
-                <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                  <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></div>
-                  Key Specifications
-                </h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {product.specifications.slice(0, 6).map((spec, index) => (
-                    <div key={index} className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                      <span className="font-medium text-gray-700 flex items-center">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                        {spec.key}
-                      </span>
-                      <span className="text-gray-600 font-semibold">{spec.value}</span>
-                    </div>
-                  ))}
-                  {product.specifications.length > 6 && (
-                    <div className="text-center py-2">
-                      <span className="text-sm text-gray-500 italic">
-                        +{product.specifications.length - 6} more specifications below
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {product.colors && product.colors.length > 0 && (
+              <ProductColorSelector
+                colors={product.colors}
+                selectedColor={selectedColor}
+                onColorSelect={setSelectedColor}
+              />
             )}
 
-            {/* Quantity Selector */}
             <div className="flex items-center space-x-4">
-              <span className="font-medium">Quantity:</span>
-              <div className="flex items-center border rounded-lg">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 hover:bg-gray-100"
-                >
-                  -
-                </button>
-                <span className="px-4 py-2 border-x">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-2 hover:bg-gray-100"
-                >
-                  +
-                </button>
+              <span className="font-medium text-foreground">Quantity:</span>
+              <div className="flex items-center border border-border rounded-lg">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 hover:bg-muted transition-colors" aria-label="Decrease quantity">-</button>
+                <span className="px-4 py-2 border-x border-border">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="px-3 py-2 hover:bg-muted transition-colors" aria-label="Increase quantity">+</button>
               </div>
             </div>
 
-            {/* Add to Cart */}
-            <Button 
-              onClick={handleAddToCart}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 text-lg"
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              Add to Cart
-            </Button>
+            <div className="hidden sm:flex gap-3">
+              <Button
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 text-base"
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Add to Cart
+              </Button>
+            </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t">
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
               <div className="text-center">
-                <Truck className="w-8 h-8 mx-auto text-blue-600 mb-2" />
-                <p className="text-sm font-medium">Free Shipping</p>
-                <p className="text-xs text-gray-600">On orders over $50</p>
+                <Truck className="w-7 h-7 mx-auto text-primary mb-2" />
+                <p className="text-sm font-medium text-foreground">Free Shipping</p>
+                <p className="text-xs text-muted-foreground">On orders over $50</p>
               </div>
               <div className="text-center">
-                <Shield className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                <p className="text-sm font-medium">Warranty</p>
-                <p className="text-xs text-gray-600">1 year guarantee</p>
+                <Shield className="w-7 h-7 mx-auto text-success mb-2" />
+                <p className="text-sm font-medium text-foreground">Warranty</p>
+                <p className="text-xs text-muted-foreground">1 year guarantee</p>
               </div>
               <div className="text-center">
-                <RotateCcw className="w-8 h-8 mx-auto text-orange-600 mb-2" />
-                <p className="text-sm font-medium">Easy Returns</p>
-                <p className="text-xs text-gray-600">30 day policy</p>
+                <RotateCcw className="w-7 h-7 mx-auto text-warning mb-2" />
+                <p className="text-sm font-medium text-foreground">Easy Returns</p>
+                <p className="text-xs text-muted-foreground">30 day policy</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Complete Product Details Section */}
-        <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
-          <h2 className="text-2xl font-bold mb-6 text-center">Complete Product Details</h2>
+        <FrequentlyBoughtTogether
+          mainProduct={{ id: product.id, name: product.name, price: product.price, image: product.image }}
+          category={product.category}
+        />
+
+        <div className="bg-card border border-border rounded-xl p-5 sm:p-6 mb-12">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-foreground">Complete Product Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Basic Information</h3>
+              <h3 className="font-semibold mb-4 text-base border-b border-border pb-2 text-foreground">Basic Information</h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-600">Brand</span>
-                  <div className="flex items-center gap-2">
-                    {getBrandLogo(product.brand) && (
-                      <img 
-                        src={getBrandLogo(product.brand)!} 
-                        alt={product.brand}
-                        className="h-5 w-auto object-contain"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    )}
-                    <span className="font-medium">{product.brand || 'N/A'}</span>
-                  </div>
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                  <span className="text-muted-foreground">Brand</span>
+                  <span className="font-medium text-foreground">{product.brand || 'N/A'}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-600">Category</span>
-                  <span className="font-medium">{product.category || 'N/A'}</span>
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                  <span className="text-muted-foreground">Category</span>
+                  <span className="font-medium text-foreground">{product.category || 'N/A'}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-600">Stock</span>
-                  <span className="font-medium text-green-600">{product.stock} units</span>
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                  <span className="text-muted-foreground">Stock</span>
+                  <span className={`font-medium ${stockLabel.tone}`}>{product.stock} units</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-600">Rating</span>
-                  <span className="font-medium">{product.rating}/5 ⭐</span>
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                  <span className="text-muted-foreground">Rating</span>
+                  <span className="font-medium text-foreground">{product.rating}/5 ⭐</span>
                 </div>
               </div>
             </div>
-            
-            {/* Complete Technical Specifications */}
-            {product.specifications && product.specifications.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Complete Specifications</h3>
-                <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {product.specifications.map((spec, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-l-4 border-blue-500">
-                      <span className="text-gray-700 font-medium">{spec.key}</span>
-                      <span className="font-semibold text-gray-800">{spec.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
+            <ProductSpecifications specifications={product.specifications} />
           </div>
-          
-          {/* Colors */}
-          {product.colors && product.colors.length > 0 && (
-            <div className="mt-8">
-              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Available Colors</h3>
-              <div className="flex flex-wrap gap-4">
-                {product.colors.map((color, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div 
-                      className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
-                      style={{ backgroundColor: color.hex_code }}
-                    ></div>
-                    <span className="text-sm font-medium text-gray-700">{color.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* What's in the Box */}
+
           {product.whats_in_box && product.whats_in_box.length > 0 && (
             <div className="mt-8">
-              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">What's in the Box</h3>
+              <h3 className="font-semibold mb-4 text-base border-b border-border pb-2 text-foreground">What's in the Box</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {product.whats_in_box.map((item, index) => (
-                  <div key={index} className="flex items-center p-2 bg-green-50 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                    <span className="text-gray-700">{item}</span>
+                  <div key={index} className="flex items-center p-2 bg-success/10 rounded-lg">
+                    <div className="w-2 h-2 bg-success rounded-full mr-3" />
+                    <span className="text-foreground">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
-          
-          {/* Tags */}
+
           {product.tags && product.tags.length > 0 && (
             <div className="mt-8">
-              <h3 className="font-semibold mb-4 text-lg border-b border-gray-200 pb-2">Product Tags</h3>
+              <h3 className="font-semibold mb-4 text-base border-b border-border pb-2 text-foreground">Product Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {product.tags.map((tag, index) => (
-                  <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                    #{tag}
-                  </span>
+                  <span key={index} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">#{tag}</span>
                 ))}
               </div>
             </div>
           )}
         </div>
+
+        <RelatedProducts category={product.category} excludeId={product.id} />
+        <RecentlyViewed excludeId={product.id} />
       </div>
 
-      {/* Share Modal */}
+      {/* Sticky mobile add-to-cart bar */}
+      <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-background border-t border-border px-4 py-3 flex items-center gap-3 shadow-lg">
+        <div className="flex-1 min-w-0">
+          <p className="text-lg font-bold text-primary truncate">${product.price}</p>
+          <p className={`text-xs ${stockLabel.tone}`}>{stockLabel.text}</p>
+        </div>
+        <Button onClick={handleAddToCart} disabled={product.stock <= 0} className="bg-primary hover:bg-primary/90 px-6">
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Add to Cart
+        </Button>
+      </div>
+
       {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Share this product</h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
+              <h3 className="text-lg font-semibold text-foreground">Share this product</h3>
+              <button onClick={() => setShowShareModal(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="space-y-3">
-              {/* Native Share (Mobile) */}
-              {navigator.share && (
+              {typeof navigator !== 'undefined' && navigator.share && (
                 <button
                   onClick={() => handleShare('native')}
-                  className="w-full flex items-center justify-center space-x-3 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center space-x-3 p-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors"
                 >
                   <Share2 className="w-5 h-5" />
                   <span>Share via device</span>
                 </button>
               )}
-              
-              {/* Copy Link */}
+
               <button
                 onClick={() => handleShare('copy')}
-                className="w-full flex items-center justify-center space-x-3 p-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                className="w-full flex items-center justify-center space-x-3 p-3 bg-muted hover:bg-muted/70 text-foreground rounded-lg transition-colors"
               >
                 <Copy className="w-5 h-5" />
                 <span>Copy link</span>
               </button>
-              
-              {/* Social Media Options */}
+
               <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => handleShare('facebook')}
-                  className="flex flex-col items-center justify-center p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
+                <button onClick={() => handleShare('facebook')} className="flex flex-col items-center justify-center p-4 bg-[#1877F2] hover:opacity-90 text-white rounded-lg transition-opacity">
                   <Facebook className="w-6 h-6 mb-1" />
                   <span className="text-xs">Facebook</span>
                 </button>
-                
-                <button
-                  onClick={() => handleShare('twitter')}
-                  className="flex flex-col items-center justify-center p-4 bg-blue-400 hover:bg-blue-500 text-white rounded-lg transition-colors"
-                >
+                <button onClick={() => handleShare('twitter')} className="flex flex-col items-center justify-center p-4 bg-[#1DA1F2] hover:opacity-90 text-white rounded-lg transition-opacity">
                   <Twitter className="w-6 h-6 mb-1" />
                   <span className="text-xs">Twitter</span>
                 </button>
-                
-                <button
-                  onClick={() => handleShare('whatsapp')}
-                  className="flex flex-col items-center justify-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                >
+                <button onClick={() => handleShare('whatsapp')} className="flex flex-col items-center justify-center p-4 bg-success hover:opacity-90 text-success-foreground rounded-lg transition-opacity">
                   <MessageCircle className="w-6 h-6 mb-1" />
                   <span className="text-xs">WhatsApp</span>
                 </button>
               </div>
             </div>
-            
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Preview:</p>
-              <p className="text-sm font-medium">{getShareText()}</p>
+
+            <div className="mt-4 p-3 bg-muted/40 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Preview:</p>
+              <p className="text-sm font-medium text-foreground">{getShareText()}</p>
             </div>
           </div>
         </div>

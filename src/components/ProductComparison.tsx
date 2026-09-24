@@ -88,7 +88,7 @@ const ProductComparison: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">Select products to compare side by side</p>
+            <p className="text-muted-foreground mb-4">Select products to compare side by side</p>
             <Button 
               onClick={() => setShowProductSelector(true)}
               className="bg-sky-600 hover:bg-sky-700"
@@ -128,7 +128,7 @@ const ProductComparison: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => removeProductFromComparison(product.id)}
-                  className="absolute top-2 right-2 p-1 h-6 w-6 text-red-500 hover:text-red-700"
+                  className="absolute top-2 right-2 p-1 h-6 w-6 text-destructive hover:text-destructive"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -143,7 +143,7 @@ const ProductComparison: React.FC = () => {
                     <div className="flex items-center space-x-1">
                       <span className="text-lg font-bold text-sky-600">${product.price}</span>
                       {product.original_price && product.original_price > product.price && (
-                        <span className="text-sm text-gray-400 line-through">
+                        <span className="text-sm text-muted-foreground line-through">
                           ${product.original_price}
                         </span>
                       )}
@@ -151,10 +151,10 @@ const ProductComparison: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2 mb-3">
                     <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star className="w-4 h-4 text-rating fill-current" />
                       <span className="text-sm">{product.rating}</span>
                     </div>
-                    <span className="text-xs text-gray-500">({product.reviews} reviews)</span>
+                    <span className="text-xs text-muted-foreground">({product.reviews} reviews)</span>
                   </div>
                   <Button
                     onClick={() => handleAddToCart(product.id)}
@@ -170,12 +170,12 @@ const ProductComparison: React.FC = () => {
 
           {/* Comparison Table */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-200">
+            <table className="w-full border-collapse border border-border">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-gray-200 p-3 text-left font-medium">Specification</th>
+                <tr className="bg-muted/50">
+                  <th className="border border-border p-3 text-left font-medium">Specification</th>
                   {selectedProducts.map((product) => (
-                    <th key={product.id} className="border border-gray-200 p-3 text-left font-medium">
+                    <th key={product.id} className="border border-border p-3 text-left font-medium">
                       {product.name}
                     </th>
                   ))}
@@ -184,37 +184,37 @@ const ProductComparison: React.FC = () => {
               <tbody>
                 {/* Basic Info */}
                 <tr>
-                  <td className="border border-gray-200 p-3 font-medium bg-gray-50">Brand</td>
+                  <td className="border border-border p-3 font-medium bg-muted/50">Brand</td>
                   {selectedProducts.map((product) => (
-                    <td key={product.id} className="border border-gray-200 p-3">
+                    <td key={product.id} className="border border-border p-3">
                       {product.brand || 'N/A'}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 p-3 font-medium bg-gray-50">Category</td>
+                  <td className="border border-border p-3 font-medium bg-muted/50">Category</td>
                   {selectedProducts.map((product) => (
-                    <td key={product.id} className="border border-gray-200 p-3">
+                    <td key={product.id} className="border border-border p-3">
                       {product.category || 'N/A'}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 p-3 font-medium bg-gray-50">Price</td>
+                  <td className="border border-border p-3 font-medium bg-muted/50">Price</td>
                   {selectedProducts.map((product) => (
-                    <td key={product.id} className="border border-gray-200 p-3">
+                    <td key={product.id} className="border border-border p-3">
                       <span className="font-bold text-sky-600">${product.price}</span>
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 p-3 font-medium bg-gray-50">Rating</td>
+                  <td className="border border-border p-3 font-medium bg-muted/50">Rating</td>
                   {selectedProducts.map((product) => (
-                    <td key={product.id} className="border border-gray-200 p-3">
+                    <td key={product.id} className="border border-border p-3">
                       <div className="flex items-center space-x-1">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <Star className="w-4 h-4 text-rating fill-current" />
                         <span>{product.rating}</span>
-                        <span className="text-xs text-gray-500">({product.reviews})</span>
+                        <span className="text-xs text-muted-foreground">({product.reviews})</span>
                       </div>
                     </td>
                   ))}
@@ -223,11 +223,11 @@ const ProductComparison: React.FC = () => {
                 {/* Dynamic Specifications - This is the key fix */}
                 {getAllSpecifications().map((specKey) => (
                   <tr key={specKey}>
-                    <td className="border border-gray-200 p-3 font-medium bg-gray-50">
+                    <td className="border border-border p-3 font-medium bg-muted/50">
                       {specKey}
                     </td>
                     {selectedProducts.map((product) => (
-                      <td key={product.id} className="border border-gray-200 p-3">
+                      <td key={product.id} className="border border-border p-3">
                         {getSpecValue(product, specKey)}
                       </td>
                     ))}

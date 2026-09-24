@@ -35,21 +35,21 @@ const Phones = () => {
       name: 'Smartphones',
       icon: Smartphone,
       description: 'Latest Android and iOS devices',
-      color: 'bg-blue-500'
+      color: 'bg-primary'
     },
     {
       id: 2,
       name: 'Tablets',
       icon: Tablet,
       description: 'iPads and Android tablets',
-      color: 'bg-green-500'
+      color: 'bg-success'
     },
     {
       id: 3,
       name: 'Smartwatches',
       icon: Watch,
       description: 'Apple Watch and Android wearables',
-      color: 'bg-purple-500'
+      color: 'bg-primary'
     }
   ];
 
@@ -61,7 +61,7 @@ const Phones = () => {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            <Smartphone className="inline-block w-8 h-8 mr-2 text-blue-500" />
+            <Smartphone className="inline-block w-8 h-8 mr-2 text-primary" />
             Mobile Devices
           </h1>
           <p className="text-xl text-gray-600">Explore the latest smartphones and mobile technology</p>
@@ -89,7 +89,7 @@ const Phones = () => {
             title="📱 Featured Smartphones"
             subtitle="Latest models with cutting-edge technology"
             products={phoneProducts}
-            sectionColor="blue"
+            variant="default"
           />
         )}
       </div>

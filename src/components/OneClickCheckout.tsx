@@ -174,19 +174,19 @@ const OneClickCheckout: React.FC = () => {
   // Don't show if user is not authenticated
   if (!user) {
     return (
-      <Card className="mb-6 border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50">
+      <Card className="mb-6 border-2 border-warning/20 bg-gradient-to-r from-yellow-50 to-orange-50">
         <CardContent className="p-6 text-center">
           <div className="space-y-4">
-            <Zap className="w-12 h-12 mx-auto text-yellow-600" />
+            <Zap className="w-12 h-12 mx-auto text-warning" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Quick Checkout Available</h3>
-              <p className="text-sm text-gray-600 mt-2">
+              <h3 className="text-lg font-semibold text-foreground">Quick Checkout Available</h3>
+              <p className="text-sm text-muted-foreground mt-2">
                 Log in to enable one-click checkout with cash on delivery
               </p>
             </div>
             <Button 
               onClick={() => navigate('/auth')}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+              className="bg-warning hover:bg-warning/90 text-white"
             >
               Log In for Quick Checkout
             </Button>
@@ -202,53 +202,53 @@ const OneClickCheckout: React.FC = () => {
   }
 
   return (
-    <Card className="mb-6 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+    <Card className="mb-6 border-2 border-primary/20 bg-gradient-to-r from-blue-50 to-purple-50">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center space-x-2 text-blue-700">
+        <CardTitle className="flex items-center space-x-2 text-primary">
           <Zap className="w-5 h-5" />
           <span>One-Click Checkout</span>
-          <Badge className="bg-blue-100 text-blue-800">Express</Badge>
+          <Badge className="bg-primary/10 text-primary">Express</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Order Summary */}
-        <div className="bg-white rounded-lg p-3 border border-blue-100">
+        <div className="bg-white rounded-lg p-3 border border-primary/10">
           <div className="flex items-center justify-between mb-2">
             <span className="flex items-center space-x-2">
-              <ShoppingCart className="w-4 h-4 text-gray-600" />
+              <ShoppingCart className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium">{cartItems.length} items</span>
             </span>
-            <span className="text-lg font-bold text-blue-600">${finalTotal.toFixed(2)}</span>
+            <span className="text-lg font-bold text-primary">${finalTotal.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Default Address - Updated for Collection */}
         {defaultAddress ? (
-          <div className="bg-white rounded-lg p-3 border border-blue-100">
+          <div className="bg-white rounded-lg p-3 border border-primary/10">
             <div className="flex items-center space-x-2 mb-2">
-              <MapPin className="w-4 h-4 text-gray-600" />
+              <MapPin className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium">Collect at Shop:</span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               <p className="font-medium">Shop Collection (FREE)</p>
               <p>123 Main Street, City Center</p>
-              <p className="text-green-600 text-xs mt-1">Ready in 2-3 business days</p>
+              <p className="text-success text-xs mt-1">Ready in 2-3 business days</p>
             </div>
           </div>
         ) : (
-          <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+          <div className="bg-success/10 rounded-lg p-3 border border-success/20">
             <div className="flex items-center space-x-2 mb-2">
-              <MapPin className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Shop Collection Available</span>
+              <MapPin className="w-4 h-4 text-success" />
+              <span className="text-sm font-medium text-success">Shop Collection Available</span>
             </div>
-            <p className="text-xs text-green-700">Collect your order from our shop - no shipping fees!</p>
+            <p className="text-xs text-success">Collect your order from our shop - no shipping fees!</p>
           </div>
         )}
 
         {/* Payment Method */}
-        <div className="bg-white rounded-lg p-3 border border-blue-100">
+        <div className="bg-white rounded-lg p-3 border border-primary/10">
           <div className="flex items-center space-x-2">
-            <CreditCard className="w-4 h-4 text-gray-600" />
+            <CreditCard className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm font-medium">Cash on Delivery</span>
             <Badge variant="outline" className="text-xs">Default</Badge>
           </div>
@@ -275,7 +275,7 @@ const OneClickCheckout: React.FC = () => {
         ) : (
           <Button 
             onClick={() => navigate('/addresses')}
-            className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 font-semibold rounded-xl"
+            className="w-full bg-warning hover:bg-warning/90 text-white py-3 font-semibold rounded-xl"
           >
             Add Delivery Address
           </Button>

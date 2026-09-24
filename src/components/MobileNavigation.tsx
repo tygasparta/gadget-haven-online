@@ -1,27 +1,18 @@
 
 import React from 'react';
-import { Home, Grid3X3, Heart, User, ShoppingBag } from 'lucide-react';
+import { Home, Search, Heart, User, ShoppingBag } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useCartItems } from '@/hooks/useCart';
-import { useUserRole } from '@/hooks/useUserRole';
 import { Badge } from '@/components/ui/badge';
 
 const MobileNavigation = () => {
   const location = useLocation();
   const { user } = useAuthContext();
-  const { isAdmin } = useUserRole();
   const { data: cartItems = [] } = useCartItems();
-  
+
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const accountPath = user ? '/dashboard' : '/auth';
-
-  const navItems = [
-    { icon: Home, label: 'Shop', path: '/', key: 'shop' },
-    { icon: Grid3X3, label: 'Categories', path: '/categories', key: 'categories' },
-    { icon: Heart, label: 'Saved', path: user ? '/wishlist' : '/auth', key: 'saved' },
-    { icon: User, label: 'Account', path: accountPath, key: 'account' },
-  ];
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -32,70 +23,75 @@ const MobileNavigation = () => {
     window.dispatchEvent(new Event('openCart'));
   };
 
+  const handleSearchClick = () => {
+    window.dispatchEvent(new Event('focusSearch'));
+  };
+
+  const isSearchActive = location.pathname.startsWith('/search');
+
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-sky-100 z-[50] shadow-2xl h-16">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-600 via-sky-500 to-sky-700"></div>
-      
-      <div className="flex items-center justify-around py-1 px-2 h-full relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-sky-50/30 via-transparent to-transparent pointer-events-none"></div>
-        
-        {navItems.map((item) => (
-          <Link
-            key={item.key}
-            to={item.path}
-            className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-110 group ${
-              isActive(item.path)
-                ? 'text-sky-600 bg-sky-50 shadow-lg scale-105'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-            }`}
-          >
-            {isActive(item.path) && (
-              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-sky-600 rounded-full"></div>
-            )}
-            
-            <div className={`relative mb-1 p-1 rounded-lg transition-all duration-300 ${
-              isActive(item.path) 
-                ? 'bg-sky-600 shadow-lg' 
-                : 'group-hover:bg-gray-100'
-            }`}>
-              <item.icon className={`w-4 h-4 transition-all duration-300 ${
-                isActive(item.path) ? 'text-white' : 'text-current'
-              }`} />
-              
-              {isActive(item.path) && (
-                <div className="absolute inset-0 bg-sky-600 rounded-xl animate-ping opacity-30"></div>
-              )}
-            </div>
-            
-            <span className={`text-xs font-medium transition-all duration-300 ${
-              isActive(item.path) ? 'font-bold' : 'group-hover:font-semibold'
-            }`}>
-              {item.label}
-            </span>
-          </Link>
-        ))}
-        
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border z-[50] shadow-lg h-16 safe-area-pb">
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/60" />
+
+      <div className="flex items-center justify-around px-2 h-full relative">
+        <Link
+          to="/"
+          className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-colors duration-200 group ${
+            isActive('/') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {isActive('/') && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />}
+          <Home className="w-5 h-5 mb-0.5" />
+          <span className={`text-[11px] ${isActive('/') ? 'font-semibold' : 'font-medium'}`}>Home</span>
+        </Link>
+
+        <button
+          onClick={handleSearchClick}
+          className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-colors duration-200 ${
+            isSearchActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {isSearchActive && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />}
+          <Search className="w-5 h-5 mb-0.5" />
+          <span className={`text-[11px] ${isSearchActive ? 'font-semibold' : 'font-medium'}`}>Search</span>
+        </button>
+
+        <Link
+          to={user ? '/wishlist' : '/auth'}
+          className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-colors duration-200 ${
+            isActive('/wishlist') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {isActive('/wishlist') && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />}
+          <Heart className="w-5 h-5 mb-0.5" />
+          <span className={`text-[11px] ${isActive('/wishlist') ? 'font-semibold' : 'font-medium'}`}>Wishlist</span>
+        </Link>
+
         <button
           onClick={handleCartClick}
-          className="relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-110 text-gray-600 hover:text-gray-800 hover:bg-gray-50 group"
+          className="relative flex flex-col items-center py-2 px-2 rounded-xl transition-colors duration-200 text-muted-foreground hover:text-foreground"
         >
-          <div className="relative mb-1 p-1 rounded-lg transition-all duration-300 group-hover:bg-sky-600 group-hover:shadow-lg">
-            <ShoppingBag className="w-4 h-4 transition-all duration-300 group-hover:text-white" />
-            
+          <div className="relative mb-0.5">
+            <ShoppingBag className="w-5 h-5" />
             {cartCount > 0 && (
-              <>
-                <Badge className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-4 h-4 flex items-center justify-center font-bold shadow-lg animate-pulse text-[10px]">
-                  {cartCount}
-                </Badge>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-sky-400 rounded-full animate-ping opacity-30"></div>
-              </>
+              <Badge className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[10px] px-1 py-0 rounded-full min-w-4 h-4 flex items-center justify-center font-bold animate-badge-pop">
+                {cartCount}
+              </Badge>
             )}
           </div>
-          
-          <span className="text-xs font-medium transition-all duration-300 group-hover:font-semibold">
-            Cart
-          </span>
+          <span className="text-[11px] font-medium">Cart</span>
         </button>
+
+        <Link
+          to={accountPath}
+          className={`relative flex flex-col items-center py-2 px-2 rounded-xl transition-colors duration-200 ${
+            isActive(accountPath) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {isActive(accountPath) && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />}
+          <User className="w-5 h-5 mb-0.5" />
+          <span className={`text-[11px] ${isActive(accountPath) ? 'font-semibold' : 'font-medium'}`}>Account</span>
+        </Link>
       </div>
     </div>
   );

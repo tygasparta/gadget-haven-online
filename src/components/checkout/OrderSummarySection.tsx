@@ -49,21 +49,21 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
     >
       <Card className="sticky top-4 bg-white border-0 shadow-xl">
         <CardHeader className="bg-accent rounded-t-xl">
-          <CardTitle className="flex items-center space-x-2 text-gray-800">
-            <ShoppingCart className="w-5 h-5 text-blue-600" />
+          <CardTitle className="flex items-center space-x-2 text-foreground">
+            <ShoppingCart className="w-5 h-5 text-primary" />
             <span>Order Summary</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
           {/* Cart Items */}
           <div className="space-y-3">
-            <div className="flex items-center space-x-2 text-sm font-medium text-gray-600">
+            <div className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
               <Package className="w-4 h-4" />
               <span>{cartItems.length} Items</span>
             </div>
             
             {cartItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <div key={item.id} className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
                 <div className="relative">
                   <img
                     src={item.products.image}
@@ -72,20 +72,20 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
                   />
                   <Badge
                     variant="secondary"
-                    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs bg-blue-600 text-white"
+                    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs bg-primary text-white"
                   >
                     {item.quantity}
                   </Badge>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {item.products.name}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     ${item.products.price.toFixed(2)} each
                   </p>
                 </div>
-                <div className="text-sm font-semibold text-gray-900">
+                <div className="text-sm font-semibold text-foreground">
                   ${(item.products.price * item.quantity).toFixed(2)}
                 </div>
               </div>
@@ -97,19 +97,19 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           {/* Order Totals */}
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
+              <span className="text-muted-foreground">Subtotal</span>
               <span className="font-medium">${subtotal.toFixed(2)}</span>
             </div>
             
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax (2%)</span>
+              <span className="text-muted-foreground">Tax (2%)</span>
               <span className="font-medium">${tax.toFixed(2)}</span>
             </div>
             
             <div className="flex justify-between text-sm">
               <div className="flex items-center space-x-1">
-                <Truck className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Shipping</span>
+                <Truck className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Shipping</span>
               </div>
               <span className="font-medium">
                 {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
@@ -118,13 +118,13 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
 
             <Separator />
             
-            <div className="flex justify-between text-lg font-bold text-gray-900">
+            <div className="flex justify-between text-lg font-bold text-foreground">
               <span>Total</span>
               <span>${finalTotal.toFixed(2)}</span>
             </div>
 
             {shipping === 0 && (
-              <p className="text-xs text-green-600 text-center">
+              <p className="text-xs text-success text-center">
                 🎉 You saved $5.00 on shipping by choosing collection!
               </p>
             )}
@@ -134,8 +134,8 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
 
           {/* Payment Method Display */}
           <div className="flex items-center space-x-2 text-sm">
-            <CreditCard className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">Payment:</span>
+            <CreditCard className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Payment:</span>
             <Badge variant="outline" className="capitalize">
               {paymentMethod === 'dischub' ? 'Dischub Payment' : 
                paymentMethod === 'cod' ? 'Cash on Delivery' : 
@@ -160,7 +160,7 @@ const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           </Button>
 
           {/* Security Notice */}
-          <div className="text-xs text-gray-500 text-center space-y-1">
+          <div className="text-xs text-muted-foreground text-center space-y-1">
             <p>🔒 Your payment information is secure and encrypted</p>
             <p>✅ Tax calculated at checkout</p>
           </div>

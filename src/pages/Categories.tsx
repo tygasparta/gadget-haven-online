@@ -2,7 +2,6 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import MobileNavigation from '../components/MobileNavigation';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Grid3X3, Smartphone, Headphones, Laptop, Watch, Camera, Gamepad2, Tv, Zap } from 'lucide-react';
@@ -18,7 +17,7 @@ const Categories = () => {
       icon: Smartphone,
       count: 45,
       description: 'Latest smartphones and accessories',
-      color: 'bg-blue-500',
+      color: 'bg-primary',
       category: 'phones'
     },
     {
@@ -27,7 +26,7 @@ const Categories = () => {
       icon: Headphones,
       count: 32,
       description: 'Headphones, speakers, and audio gear',
-      color: 'bg-green-500',
+      color: 'bg-success',
       category: 'audio'
     },
     {
@@ -36,7 +35,7 @@ const Categories = () => {
       icon: Laptop,
       count: 28,
       description: 'Laptops and computing devices',
-      color: 'bg-purple-500',
+      color: 'bg-primary',
       category: 'laptops'
     },
     {
@@ -45,7 +44,7 @@ const Categories = () => {
       icon: Watch,
       count: 18,
       description: 'Smartwatches and fitness trackers',
-      color: 'bg-red-500',
+      color: 'bg-destructive',
       category: 'wearables'
     },
     {
@@ -54,7 +53,7 @@ const Categories = () => {
       icon: Camera,
       count: 25,
       description: 'Digital cameras and photography gear',
-      color: 'bg-yellow-500',
+      color: 'bg-warning',
       category: 'cameras'
     },
     {
@@ -91,13 +90,13 @@ const Categories = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Product Categories</h1>
-          <p className="text-gray-600">Explore our wide range of tech products</p>
+          <h1 className="text-3xl font-bold text-foreground mb-4">Product Categories</h1>
+          <p className="text-muted-foreground">Explore our wide range of tech products</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -110,11 +109,11 @@ const Categories = () => {
               <div className={`w-16 h-16 ${category.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
                 <category.icon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">{category.name}</h3>
-              <p className="text-gray-600 mb-3 text-center text-sm">{category.description}</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2 text-center">{category.name}</h3>
+              <p className="text-muted-foreground mb-3 text-center text-sm">{category.description}</p>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">{category.count} products</span>
-                <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                <span className="text-sm text-muted-foreground">{category.count} products</span>
+                <button className="text-primary hover:text-primary font-medium text-sm">
                   View All →
                 </button>
               </div>
@@ -124,7 +123,7 @@ const Categories = () => {
 
         {/* Featured Categories */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Featured Collections</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8 text-center">Featured Collections</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div 
               className="relative bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white cursor-pointer hover:shadow-lg transition-shadow"
@@ -132,7 +131,7 @@ const Categories = () => {
             >
               <h3 className="text-2xl font-bold mb-2">Flash Deals</h3>
               <p className="mb-4">Up to 50% off on selected items</p>
-              <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              <button className="bg-white text-primary px-6 py-2 rounded-lg font-semibold hover:bg-muted transition-colors">
                 Shop Deals
               </button>
             </div>
@@ -142,7 +141,7 @@ const Categories = () => {
             >
               <h3 className="text-2xl font-bold mb-2">New Arrivals</h3>
               <p className="mb-4">Latest tech products just landed</p>
-              <button className="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              <button className="bg-white text-success px-6 py-2 rounded-lg font-semibold hover:bg-muted transition-colors">
                 Explore New
               </button>
             </div>
@@ -154,7 +153,6 @@ const Categories = () => {
       {!isMobile && <Footer />}
       
       {/* Mobile Navigation - Always visible on mobile */}
-      <MobileNavigation />
     </div>
   );
 };

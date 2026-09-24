@@ -10,7 +10,6 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -86,7 +85,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className={`max-w-2xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -99,7 +98,7 @@ const Profile = () => {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+          <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
         </div>
 
         <Card>
@@ -128,34 +127,34 @@ const Profile = () => {
                   value={formData.fullName}
                   onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                   disabled={!isEditing}
-                  className={!isEditing ? 'bg-gray-50' : ''}
+                  className={!isEditing ? 'bg-muted/50' : ''}
                 />
               </div>
               
               <div>
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="email"
                     value={formData.email}
                     disabled={true}
-                    className="pl-10 bg-gray-50"
+                    className="pl-10 bg-muted/50"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
               </div>
               
               <div>
                 <Label htmlFor="phone">Phone Number</Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Phone className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     disabled={!isEditing}
-                    className={`pl-10 ${!isEditing ? 'bg-gray-50' : ''}`}
+                    className={`pl-10 ${!isEditing ? 'bg-muted/50' : ''}`}
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -177,7 +176,6 @@ const Profile = () => {
       </div>
 
       {!isMobile && <Footer />}
-      <MobileNavigation />
     </div>
   );
 };

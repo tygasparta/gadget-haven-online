@@ -2,7 +2,6 @@
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import MobileNavigation from '../components/MobileNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, ShoppingCart, Trash2, Star } from 'lucide-react';
@@ -51,7 +50,7 @@ const Wishlist = () => {
       <Star
         key={i}
         className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
+          i < Math.floor(rating) ? 'text-rating fill-current' : 'text-muted-foreground/50'
         }`}
       />
     ));
@@ -59,34 +58,34 @@ const Wishlist = () => {
 
   if (wishlistLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-muted/50">
         <Header />
         <div className="flex items-center justify-center h-96">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
         <div className="flex items-center mb-8">
-          <Heart className="w-8 h-8 text-red-500 mr-3" />
+          <Heart className="w-8 h-8 text-destructive mr-3" />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
-            <p className="text-gray-600 mt-1">{wishlistProducts.length} items saved</p>
+            <h1 className="text-3xl font-bold text-foreground">My Wishlist</h1>
+            <p className="text-muted-foreground mt-1">{wishlistProducts.length} items saved</p>
           </div>
         </div>
 
         {wishlistProducts.length === 0 ? (
           <div className="text-center py-16">
-            <Heart className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your wishlist is empty</h2>
-            <p className="text-gray-600 mb-8">Save items you love to buy them later</p>
-            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+            <Heart className="w-24 h-24 text-muted-foreground/50 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-foreground mb-2">Your wishlist is empty</h2>
+            <p className="text-muted-foreground mb-8">Save items you love to buy them later</p>
+            <Button onClick={() => navigate('/')} className="bg-primary hover:bg-primary/90">
               Continue Shopping
             </Button>
           </div>
@@ -109,10 +108,10 @@ const Wishlist = () => {
                       onClick={() => handleRemoveFromWishlist(product.id)}
                       className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
                     >
-                      <Trash2 className="w-4 h-4 text-red-500" />
+                      <Trash2 className="w-4 h-4 text-destructive" />
                     </button>
                     {product.original_price && product.original_price > product.price && (
-                      <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-bold">
+                      <div className="absolute top-3 left-3 bg-destructive text-white px-2 py-1 rounded-full text-sm font-bold">
                         {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% OFF
                       </div>
                     )}
@@ -120,7 +119,7 @@ const Wishlist = () => {
                   
                   <div className="p-4">
                     <h3 
-                      className="font-semibold text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-blue-600"
+                      className="font-semibold text-foreground mb-2 line-clamp-2 cursor-pointer hover:text-primary"
                       onClick={() => navigate(`/product/${product.id}`)}
                     >
                       {product.name}
@@ -128,19 +127,19 @@ const Wishlist = () => {
                     
                     <div className="flex items-center mb-3">
                       <div className="flex">{renderStars(product.rating || 0)}</div>
-                      <span className="text-sm text-gray-500 ml-2">({product.reviews || 0})</span>
+                      <span className="text-sm text-muted-foreground ml-2">({product.reviews || 0})</span>
                     </div>
                     
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <span className="text-2xl font-bold text-blue-600">${product.price}</span>
+                        <span className="text-2xl font-bold text-primary">${product.price}</span>
                         {product.original_price && product.original_price > product.price && (
-                          <span className="text-sm text-gray-500 line-through ml-2">
+                          <span className="text-sm text-muted-foreground line-through ml-2">
                             ${product.original_price}
                           </span>
                         )}
                       </div>
-                      <div className={`text-sm font-medium ${product.stock && product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className={`text-sm font-medium ${product.stock && product.stock > 0 ? 'text-success' : 'text-destructive'}`}>
                         {product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                       </div>
                     </div>
@@ -148,8 +147,8 @@ const Wishlist = () => {
                     <Button 
                       className={`w-full ${
                         product.stock && product.stock > 0
-                          ? 'bg-blue-600 hover:bg-blue-700' 
-                          : 'bg-gray-400 cursor-not-allowed'
+                          ? 'bg-primary hover:bg-primary/90' 
+                          : 'bg-muted-foreground/40 cursor-not-allowed'
                       }`}
                       disabled={!product.stock || product.stock === 0}
                       onClick={() => handleAddToCart(product.id)}
@@ -169,7 +168,6 @@ const Wishlist = () => {
       {!isMobile && <Footer />}
       
       {/* Mobile Navigation - Always visible on mobile */}
-      <MobileNavigation />
     </div>
   );
 };

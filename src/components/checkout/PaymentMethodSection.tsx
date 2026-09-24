@@ -34,7 +34,7 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
     >
       <Card className="shadow-lg border-0 bg-card">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-gray-800">
+          <CardTitle className="flex items-center space-x-3 text-foreground">
             <div className="p-2 bg-accent rounded-lg">
               <CreditCard className="w-5 h-5 text-primary" />
             </div>
@@ -43,32 +43,32 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
         </CardHeader>
         <CardContent className="space-y-6">
           <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer">
-              <RadioGroupItem value="pesepay" id="pesepay" className="text-green-600" />
+            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-border hover:border-success/20 hover:bg-success/10/30 transition-all cursor-pointer">
+              <RadioGroupItem value="pesepay" id="pesepay" className="text-success" />
               <div className="flex items-center space-x-3 flex-1">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Wallet className="w-4 h-4 text-green-600" />
+                <div className="p-2 bg-success/10 rounded-lg">
+                  <Wallet className="w-4 h-4 text-success" />
                 </div>
                 <div>
-                  <label htmlFor="pesepay" className="font-semibold text-gray-800 cursor-pointer">
+                  <label htmlFor="pesepay" className="font-semibold text-foreground cursor-pointer">
                     PesePay
                   </label>
-                  <p className="text-sm text-gray-500">Pay with EcoCash, Visa, Mastercard & more</p>
+                  <p className="text-sm text-muted-foreground">Pay with EcoCash, Visa, Mastercard & more</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-pointer">
-              <RadioGroupItem value="paypal" id="paypal" className="text-blue-600" />
+            <div className="flex items-center space-x-3 p-4 rounded-xl border-2 border-border hover:border-primary/20 hover:bg-primary/10/30 transition-all cursor-pointer">
+              <RadioGroupItem value="paypal" id="paypal" className="text-primary" />
               <div className="flex items-center space-x-3 flex-1">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <CreditCard className="w-4 h-4 text-blue-600" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <CreditCard className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <label htmlFor="paypal" className="font-semibold text-gray-800 cursor-pointer">
+                  <label htmlFor="paypal" className="font-semibold text-foreground cursor-pointer">
                     PayPal
                   </label>
-                  <p className="text-sm text-gray-500">Pay securely with PayPal (USD)</p>
+                  <p className="text-sm text-muted-foreground">Pay securely with PayPal (USD)</p>
                 </div>
               </div>
             </div>
@@ -79,15 +79,15 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="pl-4 border-l-4 border-green-200 bg-green-50/50 p-4 rounded-r-xl space-y-3"
+              className="pl-4 border-l-4 border-success/20 bg-success/10/50 p-4 rounded-r-xl space-y-3"
             >
-              <p className="text-sm text-green-700 font-medium">
+              <p className="text-sm text-success font-medium">
                 💳 You will be redirected to PesePay to complete your payment securely using EcoCash, Visa, Mastercard, or other supported methods.
               </p>
               <Button
                 onClick={onInitiatePesePayPayment}
                 disabled={isPesePayProcessing}
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-success hover:bg-success/90"
               >
                 {isPesePayProcessing ? 'Processing...' : `Pay $${totalAmount.toFixed(2)} with PesePay`}
               </Button>
@@ -99,15 +99,15 @@ const PaymentMethodSection: React.FC<PaymentMethodSectionProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="pl-4 border-l-4 border-blue-200 bg-blue-50/50 p-4 rounded-r-xl space-y-3"
+              className="pl-4 border-l-4 border-primary/20 bg-primary/10/50 p-4 rounded-r-xl space-y-3"
             >
-              <p className="text-sm text-blue-700 font-medium">
+              <p className="text-sm text-primary font-medium">
                 💳 You will be redirected to PayPal to complete your payment securely.
               </p>
               <Button
                 onClick={onInitiatePayPalPayment}
                 disabled={isPayPalProcessing}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-primary hover:bg-primary/90"
               >
                 {isPayPalProcessing ? 'Processing...' : `Pay $${totalAmount.toFixed(2)} with PayPal`}
               </Button>

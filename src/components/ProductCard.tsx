@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, ShoppingCart, Heart, Eye, Zap } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, Zap, Truck, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -21,6 +21,7 @@ interface ProductCardProps {
     discount?: string;
     isFlash?: boolean;
     countdownTimer?: string;
+    stock?: number;
   };
 }
 
@@ -90,7 +91,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Star
         key={i}
         className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
+          i < Math.floor(rating) ? 'text-rating fill-current' : 'text-muted'
         }`}
       />
     ));
@@ -129,27 +130,34 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     navigate(`/product/${product.id}`);
   };
 
+  const stockLabel = (() => {
+    if (product.stock === undefined) return null;
+    if (product.stock <= 0) return { text: 'Out of stock', tone: 'text-destructive' };
+    if (product.stock <= 5) return { text: `Only ${product.stock} left`, tone: 'text-warning' };
+    return { text: 'In stock', tone: 'text-success' };
+  })();
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:border-sky-300 hover:shadow-xl transition-all duration-300 group relative overflow-hidden transform hover:-translate-y-1">
+    <div className="bg-card rounded-xl border border-border hover:border-primary/40 hover:shadow-lg transition-all duration-300 group relative overflow-hidden transform hover:-translate-y-1">
       {/* Enhanced discount badge */}
       {product.discount && (
         <div className="absolute top-3 left-3 z-10">
           {product.isFlash ? (
             <div className="flex flex-col space-y-1">
-              <div className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
+              <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-sm animate-badge-pop">
                 <Zap className="w-3 h-3 mr-1" />
                 FLASH
               </div>
-              <span className="bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+              <span className="bg-gradient-to-r from-success to-success/80 text-success-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm">
                 {product.discount}
               </span>
             </div>
           ) : product.discount === "NEW" ? (
-            <span className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+            <span className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm animate-badge-pop">
               {product.discount}
             </span>
           ) : (
-            <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+            <span className="bg-gradient-to-r from-warning to-warning/80 text-warning-foreground px-2 py-1 rounded-full text-xs font-bold shadow-sm animate-badge-pop">
               {product.discount}
             </span>
           )}
@@ -158,37 +166,36 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Quick action buttons */}
       <div className="absolute top-3 right-3 z-10 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-        <button 
+        <button
           onClick={handleAddToWishlist}
-          className={`rounded-full p-2 shadow-lg hover:scale-110 transition-all duration-200 ${
-            isInWishlist 
-              ? 'bg-red-500 text-white' 
-              : 'bg-white/90 backdrop-blur-sm hover:bg-white text-gray-600 hover:text-red-500'
+          className={`rounded-full p-2 shadow-sm hover:scale-110 transition-all duration-200 ${
+            isInWishlist
+              ? 'bg-destructive text-destructive-foreground'
+              : 'bg-background/90 backdrop-blur-sm hover:bg-background text-muted-foreground hover:text-destructive'
           }`}
         >
           <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
         </button>
-        <button 
+        <button
           onClick={handleQuickView}
-          className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
+          className="bg-background/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-background hover:scale-110 transition-all duration-200"
         >
-          <Eye className="w-4 h-4 text-gray-600 hover:text-sky-500" />
+          <Eye className="w-4 h-4 text-muted-foreground hover:text-primary" />
         </button>
       </div>
 
       {/* Product image */}
-      <div 
-        className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden rounded-t-xl cursor-pointer"
+      <div
+        className="aspect-square bg-muted/40 relative overflow-hidden rounded-t-xl cursor-pointer"
         onClick={handleProductClick}
       >
         {imageLoading ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
+          <div className="w-full h-full animate-shimmer" />
         ) : (
           <img
             src={productImage}
             alt={product.name}
+            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             onError={(e) => {
               console.log('Image failed to load, using fallback:', productImage);
@@ -204,41 +211,50 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Product info */}
       <div className="p-5">
-        <h3 
-          className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-sky-600 transition-colors text-sm leading-relaxed cursor-pointer"
+        <h3
+          className="font-semibold text-foreground mb-1 line-clamp-2 group-hover:text-primary transition-colors text-sm leading-relaxed cursor-pointer"
           onClick={handleProductClick}
           title={product.name}
         >
           {product.name.length > 50 ? `${product.name.substring(0, 50)}...` : product.name}
         </h3>
-        
-        {product.brand && (
-          <p className="text-xs text-gray-500 mb-2 font-medium">{product.brand}</p>
-        )}
+
+        <p className="text-xs text-muted-foreground mb-2 font-medium h-4">{product.brand ?? ' '}</p>
 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
             <div className="flex">{renderStars(product.rating)}</div>
-            <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
+            <span className="text-sm text-muted-foreground ml-2">({product.reviews})</span>
           </div>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">{product.rating}/5</span>
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">{product.rating}/5</span>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-2xl font-bold text-sky-600">${product.price}</span>
+            <span className="text-2xl font-bold text-primary">${product.price}</span>
             {discountPercentage > 0 && (
-              <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+              <span className="text-xs font-semibold text-success bg-success/10 px-2 py-1 rounded-full">
                 Save {discountPercentage}%
               </span>
             )}
           </div>
           {product.originalPrice && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
-              <span className="text-xs text-green-600 font-medium">You save ${product.originalPrice - product.price}</span>
+              <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
+              <span className="text-xs text-success font-medium">You save ${product.originalPrice - product.price}</span>
             </div>
           )}
+        </div>
+
+        <div className="flex items-center justify-between text-xs pt-3 border-t border-border">
+          <span className={`flex items-center gap-1 font-medium ${stockLabel?.tone ?? 'text-success'}`}>
+            {stockLabel?.text === 'Out of stock' ? <PackageX className="w-3.5 h-3.5" /> : null}
+            {stockLabel?.text ?? 'In stock'}
+          </span>
+          <span className="flex items-center gap-1 text-muted-foreground">
+            <Truck className="w-3.5 h-3.5" />
+            Delivery available
+          </span>
         </div>
       </div>
     </div>

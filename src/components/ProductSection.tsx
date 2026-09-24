@@ -2,93 +2,56 @@
 import React from 'react';
 import ProductCard from './ProductCard';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Zap, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowRight, Zap, Sparkles, TrendingUp, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+type SectionVariant = 'default' | 'deal' | 'new' | 'trending';
 
 interface ProductSectionProps {
   title: string;
   subtitle?: string;
   products: any[];
   showViewAll?: boolean;
-  sectionColor?: string;
+  variant?: SectionVariant;
+  viewAllPath?: string;
 }
 
-const ProductSection: React.FC<ProductSectionProps> = ({ 
-  title, 
-  subtitle, 
-  products, 
+const VARIANT_CONFIG: Record<SectionVariant, { icon: React.ElementType; gradient: string; border: string; text: string; hoverBg: string }> = {
+  default: { icon: Star, gradient: 'from-primary to-primary/80', border: 'border-primary', text: 'text-primary', hoverBg: 'hover:bg-primary/5' },
+  deal: { icon: Zap, gradient: 'from-destructive to-destructive/80', border: 'border-destructive', text: 'text-destructive', hoverBg: 'hover:bg-destructive/5' },
+  new: { icon: Sparkles, gradient: 'from-primary to-primary/80', border: 'border-primary', text: 'text-primary', hoverBg: 'hover:bg-primary/5' },
+  trending: { icon: TrendingUp, gradient: 'from-warning to-warning/80', border: 'border-warning', text: 'text-warning', hoverBg: 'hover:bg-warning/5' },
+};
+
+const ProductSection: React.FC<ProductSectionProps> = ({
+  title,
+  subtitle,
+  products,
   showViewAll = true,
-  sectionColor = "blue"
+  variant = 'default',
+  viewAllPath,
 }) => {
   const navigate = useNavigate();
-
-  const getSectionIcon = () => {
-    if (title.includes("Flash Sale")) return <Zap className="w-4 h-4 sm:w-6 sm:h-6" />;
-    if (title.includes("New Arrivals")) return <Sparkles className="w-4 h-4 sm:w-6 sm:h-6" />;
-    if (title.includes("Best Sellers")) return <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6" />;
-    return null;
-  };
-
-  const getColorClasses = () => {
-    switch (sectionColor) {
-      case "red":
-        return {
-          border: "border-red-500",
-          text: "text-red-600",
-          bg: "hover:bg-red-50",
-          gradient: "from-red-500 to-red-600"
-        };
-      case "blue":
-        return {
-          border: "border-sky-500",
-          text: "text-sky-600",
-          bg: "hover:bg-sky-50",
-          gradient: "from-sky-500 to-sky-600"
-        };
-      case "green":
-        return {
-          border: "border-green-500",
-          text: "text-green-600",
-          bg: "hover:bg-green-50",
-          gradient: "from-green-500 to-green-600"
-        };
-      default:
-        return {
-          border: "border-sky-500",
-          text: "text-sky-600",
-          bg: "hover:bg-sky-50",
-          gradient: "from-sky-500 to-sky-600"
-        };
-    }
-  };
+  const config = VARIANT_CONFIG[variant];
+  const Icon = config.icon;
 
   const handleViewAllClick = () => {
-    if (title.includes("Flash Sale")) {
-      navigate('/deals');
-    } else if (title.includes("New Arrivals")) {
-      navigate('/products?filter=new-arrivals');
-    } else if (title.includes("Best Sellers")) {
-      navigate('/products?filter=best-sellers');
-    } else {
-      navigate('/products');
-    }
+    navigate(viewAllPath ?? '/products');
   };
-
-  const colors = getColorClasses();
 
   return (
     <div className="mb-8 sm:mb-16 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-8 gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center mb-2 sm:mb-3">
-            <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-r ${colors.gradient} text-white mr-2 sm:mr-4 flex-shrink-0`}>
-              {getSectionIcon()}
+            <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-r ${config.gradient} text-white mr-2 sm:mr-4 flex-shrink-0`}>
+              <Icon className="w-4 h-4 sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg sm:text-3xl font-bold text-gray-800 flex flex-col sm:flex-row sm:items-center gap-2">
+              <h2 className="text-lg sm:text-3xl font-bold text-foreground flex flex-col sm:flex-row sm:items-center gap-2">
                 <span className="truncate">{title}</span>
-                {title === "Flash Sale ⚡" && (
-                  <span className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold animate-pulse shadow-lg whitespace-nowrap">
+                {variant === 'deal' && (
+                  <span className="bg-gradient-to-r from-destructive to-destructive/80 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold animate-pulse shadow-md whitespace-nowrap">
                     ⚡ LIMITED TIME
                   </span>
                 )}
@@ -96,13 +59,13 @@ const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
           </div>
           {subtitle && (
-            <p className="text-sm sm:text-lg text-gray-600 ml-8 sm:ml-14 line-clamp-2">{subtitle}</p>
+            <p className="text-sm sm:text-lg text-muted-foreground ml-8 sm:ml-14 line-clamp-2">{subtitle}</p>
           )}
         </div>
         {showViewAll && (
-          <Button 
-            variant="outline" 
-            className={`${colors.border} ${colors.text} ${colors.bg} px-3 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg sm:rounded-xl transition-all duration-200 flex items-center hover:scale-105 shadow-md hover:shadow-lg text-sm sm:text-base whitespace-nowrap flex-shrink-0`}
+          <Button
+            variant="outline"
+            className={`${config.border} ${config.text} ${config.hoverBg} px-3 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg sm:rounded-xl transition-all duration-200 flex items-center hover:scale-105 shadow-sm hover:shadow-md text-sm sm:text-base whitespace-nowrap flex-shrink-0`}
             onClick={handleViewAllClick}
           >
             <span className="hidden sm:inline">View All</span>

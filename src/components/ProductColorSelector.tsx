@@ -44,9 +44,9 @@ const ProductColorSelector: React.FC<ProductColorSelectorProps> = ({
   return (
     <div className={`space-y-3 ${className}`}>
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700">
+        <h4 className="text-sm font-medium text-foreground">
           Color: {selectedColor && showSelectedName && (
-            <span className="font-semibold text-gray-900">{selectedColor}</span>
+            <span className="font-semibold text-foreground">{selectedColor}</span>
           )}
         </h4>
         {selectedColor && (
@@ -63,10 +63,10 @@ const ProductColorSelector: React.FC<ProductColorSelectorProps> = ({
             onClick={() => onColorSelect(color.name)}
             className={`
               relative ${sizeClasses[size]} rounded-full border-2 transition-all duration-200
-              hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-              ${selectedColor === color.name 
-                ? 'border-blue-500 ring-2 ring-blue-200 scale-105' 
-                : 'border-gray-300 hover:border-gray-400'
+              hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+              ${selectedColor === color.name
+                ? 'border-primary ring-2 ring-primary/20 scale-105'
+                : 'border-border hover:border-muted-foreground'
               }
             `}
             style={{ backgroundColor: color.hex_code }}

@@ -23,7 +23,6 @@ import { useOrders } from '@/hooks/useOrders';
 import { useWishlist } from '@/hooks/useWishlist';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 
 const Dashboard = () => {
   const { user, signOut } = useAuthContext();
@@ -64,14 +63,14 @@ const Dashboard = () => {
       description: 'Manage your personal information',
       icon: User,
       action: () => navigate('/profile'),
-      color: 'text-blue-600'
+      color: 'text-primary'
     },
     {
       title: 'My Orders',
       description: 'Track your orders and purchase history',
       icon: Package,
       action: () => navigate('/orders'),
-      color: 'text-green-600'
+      color: 'text-success'
     },
     {
       title: 'Wishlist',
@@ -85,7 +84,7 @@ const Dashboard = () => {
       description: 'Manage your payment options',
       icon: CreditCard,
       action: () => navigate('/payment-methods'),
-      color: 'text-purple-600'
+      color: 'text-primary'
     },
     {
       title: 'Addresses',
@@ -99,12 +98,12 @@ const Dashboard = () => {
       description: 'Control your notification preferences',
       icon: Bell,
       action: () => navigate('/notifications'),
-      color: 'text-yellow-600'
+      color: 'text-warning'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -115,10 +114,10 @@ const Dashboard = () => {
               {user.email?.[0].toUpperCase()}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
-              <p className="text-gray-600">{user.email}</p>
+              <h1 className="text-3xl font-bold text-foreground">Welcome back!</h1>
+              <p className="text-muted-foreground">{user.email}</p>
               {isAdmin && (
-                <Badge className="mt-2 bg-purple-100 text-purple-800">
+                <Badge className="mt-2 bg-primary/10 text-primary">
                   <Shield className="w-3 h-3 mr-1" />
                   Admin
                 </Badge>
@@ -129,7 +128,7 @@ const Dashboard = () => {
           {isAdmin && !isMobile && (
             <Button 
               onClick={() => navigate('/admin')}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               <Shield className="w-4 h-4 mr-2" />
               Admin Dashboard
@@ -143,10 +142,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100">Total Orders</p>
+                  <p className="text-primary-foreground/90">Total Orders</p>
                   <p className="text-3xl font-bold">{totalOrders}</p>
                 </div>
-                <Package className="w-8 h-8 text-blue-200" />
+                <Package className="w-8 h-8 text-primary-foreground/90" />
               </div>
             </CardContent>
           </Card>
@@ -155,10 +154,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100">Wishlist Items</p>
+                  <p className="text-success-foreground/90">Wishlist Items</p>
                   <p className="text-3xl font-bold">{wishlistCount}</p>
                 </div>
-                <Heart className="w-8 h-8 text-green-200" />
+                <Heart className="w-8 h-8 text-success-foreground/90" />
               </div>
             </CardContent>
           </Card>
@@ -167,10 +166,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100">Loyalty Points</p>
+                  <p className="text-primary-foreground/90">Loyalty Points</p>
                   <p className="text-3xl font-bold">{loyaltyPoints}</p>
                 </div>
-                <Settings className="w-8 h-8 text-purple-200" />
+                <Settings className="w-8 h-8 text-primary-foreground/90" />
               </div>
             </CardContent>
           </Card>
@@ -185,10 +184,10 @@ const Dashboard = () => {
             <CardContent>
               <div className="space-y-3">
                 {orders.slice(0, 3).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={order.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium">#{order.id.slice(-8).toUpperCase()}</p>
-                      <p className="text-sm text-gray-600">{new Date(order.created_at).toLocaleDateString()}</p>
+                      <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">${Number(order.total_amount).toFixed(2)}</p>
@@ -214,12 +213,12 @@ const Dashboard = () => {
             <Card key={index} className="hover:shadow-lg transition-shadow duration-300 cursor-pointer group" onClick={item.action}>
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
-                  <div className={`p-3 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors ${item.color}`}>
+                  <div className={`p-3 rounded-lg bg-muted group-hover:bg-muted transition-colors ${item.color}`}>
                     <item.icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
                   </div>
                 </div>
               </CardContent>
@@ -228,12 +227,12 @@ const Dashboard = () => {
         </div>
 
         {/* Logout Button */}
-        <Card className="border-red-200">
+        <Card className="border-destructive/20">
           <CardContent className="p-6">
             <Button 
               onClick={handleLogout}
               variant="outline"
-              className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+              className="w-full text-destructive border-destructive/20 hover:bg-destructive/10 hover:border-destructive/20"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -246,7 +245,6 @@ const Dashboard = () => {
       {!isMobile && <Footer />}
       
       {/* Mobile Navigation */}
-      <MobileNavigation />
     </div>
   );
 };

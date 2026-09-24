@@ -10,12 +10,14 @@ export interface BannerSlide {
   type?: 'image' | 'video';
 }
 
+// Video banners live on Lovable's own asset host (/__l5e/assets-v1/...), which
+// isn't reachable outside Lovable's hosting — so the default carousel uses the
+// static images that actually ship in public/banners/ instead. Admin-configured
+// banners (admin_settings.desktop_banners) still take priority when present.
 const DEFAULT_SLIDES: BannerSlide[] = [
-  { id: '1', image: '/__l5e/assets-v1/1ddfd330-aa3a-46d4-9c59-06521289b21b/audio-banner.mp4', path: '/audio', alt: 'Premium Audio Collection', type: 'video' },
-  { id: '2', image: '/__l5e/assets-v1/49b13230-6457-4e0c-8052-33852a23853f/phones-banner.mp4', path: '/phones', alt: 'Latest Smartphones', type: 'video' },
-  { id: '3', image: '/__l5e/assets-v1/24a7bc0e-1b19-4688-83f5-3754dbde12fc/electronics-banner.mp4', path: '/deals', alt: 'Electronics Mega Deals', type: 'video' },
-  { id: '4', image: '/__l5e/assets-v1/02a68c7d-85c8-45e1-877b-7b6a98d9d5d0/samsung-banner.mp4', path: '/search?q=samsung', alt: 'Samsung Galaxy Smartphones', type: 'video' },
-  { id: '5', image: '/__l5e/assets-v1/e83e639f-7a88-4242-9627-a47f9835665b/iphone-banner.mp4', path: '/search?q=iphone', alt: 'Apple iPhone Collection', type: 'video' },
+  { id: '1', image: '/banners/phones-banner.jpg', path: '/phones', alt: 'Latest Smartphones', type: 'image' },
+  { id: '2', image: '/banners/audio-banner.jpg', path: '/audio', alt: 'Premium Audio Collection', type: 'image' },
+  { id: '3', image: '/banners/electronics-banner.jpg', path: '/deals', alt: 'Electronics Mega Deals', type: 'image' },
 ];
 
 const HeroBanner = () => {
@@ -79,7 +81,7 @@ const HeroBanner = () => {
 
   return (
     <div className="relative mb-4">
-      <div className="relative w-full aspect-[1920/544] overflow-hidden rounded-sm bg-gray-100">
+      <div className="relative w-full aspect-[1920/544] overflow-hidden rounded-sm bg-muted">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -111,15 +113,17 @@ const HeroBanner = () => {
           </div>
         ))}
 
-        <button 
-          onClick={(e) => { e.stopPropagation(); prevSlide(); }} 
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 transition-all z-10 shadow-sm"
+        <button
+          onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+          aria-label="Previous slide"
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground rounded-full p-2 transition-all z-10 shadow-sm"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); nextSlide(); }} 
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 transition-all z-10 shadow-sm"
+        <button
+          onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+          aria-label="Next slide"
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground rounded-full p-2 transition-all z-10 shadow-sm"
         >
           <ChevronRight className="w-5 h-5" />
         </button>

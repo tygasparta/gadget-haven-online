@@ -44,7 +44,7 @@ const OrderSuccess = () => {
       <Header />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-8">
-          <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-6" />
+          <CheckCircle className="w-24 h-24 text-success mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
           <p className="text-lg text-gray-600">Thank you for your purchase</p>
         </div>
@@ -57,11 +57,11 @@ const OrderSuccess = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="font-semibold mb-2">Order Number</h3>
-                <p className="text-blue-600 font-mono text-lg">#{orderId?.slice(0, 8) || 'N/A'}</p>
+                <p className="text-primary font-mono text-lg">#{orderId?.slice(0, 8) || 'N/A'}</p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Total Amount</h3>
-                <p className="text-green-600 font-bold text-xl">${total?.toFixed(2) || '0.00'}</p>
+                <p className="text-success font-bold text-xl">${total?.toFixed(2) || '0.00'}</p>
               </div>
             </div>
           </CardContent>
@@ -70,7 +70,7 @@ const OrderSuccess = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="text-center p-6">
-              <Package className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+              <Package className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Order Processing</h3>
               <p className="text-sm text-gray-600">Your order is being prepared</p>
             </CardContent>
@@ -78,7 +78,7 @@ const OrderSuccess = () => {
           
           <Card>
             <CardContent className="text-center p-6">
-              <Truck className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+              <Truck className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Shipping</h3>
               <p className="text-sm text-gray-600">Expected delivery in 3-5 business days</p>
             </CardContent>
@@ -86,7 +86,7 @@ const OrderSuccess = () => {
           
           <Card>
             <CardContent className="text-center p-6">
-              <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="w-12 h-12 text-success mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Confirmation</h3>
               <p className="text-sm text-gray-600">Order confirmation sent to your email</p>
             </CardContent>
@@ -101,7 +101,7 @@ const OrderSuccess = () => {
             <Button onClick={() => navigate('/dashboard')} variant="outline">
               View Order History
             </Button>
-            <Button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => navigate('/')} className="bg-primary hover:bg-primary/90">
               <Home className="w-4 h-4 mr-2" />
               Continue Shopping
             </Button>

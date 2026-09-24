@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -194,26 +193,26 @@ const PaymentSuccess = () => {
       subtitle: `Checking payment status (attempt ${pollCount}/${MAX_POLLS})`,
     },
     success: {
-      icon: <CheckCircle className="w-12 h-12 text-green-600" />,
-      bgColor: 'bg-green-100',
+      icon: <CheckCircle className="w-12 h-12 text-success" />,
+      bgColor: 'bg-success/10',
       title: 'Payment Successful!',
       subtitle: 'Thank you for your order. We\'re processing it now.',
     },
     failed: {
       icon: <XCircle className="w-12 h-12 text-destructive" />,
-      bgColor: 'bg-red-100',
+      bgColor: 'bg-destructive/10',
       title: 'Payment Failed',
       subtitle: 'Your payment was not successful. Please try again or contact support.',
     },
     pending: {
-      icon: <Clock className="w-12 h-12 text-yellow-600" />,
-      bgColor: 'bg-yellow-100',
+      icon: <Clock className="w-12 h-12 text-warning" />,
+      bgColor: 'bg-warning/10',
       title: 'Payment Pending',
       subtitle: 'We\'re still waiting for confirmation. This may take a few minutes.',
     },
     error: {
       icon: <XCircle className="w-12 h-12 text-destructive" />,
-      bgColor: 'bg-red-100',
+      bgColor: 'bg-destructive/10',
       title: 'Verification Error',
       subtitle: 'There was an issue verifying your payment. Please contact support.',
     },
@@ -357,7 +356,6 @@ const PaymentSuccess = () => {
       </div>
 
       {!isMobile && <Footer />}
-      <MobileNavigation />
     </div>
   );
 };

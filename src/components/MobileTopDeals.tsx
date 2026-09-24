@@ -57,7 +57,7 @@ const MobileTopDeals = () => {
             onClick={(e) => handleProductClick(product.id, e)}
           >
             {product.discount_percentage > 0 && (
-              <Badge className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
+              <Badge className="absolute top-2 left-2 bg-destructive text-white text-xs px-2 py-1 rounded-full z-10">
                 {product.discount_percentage}% OFF
               </Badge>
             )}
@@ -77,7 +77,7 @@ const MobileTopDeals = () => {
               <div className="flex items-center mb-2">
                 <div className="flex items-center">
                   {Array.from({ length: 5 }, (_, i) => (
-                    <Star key={i} className={`w-3 h-3 ${i < Math.floor(product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                    <Star key={i} className={`w-3 h-3 ${i < Math.floor(product.rating || 0) ? 'text-rating fill-current' : 'text-gray-300'}`} />
                   ))}
                 </div>
                 <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>

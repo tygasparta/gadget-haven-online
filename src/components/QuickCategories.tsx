@@ -1,54 +1,80 @@
 
-import React from 'react';
-import { Smartphone, Headphones, Laptop, Camera } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Smartphone, Headphones, Laptop, Camera, Gamepad2, Home as HomeIcon, Cable, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useProducts } from '@/hooks/useProducts';
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop';
+
+const categories = [
+  { name: 'Smartphones', icon: Smartphone, path: '/products?category=smartphones', matchKey: 'smartphone' },
+  { name: 'Laptops', icon: Laptop, path: '/products?category=laptops', matchKey: 'laptop' },
+  { name: 'Audio', icon: Headphones, path: '/products?category=audio', matchKey: 'audio' },
+  { name: 'Gaming', icon: Gamepad2, path: '/products?category=gaming', matchKey: 'gaming' },
+  { name: 'Cameras', icon: Camera, path: '/products?category=cameras', matchKey: 'camera' },
+  { name: 'Smart Home', icon: HomeIcon, path: '/products?category=smart-home', matchKey: 'smart home' },
+  { name: 'Accessories', icon: Cable, path: '/products?category=accessories', matchKey: 'accessor' },
+  { name: 'Electronics', icon: Zap, path: '/products?category=electronics', matchKey: 'electronic' },
+];
 
 const QuickCategories = () => {
   const navigate = useNavigate();
+  const { data: products = [] } = useProducts();
 
-  const categories = [
-    { name: 'Smartphones', icon: Smartphone, count: 8, color: 'bg-sky-600', path: '/products?category=smartphones' },
-    { name: 'Audio', icon: Headphones, count: 2, color: 'bg-sky-600', path: '/products?category=audio' },
-    { name: 'Laptops', icon: Laptop, count: 4, color: 'bg-sky-600', path: '/products?category=laptops' },
-    { name: 'Cameras', icon: Camera, count: 3, color: 'bg-sky-600', path: '/products?category=cameras' }
-  ];
-
-  const handleCategoryClick = (path: string) => { navigate(path); };
-  const handleAllCategoriesClick = () => { navigate('/categories'); };
+  const categoryImages = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const category of categories) {
+      const match = products.find(
+        (p) => p.category?.toLowerCase().includes(category.matchKey) && p.image
+      );
+      if (match) map[category.name] = match.image;
+    }
+    return map;
+  }, [products]);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-gray-900">Quick Browse</h3>
-        <p className="text-sm text-gray-600">Shop by category</p>
+    <div className="mb-8 sm:mb-16">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-2xl font-bold text-foreground">Shop by Category</h2>
+        <button
+          onClick={() => navigate('/categories')}
+          className="text-sm font-medium text-primary hover:opacity-80 transition-opacity"
+        >
+          View all →
+        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        {categories.map((category, index) => (
-          <div key={index} className="relative group cursor-pointer" onClick={() => handleCategoryClick(category.path)}>
-            <div className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-              <div className={`w-12 h-12 ${category.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
-                <category.icon className="w-6 h-6 text-white" />
+      <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+        {categories.map((category) => {
+          const image = categoryImages[category.name];
+          return (
+            <button
+              key={category.name}
+              onClick={() => navigate(category.path)}
+              className="flex flex-col overflow-hidden rounded-xl bg-card border border-border hover:border-primary/40 hover:shadow-md transition-all group text-left"
+            >
+              <div className="aspect-square w-full bg-muted/40 flex items-center justify-center overflow-hidden">
+                {image ? (
+                  <img
+                    src={image}
+                    alt={category.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+                  />
+                ) : (
+                  <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-all duration-200">
+                    <category.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary group-hover:text-primary-foreground transition-colors" />
+                  </div>
+                )}
               </div>
-              <span className="text-sm font-medium text-gray-900 text-center">{category.name}</span>
-              <span className="text-xs text-gray-500">{category.count} items</span>
-            </div>
-            {index === 0 && (
-              <div className="absolute -top-2 -right-2 bg-sky-600 text-white text-xs px-2 py-1 rounded-full">Hot</div>
-            )}
-            {index === 2 && (
-              <div className="absolute -top-2 -right-2 bg-sky-600 text-white text-xs px-2 py-1 rounded-full">Hot</div>
-            )}
-          </div>
-        ))}
+              <span className="text-xs sm:text-sm font-medium text-foreground text-center leading-tight px-2 py-2.5">
+                {category.name}
+              </span>
+            </button>
+          );
+        })}
       </div>
-
-      <button 
-        className="w-full bg-sky-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-sky-600 transition-colors"
-        onClick={handleAllCategoriesClick}
-      >
-        All Categories
-      </button>
     </div>
   );
 };

@@ -11,7 +11,6 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 import { useAddresses, useAddAddress, useDeleteAddress } from '@/hooks/useAddresses';
 
 const Addresses = () => {
@@ -72,17 +71,17 @@ const Addresses = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-muted/50">
         <Header />
         <div className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       <Header />
       
       <div className={`max-w-2xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
@@ -97,14 +96,14 @@ const Addresses = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
-              <p className="text-gray-600">Manage your shipping addresses</p>
+              <h1 className="text-2xl font-bold text-foreground">Addresses</h1>
+              <p className="text-muted-foreground">Manage your shipping addresses</p>
             </div>
           </div>
           
           <Button
             onClick={() => setShowAddAddress(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Address
@@ -118,19 +117,19 @@ const Addresses = () => {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    <div className="text-gray-600 mt-1">
+                    <div className="text-muted-foreground mt-1">
                       {getAddressIcon(address.type)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="font-medium text-gray-900">{address.name}</h3>
+                        <h3 className="font-medium text-foreground">{address.name}</h3>
                         {address.isdefault && (
-                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
                             Default
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-sm text-muted-foreground space-y-1">
                         <p>{address.line1}</p>
                         {address.line2 && <p>{address.line2}</p>}
                         <p>{address.city}, {address.state} {address.zipcode}</p>
@@ -144,7 +143,7 @@ const Addresses = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteAddress(address.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-destructive hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -274,9 +273,9 @@ const Addresses = () => {
         {addresses.length === 0 && !showAddAddress && (
           <Card className="text-center py-16">
             <CardContent>
-              <MapPin className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No addresses saved</h3>
-              <p className="text-gray-600 mb-6">Add an address to make checkout faster</p>
+              <MapPin className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No addresses saved</h3>
+              <p className="text-muted-foreground mb-6">Add an address to make checkout faster</p>
               <Button onClick={() => setShowAddAddress(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Address
@@ -287,7 +286,6 @@ const Addresses = () => {
       </div>
 
       {!isMobile && <Footer />}
-      <MobileNavigation />
     </div>
   );
 };

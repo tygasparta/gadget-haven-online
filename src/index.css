@@ -35,6 +35,19 @@
     --ring: 201 91% 40%;
 
     --radius: 0.5rem;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 24 95% 53%;
+    --warning-foreground: 0 0% 100%;
+
+    --rating-star: 45 93% 51%;
+
+    --shadow-color: 217 50% 20%;
+    --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+    --shadow-md: 0 4px 12px hsl(var(--shadow-color) / 0.08), 0 1px 3px hsl(var(--shadow-color) / 0.06);
+    --shadow-lg: 0 12px 28px hsl(var(--shadow-color) / 0.12), 0 4px 8px hsl(var(--shadow-color) / 0.06);
   }
 
   .dark {
@@ -65,6 +78,19 @@
     --border: 217 32% 17%;
     --input: 217 32% 17%;
     --ring: 201 91% 50%;
+
+    --success: 142 65% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 24 90% 58%;
+    --warning-foreground: 0 0% 100%;
+
+    --rating-star: 45 93% 58%;
+
+    --shadow-color: 217 50% 0%;
+    --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.3);
+    --shadow-md: 0 4px 12px hsl(var(--shadow-color) / 0.35), 0 1px 3px hsl(var(--shadow-color) / 0.3);
+    --shadow-lg: 0 12px 28px hsl(var(--shadow-color) / 0.45), 0 4px 8px hsl(var(--shadow-color) / 0.3);
   }
 }
 
@@ -108,6 +134,51 @@
 
 .animate-fade-in {
   animation: fade-in 0.6s ease-out;
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+@keyframes badge-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.animate-badge-pop {
+  animation: badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-shimmer,
+  .animate-scale-in,
+  .animate-badge-pop,
+  .animate-bounce-delay {
+    animation: none !important;
+  }
 }
 
 /* Safe area for mobile navigation */

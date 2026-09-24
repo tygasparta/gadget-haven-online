@@ -19,17 +19,17 @@ const FeaturedBrands = () => {
   ];
 
   return (
-    <div className="w-full py-4 border-t border-b border-gray-200 mb-4">
-      <h3 className="text-base font-bold text-gray-800 mb-4">Featured Brands</h3>
-      
-      <div className="relative">
+    <div className="w-full mb-8 sm:mb-16">
+      <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">Popular Brands</h2>
+
+      <div className="relative bg-card border border-border rounded-xl p-4 sm:p-6">
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
           <CarouselContent className="-ml-2">
             {brands.map((brand, index) => (
               <CarouselItem key={index} className="pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6">
                 <button
                   onClick={() => navigate(`/products?brand=${brand.brandKey}`)}
-                  className="flex items-center justify-center p-3 rounded hover:bg-gray-50 transition-colors w-full"
+                  className="flex items-center justify-center p-3 rounded-lg hover:bg-muted/60 transition-colors w-full"
                 >
                   <img
                     src={brand.logo}

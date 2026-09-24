@@ -18,7 +18,7 @@ const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({ specifica
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">No specifications available for this product.</p>
+          <p className="text-muted-foreground">No specifications available for this product.</p>
         </CardContent>
       </Card>
     );
@@ -42,7 +42,7 @@ const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({ specifica
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">No valid specifications available for this product.</p>
+          <p className="text-muted-foreground">No valid specifications available for this product.</p>
         </CardContent>
       </Card>
     );
@@ -59,12 +59,12 @@ const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({ specifica
       <CardContent>
         <div className="space-y-3">
           {validSpecs.map((spec, index) => (
-            <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+            <div key={index} className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <span className="font-medium text-gray-700">{spec.key}</span>
+                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
+                <span className="font-medium text-foreground">{spec.key}</span>
               </div>
-              <span className="text-gray-600 text-right">{spec.value}</span>
+              <span className="text-muted-foreground text-right">{spec.value}</span>
             </div>
           ))}
         </div>

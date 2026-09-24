@@ -7,7 +7,6 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MobileNavigation from '@/components/MobileNavigation';
 import { motion } from 'framer-motion';
 import { usePayPal } from '@/hooks/usePayPal';
 import { usePesePay } from '@/hooks/usePesePay';
@@ -18,6 +17,9 @@ import ShippingAddressSection from '@/components/checkout/ShippingAddressSection
 import PaymentMethodSection from '@/components/checkout/PaymentMethodSection';
 import ShippingMethodSection from '@/components/checkout/ShippingMethodSection';
 import OrderSummarySection from '@/components/checkout/OrderSummarySection';
+import CheckoutStepper from '@/components/checkout/CheckoutStepper';
+
+const CHECKOUT_STEPS = ['Cart', 'Delivery & Payment', 'Confirmation'];
 
 const CheckoutDetails = () => {
   const { user } = useAuthContext();
@@ -201,10 +203,9 @@ const CheckoutDetails = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading checkout details...</p>
+            <p className="text-muted-foreground">Loading checkout details...</p>
           </div>
         </div>
-        <MobileNavigation />
       </div>
     );
   }
@@ -221,7 +222,6 @@ const CheckoutDetails = () => {
             </Button>
           </div>
         </div>
-        <MobileNavigation />
       </div>
     );
   }
@@ -238,7 +238,6 @@ const CheckoutDetails = () => {
             </Button>
           </div>
         </div>
-        <MobileNavigation />
       </div>
     );
   }
@@ -250,30 +249,27 @@ const CheckoutDetails = () => {
       <Header />
       
       <div className={`max-w-7xl mx-auto px-4 py-8 ${isMobile ? 'pb-20' : ''}`}>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8 bg-white rounded-2xl p-6 shadow-lg border-0"
+          className="mb-8 bg-card rounded-2xl p-6 shadow-sm border border-border space-y-6"
         >
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/checkout')}
-              className="p-3 rounded-xl hover:bg-gray-100 transition-colors"
+              className="p-3 rounded-xl hover:bg-muted transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 Checkout Details
               </h1>
-              <p className="text-gray-500 mt-1">Complete your order securely</p>
+              <p className="text-muted-foreground mt-1">Complete your order securely</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-xl">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-sm font-medium text-blue-700">Step 2 of 3</span>
-          </div>
+          <CheckoutStepper steps={CHECKOUT_STEPS} currentStep={1} />
         </motion.div>
 
         <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-5 gap-8'}`}>
@@ -322,8 +318,7 @@ const CheckoutDetails = () => {
         </div>
       </div>
 
-      {!isMobile && <Footer />}
-      <MobileNavigation />
+      <Footer />
     </div>
   );
 };

@@ -6,7 +6,6 @@ import ProductSection from '../components/ProductSection';
 import { useFlashSaleProducts, useFeaturedProducts } from '@/hooks/useProducts';
 import { Tag, Clock, Zap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import MobileNavigation from '../components/MobileNavigation';
 
 const Deals = () => {
   const { data: flashSaleProducts = [] } = useFlashSaleProducts();
@@ -38,7 +37,7 @@ const Deals = () => {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            <Tag className="inline-block w-8 h-8 mr-2 text-red-500" />
+            <Tag className="inline-block w-8 h-8 mr-2 text-destructive" />
             Amazing Deals
           </h1>
           <p className="text-xl text-gray-600">Don't miss out on these incredible offers!</p>
@@ -49,19 +48,19 @@ const Deals = () => {
           <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-lg">
             <Zap className="w-8 h-8 mb-3" />
             <h3 className="text-xl font-bold mb-2">Flash Sales</h3>
-            <p className="text-red-100">Limited time offers with huge discounts</p>
+            <p className="text-destructive-foreground/90">Limited time offers with huge discounts</p>
           </div>
           
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg">
             <Clock className="w-8 h-8 mb-3" />
             <h3 className="text-xl font-bold mb-2">Daily Deals</h3>
-            <p className="text-blue-100">New deals updated every 24 hours</p>
+            <p className="text-primary-foreground/90">New deals updated every 24 hours</p>
           </div>
           
           <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-lg">
             <Tag className="w-8 h-8 mb-3" />
             <h3 className="text-xl font-bold mb-2">Best Offers</h3>
-            <p className="text-green-100">Hand-picked deals with maximum savings</p>
+            <p className="text-success-foreground/90">Hand-picked deals with maximum savings</p>
           </div>
         </div>
 
@@ -72,7 +71,7 @@ const Deals = () => {
               title="⚡ Flash Sale - Limited Time!"
               subtitle="Hurry up! These deals won't last long"
               products={transformedFlashSale}
-              sectionColor="red"
+              variant="deal"
               showViewAll={false}
             />
           </div>
@@ -85,7 +84,7 @@ const Deals = () => {
               title="🔥 Featured Deals"
               subtitle="Our most popular discounted items"
               products={transformedFeatured}
-              sectionColor="blue"
+              variant="default"
               showViewAll={false}
             />
           </div>
@@ -93,7 +92,6 @@ const Deals = () => {
       </div>
 
       {!isMobile && <Footer />}
-      <MobileNavigation />
     </div>
   );
 };

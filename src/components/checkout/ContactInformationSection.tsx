@@ -42,7 +42,7 @@ const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="email" className="text-sm font-medium text-foreground">
               Email Address *
             </Label>
             <Input
@@ -50,34 +50,34 @@ const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all bg-white"
+              className="h-12 border-border focus:border-primary focus:ring-blue-500/20 transition-all bg-white"
               placeholder="your@email.com"
               required
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="firstName" className="text-sm font-medium text-foreground">
                 First Name *
               </Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all bg-white"
+                className="h-12 border-border focus:border-primary focus:ring-blue-500/20 transition-all bg-white"
                 placeholder="John"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="lastName" className="text-sm font-medium text-foreground">
                 Last Name *
               </Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all bg-white"
+                className="h-12 border-border focus:border-primary focus:ring-blue-500/20 transition-all bg-white"
                 placeholder="Doe"
                 required
               />
