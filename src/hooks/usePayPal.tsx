@@ -45,7 +45,8 @@ export const usePayPal = () => {
           amount: paymentData.amount,
           payment_method: 'paypal',
           payment_reference: `PAYPAL_PENDING_${Date.now()}`,
-          status: 'pending'
+          status: 'pending',
+          ...(orderDbId ? { order_id: orderDbId } : {})
         }])
         .select()
         .single();
