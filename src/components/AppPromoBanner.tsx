@@ -1,12 +1,14 @@
 import React from 'react';
 import { Apple, PlayCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import appHomeImg from '@/assets/marketing/gadget-genie-app-home.webp';
-import appProductImg from '@/assets/marketing/gadget-genie-app-product.webp';
+import appHomeAsset from '@/assets/marketing/app-home.png.asset.json';
+import appProductAsset from '@/assets/marketing/app-categories.png.asset.json';
+const appHomeImg = appHomeAsset.url;
+const appProductImg = appProductAsset.url;
 
 const PhoneFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => (
-  <div className={cn('w-32 sm:w-40 lg:w-44 aspect-[390/844] rounded-[1.9rem] bg-background border-[6px] border-foreground shadow-xl overflow-hidden flex-shrink-0', className)}>
-    <img src={src} alt={alt} width={600} height={1298} loading="lazy" className="w-full h-full object-cover object-top" />
+  <div className={cn('w-32 sm:w-40 lg:w-44 flex-shrink-0 drop-shadow-xl', className)}>
+    <img src={src} alt={alt} width={887} height={1774} loading="lazy" className="w-full h-auto" />
   </div>
 );
 
