@@ -48,8 +48,8 @@ const CampaignSlide = ({ campaign, eager }: { campaign: HeroCampaign; eager: boo
   return (
     <>
       {/* Desktop (lg+): frame matches the artwork's native 3.5:1 ratio, so nothing is cropped */}
-      <div className="hidden lg:block relative w-full aspect-[1792/512]">
-        <img src={campaign.desktopImage} alt={campaign.alt} width={1792} height={512} loading={loading}
+      <div className="hidden lg:block relative w-full aspect-[1792/608]">
+        <img src={campaign.desktopImage} alt={campaign.alt} width={1792} height={608} loading={loading}
           className="absolute inset-0 w-full h-full object-contain" />
         <div className="absolute inset-y-0 left-0 w-[40%] flex items-center pl-16 xl:pl-20 pr-4">
           <CampaignCopy campaign={campaign} dark={dark} />
@@ -58,8 +58,8 @@ const CampaignSlide = ({ campaign, eager }: { campaign: HeroCampaign; eager: boo
 
       {/* Tablet: full artwork at native ratio, copy below */}
       <div className="hidden sm:block lg:hidden bg-card">
-        <img src={campaign.desktopImage} alt={campaign.alt} width={1792} height={512} loading={loading}
-          className="w-full h-auto aspect-[1792/512] object-contain" />
+        <img src={campaign.desktopImage} alt={campaign.alt} width={1792} height={608} loading={loading}
+          className="w-full h-auto aspect-[1792/608] object-contain" />
         <CampaignCopy campaign={campaign} dark={false} stacked />
       </div>
 
