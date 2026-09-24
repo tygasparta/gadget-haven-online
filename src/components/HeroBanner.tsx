@@ -80,6 +80,10 @@ const HeroBanner = () => {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   useEffect(() => {
+    setCurrentSlide(0);
+  }, [adminSlides.length]);
+
+  useEffect(() => {
     (async () => {
       try {
         const { data, error } = await supabase
@@ -92,10 +96,10 @@ const HeroBanner = () => {
     })();
   }, []);
 
-  const slides: Slide[] = [
-    ...HERO_CAMPAIGNS.map(c => ({ kind: 'campaign' as const, campaign: c })),
-    ...adminSlides.map(b => ({ kind: 'admin' as const, banner: b })),
-  ];
+  // Admin-panel banners drive the hero; built-in campaigns only show when none are set
+  const slides: Slide[] = adminSlides.length > 0
+    ? adminSlides.map(b => ({ kind: 'admin' as const, banner: b }))
+    : HERO_CAMPAIGNS.map(c => ({ kind: 'campaign' as const, campaign: c }));
 
   const current = slides[currentSlide];
   const isVideo = current?.kind === 'admin' && current.banner.type === 'video';
@@ -128,7 +132,7 @@ const HeroBanner = () => {
             {slide.kind === 'campaign' ? (
               <CampaignSlide campaign={slide.campaign} eager={index === 0} />
             ) : (
-              <div className="w-full aspect-[4/5] sm:aspect-[3.5/1] bg-muted cursor-pointer" onClick={() => navigate(slide.banner.path)}>
+              <div className="w-full aspect-[1920/544] bg-card cursor-pointer" onClick={() => navigate(slide.banner.path || '/products')}>
                 {slide.banner.type === 'video' ? (
                   <video
                     ref={el => { videoRefs.current[index] = el; }}
@@ -138,7 +142,7 @@ const HeroBanner = () => {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <img src={slide.banner.image} alt={slide.banner.alt} loading="lazy" className="w-full h-full object-contain" />
+                  <img src={slide.banner.image} alt={slide.banner.alt} loading={index === 0 ? 'eager' : 'lazy'} className="w-full h-full object-contain" />
                 )}
               </div>
             )}
