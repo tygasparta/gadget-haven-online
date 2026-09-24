@@ -1,3 +1,4 @@
+import { toCardProduct } from '@/lib/productCard';
 import React from 'react';
 import ProductCard from './ProductCard';
 import { useProducts } from '@/hooks/useProducts';
