@@ -1,3 +1,4 @@
+import { toCardProduct } from '@/lib/productCard';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -71,22 +72,7 @@ const SearchResults = () => {
 
   const scoredProducts = searchProductsWithScore(query);
 
-  const transformProduct = (product: any) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    originalPrice: product.original_price,
-    rating: product.rating,
-    reviews: product.reviews,
-    image: product.image,
-    category: product.category,
-    brand: product.brand,
-    stock: product.stock,
-    discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
-    isFlash: product.is_flash_sale,
-    countdownTimer: product.is_flash_sale ? "02:15:23" : undefined,
-    _score: 0,
-  });
+  const transformProduct = toCardProduct;
 
   const brands = [...new Set(scoredProducts.map(({ product }) => product.brand).filter(Boolean))];
   const categories = [...new Set(scoredProducts.map(({ product }) => product.category).filter(Boolean))];
