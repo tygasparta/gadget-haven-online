@@ -1,4 +1,5 @@
 
+import { toCardProduct } from '@/lib/productCard';
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -18,16 +19,7 @@ const Phones = () => {
       product.name.toLowerCase().includes('mobile')
     )
     .slice(0, 8)
-    .map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      originalPrice: product.original_price,
-      rating: product.rating,
-      reviews: product.reviews,
-      image: product.image,
-      discount: product.discount_percentage > 0 ? `${product.discount_percentage}% OFF` : undefined,
-    }));
+    .map(toCardProduct);
 
   const phoneCategories = [
     {
