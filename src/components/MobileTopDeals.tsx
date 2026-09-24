@@ -43,17 +43,17 @@ const MobileTopDeals = () => {
   return (
     <div className="md:hidden bg-card border border-border rounded-lg p-3 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-gray-800">Top Deals</h3>
-        <Button variant="ghost" size="sm" className="text-sky-600 hover:text-sky-700" onClick={handleSeeAll}>
+        <h3 className="text-base font-bold text-foreground">Top Deals</h3>
+        <Button variant="ghost" size="sm" className="text-primary" onClick={handleSeeAll}>
           See all
         </Button>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {topDeals.map((product) => (
           <div 
             key={product.id} 
-            className="bg-gray-50 rounded-xl p-3 relative cursor-pointer hover:shadow-md transition-shadow"
+            className="bg-background border border-border rounded-md p-2.5 relative cursor-pointer hover:shadow-md transition-shadow"
             onClick={(e) => handleProductClick(product.id, e)}
           >
             {product.discount_percentage > 0 && (
