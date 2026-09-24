@@ -11,6 +11,7 @@ export interface CardProduct {
   discount?: string;
   isFlash?: boolean;
   stock?: number;
+  category?: string;
   colors?: Array<{ name: string; hex_code: string }>;
 }
 
@@ -26,5 +27,6 @@ export const toCardProduct = (p: any): CardProduct => ({
   discount: p.discount_percentage > 0 ? `${p.discount_percentage}% OFF` : undefined,
   isFlash: !!p.is_flash_sale,
   stock: typeof p.stock === 'number' ? p.stock : undefined,
+  category: p.category || undefined,
   colors: Array.isArray(p.colors) ? p.colors : undefined,
 });
