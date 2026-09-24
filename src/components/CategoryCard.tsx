@@ -31,7 +31,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ name, image, path, count, c
         {name}
       </span>
       {typeof count === 'number' && count > 0 && (
-        <span className="block text-[11px] text-muted-foreground mt-0.5">{count} items</span>
+        <span className="block text-[11px] text-muted-foreground mt-0.5">{count} {count === 1 ? 'item' : 'items'}</span>
       )}
     </div>
   </Link>
